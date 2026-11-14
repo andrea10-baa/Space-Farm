@@ -7,6 +7,31 @@ namespace SpaceFarm
     [Serializable]
     public sealed class SpaceFarmState
     {
+        public const int BarrierSlotCount = 12;
+        private readonly bool[] barrierSegments = new bool[BarrierSlotCount];
+        private readonly bool[] discoveries = new bool[3];
+        public sealed class SystemResult
+        {
+            public int Nominal;
+            public int Actual;
+            public int EnergyUsed;
+            public int OtherUsed;
+            public string Reason = "Aún no se avanzó un sol.";
+        }
+        public sealed class SolResults
+        {
+            public readonly SystemResult Solar = new SystemResult();
+            public readonly SystemResult OxygenOne = new SystemResult();
+            public readonly SystemResult OxygenTwo = new SystemResult();
+            public readonly SystemResult Water = new SystemResult();
+            public readonly SystemResult Greenhouse = new SystemResult();
+            public readonly SystemResult Mine = new SystemResult();
+            public bool Storm;
+            public int CrewConsumed;
+            public int RaidFoodLoss;
+            public bool RaidDamagedMine;
+        }
+        public SolResults LastSol { get; private set; } = new SolResults();
         public int Sol { get; private set; } = 1;
         public int Iron { get; private set; } = 18;
         public int Energy { get; private set; } = 12;
@@ -22,11 +47,17 @@ namespace SpaceFarm
         public bool IceSurveyed { get; private set; }
         public bool Greenhouse { get; private set; }
         public bool WaterExtractor { get; private set; }
-        public bool Barrier { get; private set; }
+        public int BarrierCount { get; private set; }
+        public bool HasBarrierSegment(int index) => index >= 0 && index < BarrierSlotCount && barrierSegments[index];
+        public bool HasDiscovery(int index) => index >= 0 && index < discoveries.Length && discoveries[index];
+        public int MineStored { get; private set; }
+        public int MineCapacity => MineLevel == 2 ? 15 : MineLevel == 1 ? 6 : 0;
+        public int RoverCargo { get; private set; }
+        public int RoverCapacity => RoverLevel == 2 ? 8 : 4;
         public bool MineDamaged { get; private set; }
         public int ShipmentArrivalSol { get; private set; }
         public bool GameOver => Health <= 0;
-        public bool MissionComplete => Sol >= 7 && MineLevel > 0 && Greenhouse && Population >= 3 && Barrier && !GameOver;
+        public bool MissionComplete => Sol >= 7 && MineLevel > 0 && Greenhouse && Population >= 3 && BarrierCount >= 8 && !GameOver;
         public int ScanRadius => RoverLevel == 1 ? 2 : 3;
         public int OxygenPerSol => OxygenPlants * 4;
         public string LastReport { get; private set; } = "La nave aterrizó. Enviá el rover a explorar los sectores ocultos.";
@@ -54,7 +85,7 @@ namespace SpaceFarm
             if (Iron < 8) return Fail("La mina necesita 8 de hierro.", out message);
             Iron -= 8;
             MineLevel = 1;
-            return Success("Mina nivel 1 construida. Produce 3 de hierro por sol y consume 2 de energía.", out message);
+            return Success("Mina nivel 1 construida. Produce hasta 3 Fe por sol y almacena 6. Enviá el rover para recoger.", out message);
         }
 
         public bool UpgradeMine(out string message)
@@ -65,7 +96,7 @@ namespace SpaceFarm
             if (Iron < 6) return Fail("La mejora necesita 6 de hierro.", out message);
             Iron -= 6;
             MineLevel = 2;
-            return Success("Mina nivel 2 lista. Produce 5 de hierro por sol; requiere 3 de energía.", out message);
+            return Success("Mina nivel 2 lista. Produce hasta 5 Fe por sol, almacena 15 y requiere 3 de energía.", out message);
         }
 
         public bool RepairMine(out string message)
@@ -114,13 +145,45 @@ namespace SpaceFarm
             return Success("Nueva planta de oxígeno lista. Cada planta genera 4 de O2 y consume 3 de energía por sol.", out message);
         }
 
-        public bool BuildBarrier(out string message)
+        public bool BuildBarrierSegment(int index, out string message)
         {
-            if (Barrier) return Fail("El perímetro ya tiene barreras.", out message);
-            if (Iron < 5) return Fail("Las barreras necesitan 5 de hierro.", out message);
-            Iron -= 5;
-            Barrier = true;
-            return Success("Barreras instaladas: reducirán los daños de una incursión.", out message);
+            if (index < 0 || index >= BarrierSlotCount) return Fail("Esa posición no admite barrera.", out message);
+            if (barrierSegments[index]) return Fail("Ese segmento ya está construido.", out message);
+            if (Iron < 1) return Fail("Cada segmento cuesta 1 Fe.", out message);
+            Iron--;
+            barrierSegments[index] = true;
+            BarrierCount++;
+            return Success($"Segmento instalado. Perímetro {BarrierCount}/{BarrierSlotCount}; desde 8 la mina queda protegida.", out message);
+        }
+
+        public bool LoadMineToRover(out string message)
+        {
+            if (RoverCargo > 0) return Fail("Descargá primero la carga del rover.", out message);
+            if (MineStored == 0) return Fail("La mina no tiene hierro para recoger.", out message);
+            int loaded = Mathf.Min(MineStored, RoverCapacity);
+            MineStored -= loaded;
+            RoverCargo = loaded;
+            return Success($"Rover cargó {loaded}/{RoverCapacity} Fe. Regresá al hábitat para descargar.", out message);
+        }
+
+        public bool UnloadRover(out string message)
+        {
+            if (RoverCargo == 0) return Fail("El rover no lleva carga.", out message);
+            int amount = RoverCargo;
+            Iron += amount;
+            RoverCargo = 0;
+            return Success($"Rover descargó +{amount} Fe en el hábitat.", out message);
+        }
+
+        public string ClaimDiscovery(int index)
+        {
+            if (index < 0 || index >= discoveries.Length || discoveries[index])
+                return "Ese punto ya fue explorado.";
+            discoveries[index] = true;
+            if (index == 0) { Iron += 2; return LastReport = "Cápsula científica: +2 Fe recuperado."; }
+            if (index == 1) { Water += 3; return LastReport = "Hielo superficial: +3 agua recuperada."; }
+            Energy = Mathf.Min(30, Energy + 4);
+            return LastReport = "Batería abandonada: +4 energía recuperada.";
         }
 
         public bool AddColonist(out string message)
@@ -149,37 +212,86 @@ namespace SpaceFarm
             Sol++;
             bool storm = Sol == 3 || Sol == 4;
             int solar = storm ? 2 : 9;
-            Energy = Mathf.Min(30, Energy + solar);
-            string report = $"Sol {Sol}: los paneles generaron {solar} de energía";
+            LastSol = new SolResults { Storm = storm };
+            LastSol.Solar.Nominal = 9;
+            LastSol.Solar.Actual = Mathf.Min(solar, 30 - Energy);
+            LastSol.Solar.Reason = storm ? "Tormenta de polvo: llega menos luz." :
+                LastSol.Solar.Actual < solar ? "Batería llena." : "Operativa.";
+            Energy += LastSol.Solar.Actual;
+            string report = $"Sol {Sol}: los paneles generaron {LastSol.Solar.Actual} de energía";
             if (storm) report += " por la tormenta de polvo";
             report += ". ";
 
             int oxygenMade = 0;
             for (int i = 0; i < OxygenPlants; i++)
             {
-                if (SpendEnergy(3)) oxygenMade += 4;
+                SystemResult plant = i == 0 ? LastSol.OxygenOne : LastSol.OxygenTwo;
+                plant.Nominal = 4;
+                if (Oxygen + oxygenMade >= 30) plant.Reason = "Depósito de O2 lleno.";
+                else if (!SpendEnergy(3)) plant.Reason = "Falta energía.";
+                else
+                {
+                    plant.EnergyUsed = 3;
+                    plant.Actual = Mathf.Min(4, 30 - Oxygen - oxygenMade);
+                    oxygenMade += plant.Actual;
+                    plant.Reason = plant.Actual < 4 ? "Depósito de O2 lleno." : "Operativa.";
+                }
             }
-            Oxygen = Mathf.Min(30, Oxygen + oxygenMade);
+            Oxygen += oxygenMade;
             report += $"Plantas de O2: +{oxygenMade}. ";
 
-            if (WaterExtractor && SpendEnergy(2))
+            if (WaterExtractor)
             {
-                Water = Mathf.Min(30, Water + 5);
-                report += "Extractor de hielo: +5 agua. ";
+                LastSol.Water.Nominal = 5;
+                if (Water >= 30) LastSol.Water.Reason = "Depósito de agua lleno.";
+                else if (!SpendEnergy(2)) LastSol.Water.Reason = "Falta energía.";
+                else
+                {
+                    LastSol.Water.EnergyUsed = 2;
+                    LastSol.Water.Actual = Mathf.Min(5, 30 - Water);
+                    Water += LastSol.Water.Actual;
+                    LastSol.Water.Reason = LastSol.Water.Actual < 5 ? "Depósito de agua lleno." : "Operativa.";
+                    report += $"Extractor de hielo: +{LastSol.Water.Actual} agua. ";
+                }
             }
-            if (Greenhouse && Water > 0 && SpendEnergy(2))
+            if (Greenhouse)
             {
-                Water--;
-                Food = Mathf.Min(30, Food + 4);
-                report += "Invernadero: -1 agua, +4 comida. ";
+                LastSol.Greenhouse.Nominal = 4;
+                if (Food >= 30) LastSol.Greenhouse.Reason = "Almacén de comida lleno.";
+                else if (Water == 0) LastSol.Greenhouse.Reason = "Falta agua.";
+                else if (!SpendEnergy(2)) LastSol.Greenhouse.Reason = "Falta energía.";
+                else
+                {
+                    LastSol.Greenhouse.EnergyUsed = 2;
+                    LastSol.Greenhouse.OtherUsed = 1;
+                    Water--;
+                    LastSol.Greenhouse.Actual = Mathf.Min(4, 30 - Food);
+                    Food += LastSol.Greenhouse.Actual;
+                    LastSol.Greenhouse.Reason = LastSol.Greenhouse.Actual < 4 ? "Almacén de comida lleno." : "Operativa.";
+                    report += $"Invernadero: -1 agua, +{LastSol.Greenhouse.Actual} comida. ";
+                }
             }
-            if (MineLevel > 0 && !MineDamaged && SpendEnergy(MineLevel == 1 ? 2 : 3))
+            if (MineLevel > 0)
             {
-                int produced = MineLevel == 1 ? 3 : 5;
-                Iron += produced;
-                report += $"Mina: +{produced} hierro. ";
+                LastSol.Mine.Nominal = MineLevel == 1 ? 3 : 5;
+                if (MineDamaged) LastSol.Mine.Reason = "Averiada: repará la mina.";
+                else if (MineStored >= MineCapacity) LastSol.Mine.Reason = "Almacén lleno: enviá el rover.";
+                else
+                {
+                    int energyCost = MineLevel == 1 ? 2 : 3;
+                    if (!SpendEnergy(energyCost)) LastSol.Mine.Reason = "Falta energía.";
+                    else
+                    {
+                        LastSol.Mine.EnergyUsed = energyCost;
+                        LastSol.Mine.Actual = Mathf.Min(LastSol.Mine.Nominal, MineCapacity - MineStored);
+                        MineStored += LastSol.Mine.Actual;
+                        LastSol.Mine.Reason = MineStored == MineCapacity ? "Almacén lleno: enviá el rover." : "Operativa.";
+                        report += $"Mina: +{LastSol.Mine.Actual} Fe almacenado ({MineStored}/{MineCapacity}). ";
+                    }
+                }
             }
 
+            LastSol.CrewConsumed = Population;
             Oxygen = Mathf.Max(0, Oxygen - Population);
             Water = Mathf.Max(0, Water - Population);
             Food = Mathf.Max(0, Food - Population);
@@ -194,17 +306,13 @@ namespace SpaceFarm
             }
             if (Sol == 5)
             {
-                if (Barrier)
-                {
-                    Food = Mathf.Max(0, Food - 1);
-                    report += "Incursión alienígena: las barreras resistieron; -1 comida. ";
-                }
-                else
-                {
-                    Food = Mathf.Max(0, Food - 4);
-                    MineDamaged = MineLevel > 0;
-                    report += "Incursión alienígena: -4 comida; la mina quedó averiada. ";
-                }
+                int foodLoss = BarrierCount >= 12 ? 1 : BarrierCount >= 8 ? 2 : BarrierCount >= 4 ? 3 : 4;
+                LastSol.RaidFoodLoss = foodLoss;
+                Food = Mathf.Max(0, Food - foodLoss);
+                MineDamaged = BarrierCount < 8 && MineLevel > 0;
+                LastSol.RaidDamagedMine = MineDamaged;
+                report += $"Incursión alienígena: perímetro {BarrierCount}/12, -{foodLoss} comida";
+                report += MineDamaged ? "; mina averiada. " : "; mina protegida. ";
             }
             if (Oxygen == 0 || Water == 0 || Food == 0)
             {
