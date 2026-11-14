@@ -635,7 +635,7 @@ namespace SpaceFarm
                 () => !state.IceSurveyed ? "Estudiá el depósito de hielo" : state.WaterExtractor ? "Ya hay un extractor" : MissingIron(6));
             AddAction("Invernadero", "6 hierro", 0, () => state.BuildGreenhouse(out _),
                 () => state.Greenhouse ? "El invernadero ya está construido" : MissingIron(6));
-            AddAction("Planta de O₂", "9 hierro", 0, () => state.BuildOxygenPlant(out _),
+            AddAction("Planta de O2", "9 hierro", 0, () => state.BuildOxygenPlant(out _),
                 () => state.OxygenPlants >= 2 ? "La demo admite 2 plantas de oxígeno" : MissingIron(9));
             AddAction("Barreras", "5 hierro", 0, () => state.BuildBarrier(out _),
                 () => state.Barrier ? "El perímetro ya está protegido" : MissingIron(5));
@@ -646,7 +646,7 @@ namespace SpaceFarm
             AddAction("Mejorar rover", "5 hierro", 1, () => state.UpgradeRover(out _),
                 () => state.RoverLevel >= 2 ? "Nivel máximo de la demo" : MissingIron(5));
             AddAction("Recibir colono", "reservas vitales", 2, () => state.AddColonist(out _),
-                () => state.Population >= 4 ? "El hábitat está completo" : state.OxygenPerSol < (state.Population + 1) * 1.25f ? "Aumentá O₂ y conservá un 25 % de reserva" : state.Oxygen < 8 || state.Water < 8 || state.Food < 8 ? "Necesitás al menos 8 de O₂, agua y comida" : string.Empty);
+                () => state.Population >= 4 ? "El hábitat está completo" : state.OxygenPerSol < (state.Population + 1) * 1.25f ? "Aumentá O2 y conservá un 25 % de reserva" : state.Oxygen < 8 || state.Water < 8 || state.Food < 8 ? "Necesitás al menos 8 de O2, agua y comida" : string.Empty);
             AddAction("Pedir a la Tierra", "4 hierro", 2, () => state.OrderFromEarth(out _),
                 () => state.ShipmentArrivalSol != 0 ? "Ya hay un pedido en camino" : MissingIron(4));
 
@@ -1116,7 +1116,7 @@ namespace SpaceFarm
             if (!state.IceSurveyed) return "Explorá al noroeste para localizar hielo.";
             if (!state.WaterExtractor) return "Construí un extractor para asegurar agua (6 de hierro).";
             if (!state.Greenhouse) return "Construí un invernadero para iniciar la cosecha (6 de hierro).";
-            if (state.Population < 3) return "Prepará reservas de O₂, agua y comida; luego recibí un colono.";
+            if (state.Population < 3) return "Prepará reservas de O2, agua y comida; luego recibí un colono.";
             if (!state.Barrier) return "Instalá barreras antes de la incursión (5 de hierro).";
             if (state.Sol < 7) return $"Mantené la colonia hasta el sol 7 (ahora {state.Sol}).";
             return "Revisá recursos y preparate para el próximo evento.";
