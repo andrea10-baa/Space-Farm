@@ -1,15 +1,21 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SpaceFarm
 {
-    /// <summary>Small deterministic simulation for the first playable colony loop.</summary>
+    /// <summary>Small deterministic simulation for the colony loop. Knows deposits by id, not by map position.</summary>
     [Serializable]
     public sealed class SpaceFarmState
     {
         public const int BarrierSlotCount = 12;
+        public const int MaxMineCount = 3;
+        public const int MaxExtractors = 2;
         private readonly bool[] barrierSegments = new bool[BarrierSlotCount];
-        private readonly bool[] discoveries = new bool[3];
+        private readonly bool[] discoveries;
+        private readonly int[] discoveryKinds;
+        private readonly List<DepositState> deposits = new List<DepositState>();
+
         public sealed class SystemResult
         {
             public int Nominal;
@@ -18,19 +24,43 @@ namespace SpaceFarm
             public int OtherUsed;
             public string Reason = "Aún no se avanzó un sol.";
         }
+
+        /// <summary>One iron or ice deposit with the installation built on it. Each keeps its own level, damage and storage.</summary>
+        public sealed class DepositState
+        {
+            public int Id { get; internal set; }
+            public DepositKind Kind { get; internal set; }
+            public int Distance { get; internal set; }
+            public string Name { get; internal set; }
+            public bool Surveyed { get; internal set; }
+            public int MineLevel { get; internal set; }
+            public int MineStored { get; internal set; }
+            public bool MineDamaged { get; internal set; }
+            public bool Extractor { get; internal set; }
+            public SystemResult LastResult { get; internal set; } = new SystemResult();
+            public int MineCapacity => MineLevel == 2 ? 15 : MineLevel == 1 ? 6 : 0;
+            public int MineNominal => MineLevel == 2 ? 5 : MineLevel == 1 ? 3 : 0;
+            public int MineEnergy => MineLevel == 2 ? 3 : MineLevel == 1 ? 2 : 0;
+            public bool HasBuilding => MineLevel > 0 || Extractor;
+        }
+
         public sealed class SolResults
         {
             public readonly SystemResult Solar = new SystemResult();
             public readonly SystemResult OxygenOne = new SystemResult();
             public readonly SystemResult OxygenTwo = new SystemResult();
+            /// <summary>Total of every extractor this sol.</summary>
             public readonly SystemResult Water = new SystemResult();
             public readonly SystemResult Greenhouse = new SystemResult();
+            /// <summary>Total of every mine this sol.</summary>
             public readonly SystemResult Mine = new SystemResult();
             public bool Storm;
             public int CrewConsumed;
             public int RaidFoodLoss;
-            public bool RaidDamagedMine;
+            public int RaidDamagedMines;
+            public bool RaidDamagedMine => RaidDamagedMines > 0;
         }
+
         public SolResults LastSol { get; private set; } = new SolResults();
         public int Sol { get; private set; } = 1;
         public int Iron { get; private set; } = 18;
@@ -41,71 +71,134 @@ namespace SpaceFarm
         public int Population { get; private set; } = 2;
         public int Health { get; private set; } = 3;
         public int OxygenPlants { get; private set; } = 1;
-        public int MineLevel { get; private set; }
         public int RoverLevel { get; private set; } = 1;
-        public bool IronSurveyed { get; private set; }
-        public bool IceSurveyed { get; private set; }
         public bool Greenhouse { get; private set; }
-        public bool WaterExtractor { get; private set; }
         public int BarrierCount { get; private set; }
-        public bool HasBarrierSegment(int index) => index >= 0 && index < BarrierSlotCount && barrierSegments[index];
-        public bool HasDiscovery(int index) => index >= 0 && index < discoveries.Length && discoveries[index];
-        public int MineStored { get; private set; }
-        public int MineCapacity => MineLevel == 2 ? 15 : MineLevel == 1 ? 6 : 0;
         public int RoverCargo { get; private set; }
         public int RoverCapacity => RoverLevel == 2 ? 8 : 4;
-        public bool MineDamaged { get; private set; }
         public int ShipmentArrivalSol { get; private set; }
         public bool GameOver => Health <= 0;
-        public bool MissionComplete => Sol >= 7 && MineLevel > 0 && Greenhouse && Population >= 3 && BarrierCount >= 8 && !GameOver;
+        public bool MissionComplete => Sol >= 7 && MineCount > 0 && Greenhouse && Population >= 3 && BarrierCount >= 8 && !GameOver;
         public int ScanRadius => RoverLevel == 1 ? 2 : 3;
         public int OxygenPerSol => OxygenPlants * 4;
         public string LastReport { get; private set; } = "La nave aterrizó. Enviá el rover a explorar los sectores ocultos.";
 
-        public string SurveyIron()
+        public IReadOnlyList<DepositState> Deposits => deposits;
+        public int DiscoveryCount => discoveries.Length;
+        public bool HasBarrierSegment(int index) => index >= 0 && index < BarrierSlotCount && barrierSegments[index];
+        public bool HasDiscovery(int index) => index >= 0 && index < discoveries.Length && discoveries[index];
+        public DepositState Deposit(int id) => id >= 0 && id < deposits.Count ? deposits[id] : null;
+
+        public int MineCount => CountWhere(d => d.MineLevel > 0);
+        public int ExtractorCount => CountWhere(d => d.Extractor);
+        public bool AnyMineDamaged => CountWhere(d => d.MineDamaged) > 0;
+        public bool AnySurveyed(DepositKind kind) => CountWhere(d => d.Kind == kind && d.Surveyed) > 0;
+        /// <summary>Every mine needs an operator: two colonists run one mine, each extra colonist one more.</summary>
+        public int MaxMines => Mathf.Clamp(Population - 1, 1, MaxMineCount);
+        public int MineCost => 8 + 4 * MineCount;
+        public int ExtractorCost => 6 + 4 * ExtractorCount;
+
+        /// <summary>Minimal layout for rule checks: one iron deposit (id 0), one ice deposit (id 1) and three discoveries.</summary>
+        public SpaceFarmState() : this(DefaultDeposits(), new[] { 0, 1, 2 }) { }
+
+        public SpaceFarmState(SpaceFarmMap map) : this(map.Deposits, PointKinds(map)) { }
+
+        public SpaceFarmState(IReadOnlyList<MapDeposit> layout, IReadOnlyList<int> pointKinds)
         {
-            if (IronSurveyed) return "Yacimiento de hierro ya estudiado.";
-            IronSurveyed = true;
-            Iron += 2;
-            return LastReport = "Rover: yacimiento de hierro confirmado. Trajo 2 unidades de muestra. Ya podés construir una mina.";
+            for (int i = 0; i < layout.Count; i++)
+                deposits.Add(new DepositState
+                {
+                    Id = i,
+                    Kind = layout[i].Kind,
+                    Distance = layout[i].Distance,
+                    Name = string.IsNullOrEmpty(layout[i].Name) ? (layout[i].Kind == DepositKind.Iron ? "Fe-" : "Hielo-") + (i + 1) : layout[i].Name
+                });
+            discoveryKinds = new int[pointKinds.Count];
+            for (int i = 0; i < pointKinds.Count; i++) discoveryKinds[i] = pointKinds[i];
+            discoveries = new bool[pointKinds.Count];
         }
 
-        public string SurveyIce()
+        private static List<MapDeposit> DefaultDeposits() => new List<MapDeposit>
         {
-            if (IceSurveyed) return "Depósito de hielo ya estudiado.";
-            IceSurveyed = true;
-            Water += 2;
-            return LastReport = "Rover: depósito de hielo confirmado. Trajo 2 unidades de agua. Podés construir un extractor.";
+            new MapDeposit { Id = 0, Kind = DepositKind.Iron, Distance = 5, Name = "Fe-1" },
+            new MapDeposit { Id = 1, Kind = DepositKind.Ice, Distance = 7, Name = "Hielo-1" }
+        };
+
+        private static int[] PointKinds(SpaceFarmMap map)
+        {
+            int[] kinds = new int[map.Points.Count];
+            for (int i = 0; i < kinds.Length; i++) kinds[i] = map.Points[i].Kind;
+            return kinds;
         }
 
-        public bool BuildMine(out string message)
+        private int CountWhere(Func<DepositState, bool> match)
         {
-            if (!IronSurveyed) return Fail("Primero explorá y estudiá el yacimiento de hierro.", out message);
-            if (MineLevel > 0) return Fail("La mina ya está construida.", out message);
-            if (Iron < 8) return Fail("La mina necesita 8 de hierro.", out message);
-            Iron -= 8;
-            MineLevel = 1;
-            return Success("Mina nivel 1 construida. Produce hasta 3 Fe por sol y almacena 6. Enviá el rover para recoger.", out message);
+            int count = 0;
+            for (int i = 0; i < deposits.Count; i++) if (match(deposits[i])) count++;
+            return count;
         }
 
-        public bool UpgradeMine(out string message)
+        public string SurveyDeposit(int id)
         {
-            if (MineLevel == 0) return Fail("Construí primero la mina.", out message);
-            if (MineLevel >= 2) return Fail("El nivel 2 es el máximo de esta demo.", out message);
-            if (MineDamaged) return Fail("Repará la mina antes de mejorarla.", out message);
+            DepositState deposit = Deposit(id);
+            if (deposit == null) return "Ahí no hay ningún yacimiento.";
+            if (deposit.Surveyed) return $"{deposit.Name} ya está estudiado.";
+            // The first sample of each resource is the big one; later surveys bring a single unit.
+            int sample = AnySurveyed(deposit.Kind) ? 1 : 2;
+            deposit.Surveyed = true;
+            if (deposit.Kind == DepositKind.Iron)
+            {
+                Iron += sample;
+                return LastReport = $"Rover: yacimiento {deposit.Name} confirmado. Trajo {sample} Fe de muestra. Seleccionalo para construir una mina.";
+            }
+            Water = Mathf.Min(30, Water + sample);
+            return LastReport = $"Rover: depósito {deposit.Name} confirmado. Trajo {sample} de agua. Seleccionalo para construir un extractor.";
+        }
+
+        /// <summary>Why a mine cannot be built there right now, or an empty string.</summary>
+        public string MineBlocker(int id)
+        {
+            DepositState deposit = Deposit(id);
+            if (deposit == null || deposit.Kind != DepositKind.Iron) return "Elegí un yacimiento de hierro";
+            if (!deposit.Surveyed) return "Primero estudiá ese yacimiento con el rover";
+            if (deposit.MineLevel > 0) return "Ese yacimiento ya tiene mina";
+            if (MineCount >= MaxMineCount) return $"La demo admite {MaxMineCount} minas";
+            if (MineCount >= MaxMines) return $"Cada mina necesita un operador: con {Population} colonos operás {MaxMines}";
+            if (Iron < MineCost) return $"La mina necesita {MineCost} de hierro";
+            return string.Empty;
+        }
+
+        public bool BuildMine(int id, out string message)
+        {
+            string blocker = MineBlocker(id);
+            if (blocker.Length > 0) return Fail(blocker + ".", out message);
+            DepositState deposit = Deposit(id);
+            Iron -= MineCost;
+            deposit.MineLevel = 1;
+            deposit.LastResult = new SystemResult();
+            return Success($"Mina nivel 1 construida en {deposit.Name}. Produce hasta 3 Fe por sol, usa 2 de energía y almacena 6. Enviá el rover para recoger.", out message);
+        }
+
+        public bool UpgradeMine(int id, out string message)
+        {
+            DepositState deposit = Deposit(id);
+            if (deposit == null || deposit.MineLevel == 0) return Fail("Construí primero la mina.", out message);
+            if (deposit.MineLevel >= 2) return Fail("El nivel 2 es el máximo de esta demo.", out message);
+            if (deposit.MineDamaged) return Fail("Repará la mina antes de mejorarla.", out message);
             if (Iron < 6) return Fail("La mejora necesita 6 de hierro.", out message);
             Iron -= 6;
-            MineLevel = 2;
-            return Success("Mina nivel 2 lista. Produce hasta 5 Fe por sol, almacena 15 y requiere 3 de energía.", out message);
+            deposit.MineLevel = 2;
+            return Success($"Mina de {deposit.Name} en nivel 2. Produce hasta 5 Fe por sol, almacena 15 y requiere 3 de energía.", out message);
         }
 
-        public bool RepairMine(out string message)
+        public bool RepairMine(int id, out string message)
         {
-            if (!MineDamaged) return Fail("La mina no necesita reparación.", out message);
+            DepositState deposit = Deposit(id);
+            if (deposit == null || !deposit.MineDamaged) return Fail("Esa mina no necesita reparación.", out message);
             if (Iron < 3) return Fail("La reparación necesita 3 de hierro.", out message);
             Iron -= 3;
-            MineDamaged = false;
-            return Success("Mina reparada y operativa.", out message);
+            deposit.MineDamaged = false;
+            return Success($"Mina de {deposit.Name} reparada y operativa.", out message);
         }
 
         public bool UpgradeRover(out string message)
@@ -114,17 +207,29 @@ namespace SpaceFarm
             if (Iron < 5) return Fail("El rover necesita 5 de hierro para la mejora.", out message);
             Iron -= 5;
             RoverLevel = 2;
-            return Success("Rover nivel 2: ahora revela sectores a 3 casillas de distancia.", out message);
+            return Success("Rover nivel 2: revela sectores a 3 casillas y carga 8 Fe por viaje.", out message);
         }
 
-        public bool BuildWaterExtractor(out string message)
+        public string ExtractorBlocker(int id)
         {
-            if (!IceSurveyed) return Fail("Primero descubrí el depósito de hielo.", out message);
-            if (WaterExtractor) return Fail("El extractor de agua ya está construido.", out message);
-            if (Iron < 6) return Fail("El extractor necesita 6 de hierro.", out message);
-            Iron -= 6;
-            WaterExtractor = true;
-            return Success("Extractor listo: obtiene 5 de agua por sol a cambio de 2 de energía.", out message);
+            DepositState deposit = Deposit(id);
+            if (deposit == null || deposit.Kind != DepositKind.Ice) return "Elegí un depósito de hielo";
+            if (!deposit.Surveyed) return "Primero estudiá ese depósito con el rover";
+            if (deposit.Extractor) return "Ese depósito ya tiene extractor";
+            if (ExtractorCount >= MaxExtractors) return $"La demo admite {MaxExtractors} extractores";
+            if (Iron < ExtractorCost) return $"El extractor necesita {ExtractorCost} de hierro";
+            return string.Empty;
+        }
+
+        public bool BuildWaterExtractor(int id, out string message)
+        {
+            string blocker = ExtractorBlocker(id);
+            if (blocker.Length > 0) return Fail(blocker + ".", out message);
+            DepositState deposit = Deposit(id);
+            Iron -= ExtractorCost;
+            deposit.Extractor = true;
+            deposit.LastResult = new SystemResult();
+            return Success($"Extractor listo en {deposit.Name}: obtiene 5 de agua por sol a cambio de 2 de energía.", out message);
         }
 
         public bool BuildGreenhouse(out string message)
@@ -153,17 +258,19 @@ namespace SpaceFarm
             Iron--;
             barrierSegments[index] = true;
             BarrierCount++;
-            return Success($"Segmento instalado. Perímetro {BarrierCount}/{BarrierSlotCount}; desde 8 la mina queda protegida.", out message);
+            return Success($"Segmento instalado. Perímetro {BarrierCount}/{BarrierSlotCount}; desde 8 las minas quedan protegidas.", out message);
         }
 
-        public bool LoadMineToRover(out string message)
+        public bool LoadMineToRover(int id, out string message)
         {
+            DepositState deposit = Deposit(id);
+            if (deposit == null || deposit.MineLevel == 0) return Fail("Ahí no hay una mina.", out message);
             if (RoverCargo > 0) return Fail("Descargá primero la carga del rover.", out message);
-            if (MineStored == 0) return Fail("La mina no tiene hierro para recoger.", out message);
-            int loaded = Mathf.Min(MineStored, RoverCapacity);
-            MineStored -= loaded;
+            if (deposit.MineStored == 0) return Fail("La mina no tiene hierro para recoger.", out message);
+            int loaded = Mathf.Min(deposit.MineStored, RoverCapacity);
+            deposit.MineStored -= loaded;
             RoverCargo = loaded;
-            return Success($"Rover cargó {loaded}/{RoverCapacity} Fe. Regresá al hábitat para descargar.", out message);
+            return Success($"Rover cargó {loaded}/{RoverCapacity} Fe en {deposit.Name}. Regresá al hábitat para descargar.", out message);
         }
 
         public bool UnloadRover(out string message)
@@ -180,10 +287,13 @@ namespace SpaceFarm
             if (index < 0 || index >= discoveries.Length || discoveries[index])
                 return "Ese punto ya fue explorado.";
             discoveries[index] = true;
-            if (index == 0) { Iron += 2; return LastReport = "Cápsula científica: +2 Fe recuperado."; }
-            if (index == 1) { Water += 3; return LastReport = "Hielo superficial: +3 agua recuperada."; }
-            Energy = Mathf.Min(30, Energy + 4);
-            return LastReport = "Batería abandonada: +4 energía recuperada.";
+            switch (discoveryKinds[index])
+            {
+                case 0: Iron += 2; return LastReport = "Cápsula científica: +2 Fe recuperado.";
+                case 1: Water = Mathf.Min(30, Water + 3); return LastReport = "Hielo superficial: +3 agua recuperada.";
+                case 2: Energy = Mathf.Min(30, Energy + 4); return LastReport = "Batería abandonada: +4 energía recuperada.";
+                default: Food = Mathf.Min(30, Food + 3); return LastReport = "Contenedor de víveres: +3 comida recuperada.";
+            }
         }
 
         public bool AddColonist(out string message)
@@ -194,7 +304,7 @@ namespace SpaceFarm
             if (Oxygen < 8 || Water < 8 || Food < 8)
                 return Fail("Necesitás al menos 8 de O2, agua y comida antes de recibir otra persona.", out message);
             Population++;
-            return Success("Llegó un nuevo colono. Aumentó la mano de obra y también el consumo diario.", out message);
+            return Success($"Llegó un nuevo colono. Aumentó el consumo diario y ya podés operar {MaxMines} mina(s).", out message);
         }
 
         public bool OrderFromEarth(out string message)
@@ -208,7 +318,7 @@ namespace SpaceFarm
 
         public string AdvanceSol()
         {
-            if (GameOver) return LastReport = "La misión terminó. Reiniciá la escena para volver a intentarlo.";
+            if (GameOver) return LastReport = "La misión terminó. Abrí el menú de pausa para reiniciar.";
             Sol++;
             bool storm = Sol == 3 || Sol == 4;
             int solar = storm ? 2 : 9;
@@ -240,20 +350,23 @@ namespace SpaceFarm
             Oxygen += oxygenMade;
             report += $"Plantas de O2: +{oxygenMade}. ";
 
-            if (WaterExtractor)
+            foreach (DepositState deposit in deposits)
             {
-                LastSol.Water.Nominal = 5;
-                if (Water >= 30) LastSol.Water.Reason = "Depósito de agua lleno.";
-                else if (!SpendEnergy(2)) LastSol.Water.Reason = "Falta energía.";
+                if (!deposit.Extractor) continue;
+                SystemResult result = deposit.LastResult = new SystemResult { Nominal = 5 };
+                if (Water >= 30) result.Reason = "Depósito de agua lleno.";
+                else if (!SpendEnergy(2)) result.Reason = "Falta energía.";
                 else
                 {
-                    LastSol.Water.EnergyUsed = 2;
-                    LastSol.Water.Actual = Mathf.Min(5, 30 - Water);
-                    Water += LastSol.Water.Actual;
-                    LastSol.Water.Reason = LastSol.Water.Actual < 5 ? "Depósito de agua lleno." : "Operativa.";
-                    report += $"Extractor de hielo: +{LastSol.Water.Actual} agua. ";
+                    result.EnergyUsed = 2;
+                    result.Actual = Mathf.Min(5, 30 - Water);
+                    Water += result.Actual;
+                    result.Reason = result.Actual < 5 ? "Depósito de agua lleno." : "Operativa.";
                 }
+                Accumulate(LastSol.Water, result);
             }
+            if (ExtractorCount > 0) report += $"Extractores de hielo: +{LastSol.Water.Actual} agua. ";
+
             if (Greenhouse)
             {
                 LastSol.Greenhouse.Nominal = 4;
@@ -271,25 +384,24 @@ namespace SpaceFarm
                     report += $"Invernadero: -1 agua, +{LastSol.Greenhouse.Actual} comida. ";
                 }
             }
-            if (MineLevel > 0)
+
+            foreach (DepositState deposit in deposits)
             {
-                LastSol.Mine.Nominal = MineLevel == 1 ? 3 : 5;
-                if (MineDamaged) LastSol.Mine.Reason = "Averiada: repará la mina.";
-                else if (MineStored >= MineCapacity) LastSol.Mine.Reason = "Almacén lleno: enviá el rover.";
+                if (deposit.MineLevel == 0) continue;
+                SystemResult result = deposit.LastResult = new SystemResult { Nominal = deposit.MineNominal };
+                if (deposit.MineDamaged) result.Reason = "Averiada: repará la mina.";
+                else if (deposit.MineStored >= deposit.MineCapacity) result.Reason = "Almacén lleno: enviá el rover.";
+                else if (!SpendEnergy(deposit.MineEnergy)) result.Reason = "Falta energía.";
                 else
                 {
-                    int energyCost = MineLevel == 1 ? 2 : 3;
-                    if (!SpendEnergy(energyCost)) LastSol.Mine.Reason = "Falta energía.";
-                    else
-                    {
-                        LastSol.Mine.EnergyUsed = energyCost;
-                        LastSol.Mine.Actual = Mathf.Min(LastSol.Mine.Nominal, MineCapacity - MineStored);
-                        MineStored += LastSol.Mine.Actual;
-                        LastSol.Mine.Reason = MineStored == MineCapacity ? "Almacén lleno: enviá el rover." : "Operativa.";
-                        report += $"Mina: +{LastSol.Mine.Actual} Fe almacenado ({MineStored}/{MineCapacity}). ";
-                    }
+                    result.EnergyUsed = deposit.MineEnergy;
+                    result.Actual = Mathf.Min(result.Nominal, deposit.MineCapacity - deposit.MineStored);
+                    deposit.MineStored += result.Actual;
+                    result.Reason = deposit.MineStored == deposit.MineCapacity ? "Almacén lleno: enviá el rover." : "Operativa.";
                 }
+                Accumulate(LastSol.Mine, result);
             }
+            if (MineCount > 0) report += $"Minas ({MineCount}): +{LastSol.Mine.Actual} Fe almacenado. ";
 
             LastSol.CrewConsumed = Population;
             Oxygen = Mathf.Max(0, Oxygen - Population);
@@ -309,10 +421,9 @@ namespace SpaceFarm
                 int foodLoss = BarrierCount >= 12 ? 1 : BarrierCount >= 8 ? 2 : BarrierCount >= 4 ? 3 : 4;
                 LastSol.RaidFoodLoss = foodLoss;
                 Food = Mathf.Max(0, Food - foodLoss);
-                MineDamaged = BarrierCount < 8 && MineLevel > 0;
-                LastSol.RaidDamagedMine = MineDamaged;
+                LastSol.RaidDamagedMines = RaidMines();
                 report += $"Incursión alienígena: perímetro {BarrierCount}/12, -{foodLoss} comida";
-                report += MineDamaged ? "; mina averiada. " : "; mina protegida. ";
+                report += LastSol.RaidDamagedMines > 0 ? $"; {LastSol.RaidDamagedMines} mina(s) averiada(s). " : "; minas protegidas. ";
             }
             if (Oxygen == 0 || Water == 0 || Food == 0)
             {
@@ -322,6 +433,41 @@ namespace SpaceFarm
             if (GameOver) report += "La misión fracasó. ";
             else if (MissionComplete) report += "¡Misión completada: colonia estable tras la primera incursión! ";
             return LastReport = report;
+        }
+
+        /// <summary>
+        /// Raid exposure grows with the territory: under 4 segments every mine is hit,
+        /// with 4 to 7 only the mine farthest from the base, and from 8 all of them are safe.
+        /// </summary>
+        private int RaidMines()
+        {
+            if (BarrierCount >= 8) return 0;
+            int damaged = 0;
+            DepositState farthest = null;
+            foreach (DepositState deposit in deposits)
+            {
+                if (deposit.MineLevel == 0) continue;
+                if (farthest == null || deposit.Distance > farthest.Distance) farthest = deposit;
+                if (BarrierCount < 4)
+                {
+                    deposit.MineDamaged = true;
+                    damaged++;
+                }
+            }
+            if (BarrierCount >= 4 && farthest != null)
+            {
+                farthest.MineDamaged = true;
+                damaged = 1;
+            }
+            return damaged;
+        }
+
+        private static void Accumulate(SystemResult total, SystemResult part)
+        {
+            total.Nominal += part.Nominal;
+            total.Actual += part.Actual;
+            total.EnergyUsed += part.EnergyUsed;
+            total.Reason = part.Reason;
         }
 
         private bool SpendEnergy(int amount)

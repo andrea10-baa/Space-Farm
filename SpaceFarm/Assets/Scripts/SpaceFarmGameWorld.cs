@@ -8,15 +8,25 @@ using UnityEngine.InputSystem;
 
 namespace SpaceFarm
 {
+    /// <summary>World objects: terrain sprite, deposits and their installations, barriers, solar array and astronauts.</summary>
     public sealed partial class SpaceFarmGame
     {
-        private static readonly Vector2Int[] DiscoveryCells =
+        private sealed class DepositView
         {
-            new Vector2Int(5, 5), new Vector2Int(25, 15), new Vector2Int(24, 4)
-        };
+            public MapDeposit Info;
+            public SpriteRenderer Marker;
+            public GameObject Building;
+            public Vector3 BuildingScale;
+            public TextMeshPro Label;
+            public SpriteRenderer LabelBacking;
+            public bool Seen;
+            public int ShownLevel;
+            public bool ShownDamaged;
+            public RectTransform MiniMarker;
+        }
+
         private readonly GameObject[] barrierSegments = new GameObject[SpaceFarmState.BarrierSlotCount];
         private readonly GameObject[] barrierGuides = new GameObject[SpaceFarmState.BarrierSlotCount];
-        private readonly SpriteRenderer[] discoveryMarkers = new SpriteRenderer[3];
         private readonly List<Transform> astronauts = new List<Transform>();
         private readonly List<float> astronautWait = new List<float>();
         private readonly List<int> astronautGoal = new List<int>();
@@ -25,11 +35,12 @@ namespace SpaceFarm
             new Vector2(-1.4f, -1.65f), new Vector2(-.6f, -1.95f),
             new Vector2(.45f, -1.95f), new Vector2(1.55f, -1.6f)
         };
+        private DepositView[] depositViews;
+        private SpriteRenderer[] discoveryMarkers;
+        private Color32[] terrainCellColors;
         private GameObject barrierPreview;
         private GameObject barrierPreviewVertical;
         private GameObject solarWorld;
-        private TextMeshPro mineWorldLabel;
-        private SpriteRenderer mineLabelBacking;
         private bool barrierMode;
         private bool collectionActive;
         private int hoveredBarrierSlot = -1;
@@ -44,41 +55,102 @@ namespace SpaceFarm
             return new Vector2(2.5f, index == 10 ? -1.1f : 1.1f);
         }
 
-        private void CreateTerrainTiles()
+        private void CreateWorld()
         {
-            CreateArtwork("Terreno continuo", "Art/mars-terrain", Vector3.zero,
-                Width * TileSize, Height * TileSize, -11, worldRoot.transform);
-            Color[] tints =
+            worldRoot = new GameObject("Marte");
+            worldRoot.transform.SetParent(transform);
+            CreateTerrain();
+            CreateFog();
+            CreateDepositViews();
+
+            CreateArtwork("Nave y hábitat", "Art/lander", CellPosition(BaseCell) + new Vector3(0, 0, -.2f),
+                3.1f, 2.07f, 5, worldRoot.transform);
+            CreateArtwork("Planta de oxígeno", "Art/oxygen-plant",
+                CellPosition(BaseCell + new Vector2Int(2, 0)) + new Vector3(0, 0, -.2f),
+                1.7f, 1.14f, 6, worldRoot.transform);
+            rover = CreateArtwork("Rover 1", "Art/rover", CellPosition(roverCell) + new Vector3(-.65f, -.5f, -.5f),
+                1.55f, 1.04f, 8, worldRoot.transform).gameObject;
+            greenhouse = CreateBuilding("Invernadero", "Art/greenhouse", BaseCell + new Vector2Int(-2, 1), worldRoot.transform);
+            oxygenPlantTwo = CreateBuilding("Planta de oxígeno 2", "Art/oxygen-plant", BaseCell + new Vector2Int(2, 2), worldRoot.transform);
+            CreateBarrierWorld();
+            CreateSolarWorld();
+            CreatePointsOfInterest();
+            routeMarker = CreateWorldSprite("Destino del rover", ringSprite, CellPosition(roverCell),
+                new Vector3(.65f, .65f, 1f), SpaceFarmPalette.Ice, 9, worldRoot.transform);
+            routeMarker.enabled = false;
+            scanPulse = CreateWorldSprite("Pulso de exploración", ringSprite, CellPosition(roverCell),
+                new Vector3(.75f, .75f, 1f), SpaceFarmPalette.Ice, 10, worldRoot.transform);
+            scanPulse.enabled = false;
+            signalPing = CreateWorldSprite("Señal de descubrimiento", ringSprite, CellPosition(roverCell),
+                new Vector3(.8f, .8f, 1f), SpaceFarmPalette.Ice, 11, worldRoot.transform);
+            signalPing.enabled = false;
+            CreateScanTrail();
+            greenhouse.SetActive(false);
+            oxygenPlantTwo.SetActive(false);
+        }
+
+        /// <summary>The whole 80×50 region is one painted texture plus one tiled grain layer: two renderers in total.</summary>
+        private void CreateTerrain()
+        {
+            SpaceFarmTerrainPainter.Result painted = SpaceFarmTerrainPainter.Paint(map);
+            terrainCellColors = painted.CellColors;
+            Texture2D texture = new Texture2D(painted.Width, painted.Height, TextureFormat.RGB24, false);
+            texture.filterMode = FilterMode.Bilinear;
+            texture.wrapMode = TextureWrapMode.Clamp;
+            texture.SetPixels32(painted.Pixels);
+            texture.Apply(false, true);
+            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, painted.Width, painted.Height), new Vector2(.5f, .5f),
+                SpaceFarmTerrainPainter.PixelsPerCell / TileSize, 0, SpriteMeshType.FullRect);
+            CreateWorldSprite("Terreno generado", sprite, Vector3.zero, Vector3.one, Color.white, -11, worldRoot.transform);
+
+            const int grainSize = 128;
+            Texture2D grain = new Texture2D(grainSize, grainSize, TextureFormat.RGBA32, false);
+            grain.filterMode = FilterMode.Bilinear;
+            grain.wrapMode = TextureWrapMode.Repeat;
+            grain.SetPixels32(SpaceFarmTerrainPainter.PaintGrain(grainSize, seed));
+            grain.Apply(false, true);
+            Sprite grainSprite = Sprite.Create(grain, new Rect(0, 0, grainSize, grainSize), new Vector2(.5f, .5f),
+                grainSize / (TileSize * 3f), 0, SpriteMeshType.FullRect);
+            SpriteRenderer grainRenderer = CreateWorldSprite("Grano del suelo", grainSprite, new Vector3(0f, 0f, -.01f),
+                Vector3.one, Color.white, -10, worldRoot.transform);
+            grainRenderer.drawMode = SpriteDrawMode.Tiled;
+            grainRenderer.size = new Vector2(Width * TileSize, Height * TileSize);
+            runtimeAssets.AddRange(new UnityEngine.Object[] { sprite, texture, grainSprite, grain });
+        }
+
+        private void CreateDepositViews()
+        {
+            Transform root = new GameObject("Yacimientos").transform;
+            root.SetParent(worldRoot.transform);
+            depositViews = new DepositView[map.Deposits.Count];
+            for (int i = 0; i < depositViews.Length; i++)
             {
-                new Color(1f,1f,1f,.05f), new Color(.91f,.91f,.9f,.05f), new Color(.96f,.88f,.82f,.05f),
-                new Color(.89f,.84f,.81f,.05f), new Color(.95f,.93f,.88f,.05f), new Color(.86f,.83f,.83f,.05f)
-            };
-            for (int y = 0; y < 2; y++)
-            for (int x = 0; x < 3; x++)
-            {
-                SpriteRenderer tile = CreateArtwork($"Terreno {x},{y}", "Art/mars-terrain",
-                    new Vector3((x - 1) * 9f, (y - .5f) * 9f, 0f), 9.05f, 9.05f, -10, worldRoot.transform);
-                tile.color = tints[y * 3 + x];
-                if ((x + y) % 2 == 1) tile.transform.rotation = Quaternion.Euler(0f, 0f, 180f);
-            }
-            var random = new System.Random(114);
-            for (int i = 0; i < 65; i++)
-            {
-                float x = (float)(random.NextDouble() * 25.8 - 12.9);
-                float y = (float)(random.NextDouble() * 16.8 - 8.4);
-                if (Mathf.Abs(x) < 3.7f && Mathf.Abs(y) < 3f) continue;
-                float size = (float)(.07 + random.NextDouble() * .13);
-                CreateWorldSprite("Roca marciana", circleSprite, new Vector3(x,y,-.02f),
-                    new Vector3(size, size * .55f, 1f), new Color(.28f,.16f,.14f,.48f), -9, worldRoot.transform);
-            }
-            for (int i = 0; i < 45; i++)
-            {
-                float x = (float)(random.NextDouble() * 25.8 - 12.9);
-                float y = (float)(random.NextDouble() * 16.8 - 8.4);
-                if (Mathf.Abs(x) < 3f && Mathf.Abs(y) < 2.8f) continue;
-                float size = (float)(.3 + random.NextDouble() * .7);
-                CreateWorldSprite("Cráter", ringSprite, new Vector3(x,y,-.03f),
-                    new Vector3(size,size * .7f,1f), new Color(.32f,.16f,.12f,.22f), -9, worldRoot.transform);
+                MapDeposit info = map.Deposits[i];
+                bool iron = info.Kind == DepositKind.Iron;
+                DepositView view = new DepositView { Info = info };
+                view.Marker = CreateArtwork(iron ? $"Yacimiento {info.Name}" : $"Depósito {info.Name}",
+                    iron ? "Art/iron-deposit" : "Art/ice-deposit",
+                    CellPosition(info.Cell) + new Vector3(0, 0, -.1f), 1.55f, 1.03f, 3, root);
+                view.Marker.enabled = false;
+                Vector3 labelPosition = CellPosition(info.Cell) + new Vector3(0f, -.78f, -.4f);
+                view.LabelBacking = CreateWorldSprite("Fondo de etiqueta", squareSprite,
+                    labelPosition + new Vector3(0, 0, .03f), new Vector3(1.2f, .36f, 1f),
+                    new Color(.07f, .1f, .14f, .86f), 11, root);
+                GameObject label = new GameObject($"Etiqueta {info.Name}", typeof(TextMeshPro));
+                label.transform.SetParent(root);
+                label.transform.position = labelPosition;
+                label.transform.localScale = Vector3.one * .3f;
+                view.Label = label.GetComponent<TextMeshPro>();
+                view.Label.font = TMP_Settings.defaultFontAsset;
+                view.Label.fontSize = 4f;
+                view.Label.fontStyle = FontStyles.Bold;
+                view.Label.alignment = TextAlignmentOptions.Center;
+                view.Label.textWrappingMode = TextWrappingModes.NoWrap;
+                view.Label.color = iron ? SpaceFarmPalette.Iron : SpaceFarmPalette.Ice;
+                view.Label.sortingOrder = 12;
+                label.SetActive(false);
+                view.LabelBacking.gameObject.SetActive(false);
+                depositViews[i] = view;
             }
         }
 
@@ -145,24 +217,27 @@ namespace SpaceFarm
             }
         }
 
-        private void CreatePointsOfInterest()
+        private static Color DiscoveryColor(int kind)
         {
-            for (int i = 0; i < DiscoveryCells.Length; i++)
+            switch (kind)
             {
-                discoveryMarkers[i] = CreateWorldSprite("Punto de interés", ringSprite,
-                    CellPosition(DiscoveryCells[i]) + new Vector3(0,0,-.12f),
-                    new Vector3(.7f,.7f,1f), i == 1 ? SpaceFarmPalette.Ice : SpaceFarmPalette.Iron,
-                    4, worldRoot.transform);
-                discoveryMarkers[i].enabled = false;
+                case 0: return SpaceFarmPalette.Iron;
+                case 1: return SpaceFarmPalette.Ice;
+                case 2: return SpaceFarmPalette.Oxygen;
+                default: return SpaceFarmPalette.Greenhouse;
             }
         }
 
-        private string DiscoverPointOfInterest(Vector2Int cell)
+        private void CreatePointsOfInterest()
         {
-            for (int i = 0; i < DiscoveryCells.Length; i++)
-                if (DiscoveryCells[i] == cell && !state.HasDiscovery(i))
-                    return state.ClaimDiscovery(i);
-            return null;
+            discoveryMarkers = new SpriteRenderer[map.Points.Count];
+            for (int i = 0; i < discoveryMarkers.Length; i++)
+            {
+                discoveryMarkers[i] = CreateWorldSprite("Punto de interés", ringSprite,
+                    CellPosition(map.Points[i].Cell) + new Vector3(0,0,-.12f),
+                    new Vector3(.7f,.7f,1f), DiscoveryColor(map.Points[i].Kind), 4, worldRoot.transform);
+                discoveryMarkers[i].enabled = false;
+            }
         }
 
         private int FindBarrierSlot(Vector3 world)
@@ -183,8 +258,8 @@ namespace SpaceFarm
             {
                 int slot = FindBarrierSlot(world);
                 Vector2Int cell = WorldToCell(world);
-                if (slot < 0 || !Inside(cell) || !revealed[cell.x, cell.y])
-                    SetReport("Solo podés colocar segmentos en las 12 posiciones marcadas y reveladas.");
+                if (slot < 0 || !map.Inside(cell) || !revealed[cell.x, cell.y])
+                    SetReport("Solo podés colocar segmentos en las 12 posiciones marcadas alrededor de la base.");
                 else
                 {
                     bool built = state.BuildBarrierSegment(slot, out string message);
@@ -200,11 +275,18 @@ namespace SpaceFarm
                 RefreshSystems();
                 return true;
             }
+            foreach (DepositView view in depositViews)
+            {
+                if (!revealed[view.Info.Cell.x, view.Info.Cell.y]) continue;
+                if (Vector2.Distance(world, CellPosition(view.Info.Cell)) >= .8f) continue;
+                SpaceFarmState.DepositState deposit = state.Deposit(view.Info.Id);
+                if (deposit.Surveyed) return SelectDeposit(view.Info.Id);
+                // A visible but unstudied signal: the click is the order to go and study it.
+                HideWorldSelection();
+                SendRoverTo(view.Info.Cell);
+                return true;
+            }
             Vector3 basePosition = CellPosition(BaseCell);
-            if (state.MineLevel > 0 && Vector2.Distance(world, mine.transform.position) < .85f)
-                return SelectWorldBuilding("mine");
-            if (state.WaterExtractor && Vector2.Distance(world, waterExtractor.transform.position) < .85f)
-                return SelectWorldBuilding("water");
             if (state.Greenhouse && Vector2.Distance(world, greenhouse.transform.position) < .85f)
                 return SelectWorldBuilding("greenhouse");
             if (state.OxygenPlants > 1 && Vector2.Distance(world, oxygenPlantTwo.transform.position) < .8f)
@@ -218,20 +300,25 @@ namespace SpaceFarm
             return false;
         }
 
-        private void UpdateSystems(Mouse mouse)
+        private void UpdateSystems(Mouse mouse, Keyboard keyboard)
         {
-            Keyboard keyboard = Keyboard.current;
             if (keyboard != null)
             {
-                if (barrierMode && keyboard.escapeKey.wasPressedThisFrame) EndBarrierMode();
                 Vector2 direction = Vector2.zero;
-                if (keyboard.aKey.isPressed) direction.x--;
-                if (keyboard.dKey.isPressed) direction.x++;
-                if (keyboard.sKey.isPressed) direction.y--;
-                if (keyboard.wKey.isPressed) direction.y++;
+                if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed) direction.x--;
+                if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) direction.x++;
+                if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed) direction.y--;
+                if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) direction.y++;
                 if (direction.sqrMagnitude > 0f)
                 {
-                    gameCamera.transform.position += (Vector3)(direction.normalized * (6f * Time.deltaTime));
+                    if (followRover)
+                    {
+                        followRover = false;
+                        RefreshFollowButton();
+                    }
+                    // Speed follows the zoom so crossing the big map never feels slow or twitchy.
+                    float speed = gameCamera.orthographicSize * 1.7f;
+                    gameCamera.transform.position += (Vector3)(direction.normalized * (speed * Time.deltaTime));
                     ClampCamera();
                 }
             }
@@ -257,6 +344,68 @@ namespace SpaceFarm
             AnimateAstronauts();
         }
 
+        /// <summary>Syncs every world object with the rules. Called on state or fog changes, never per frame.</summary>
+        private void RefreshWorld()
+        {
+            if (state == null || worldRoot == null) return;
+            foreach (DepositView view in depositViews) RefreshDeposit(view);
+
+            if (state.RoverLevel != previousRoverLevel)
+            {
+                roverBaseScale *= 1.12f;
+                PlayWorldPing(rover.transform.position, SpaceFarmPalette.Ice);
+            }
+            if (state.Greenhouse && !previousGreenhouse) AnimatePop(greenhouse.transform, greenhouse.transform.localScale);
+            if (state.OxygenPlants > previousOxygenPlants && previousOxygenPlants > 0)
+                AnimatePop(oxygenPlantTwo.transform, oxygenPlantTwo.transform.localScale);
+            greenhouse.SetActive(state.Greenhouse);
+            oxygenPlantTwo.SetActive(state.OxygenPlants > 1);
+            previousGreenhouse = state.Greenhouse;
+            previousRoverLevel = state.RoverLevel;
+            previousOxygenPlants = state.OxygenPlants;
+            RefreshSystems();
+        }
+
+        private void RefreshDeposit(DepositView view)
+        {
+            SpaceFarmState.DepositState deposit = state.Deposit(view.Info.Id);
+            bool visible = revealed[view.Info.Cell.x, view.Info.Cell.y];
+            bool iron = deposit.Kind == DepositKind.Iron;
+            if (deposit.HasBuilding && view.Building == null)
+            {
+                view.Building = CreateBuilding(iron ? $"Mina {deposit.Name}" : $"Extractor {deposit.Name}",
+                    iron ? "Art/iron-mine" : "Art/water-extractor", view.Info.Cell, view.Marker.transform.parent);
+                view.BuildingScale = view.Building.transform.localScale;
+                AnimatePop(view.Building.transform, view.BuildingScale);
+                view.ShownLevel = deposit.MineLevel;
+            }
+            view.Marker.enabled = visible && !deposit.HasBuilding;
+            view.Marker.color = deposit.Surveyed ? Color.white : new Color(1f, 1f, 1f, .8f);
+            if (view.Building != null && iron)
+            {
+                Vector3 scale = view.BuildingScale * (deposit.MineLevel >= 2 ? 1.16f : 1f);
+                if (deposit.MineLevel != view.ShownLevel) AnimatePop(view.Building.transform, scale);
+                view.Building.GetComponent<SpriteRenderer>().color = deposit.MineDamaged ? SpaceFarmPalette.DamagedTint : Color.white;
+                if (deposit.MineDamaged && !view.ShownDamaged) FlashScreen(SpaceFarmPalette.Danger, .13f, .28f);
+                view.ShownLevel = deposit.MineLevel;
+                view.ShownDamaged = deposit.MineDamaged;
+            }
+
+            string text;
+            if (!deposit.Surveyed) text = $"SEÑAL {deposit.Name}";
+            else if (deposit.MineLevel > 0 && deposit.MineDamaged) text = $"{deposit.Name} · AVERIADA";
+            else if (deposit.MineLevel > 0 && deposit.MineStored > 0)
+                text = deposit.MineStored == deposit.MineCapacity
+                    ? $"{deposit.Name} · LLENO {deposit.MineStored}/{deposit.MineCapacity} Fe"
+                    : $"{deposit.Name} · RECOGER {deposit.MineStored} Fe";
+            else text = deposit.Name;
+            view.Label.gameObject.SetActive(visible);
+            view.LabelBacking.gameObject.SetActive(visible);
+            if (!visible || view.Label.text == text) return;
+            view.Label.text = text;
+            view.LabelBacking.transform.localScale = new Vector3(.3f + text.Length * .125f, .36f, 1f);
+        }
+
         private void RefreshSystems()
         {
             if (state == null || worldRoot == null) return;
@@ -267,60 +416,44 @@ namespace SpaceFarm
             }
             for (int i = 0; i < discoveryMarkers.Length; i++)
                 if (discoveryMarkers[i] != null)
-                    discoveryMarkers[i].enabled = revealed[DiscoveryCells[i].x, DiscoveryCells[i].y] && !state.HasDiscovery(i);
-            if (mineWorldLabel == null) CreateMineWorldLabel();
-            mineWorldLabel.gameObject.SetActive(state.MineLevel > 0 && state.MineStored > 0);
-            mineLabelBacking.gameObject.SetActive(state.MineLevel > 0 && state.MineStored > 0);
-            mineWorldLabel.text = state.MineStored == state.MineCapacity ?
-                $"LLENO {state.MineStored}/{state.MineCapacity} Fe" : $"RECOGER {state.MineStored} Fe";
+                    discoveryMarkers[i].enabled = revealed[map.Points[i].Cell.x, map.Points[i].Cell.y] && !state.HasDiscovery(i);
             SyncAstronauts();
             RefreshSystemsHud();
+            MarkMinimapDirty();
         }
 
-        private void CreateMineWorldLabel()
+        private void StartMineCollection(int depositId)
         {
-            Vector3 position = CellPosition(IronCell) + new Vector3(0f,-1.15f,-.4f);
-            mineLabelBacking = CreateWorldSprite("Fondo de almacén", squareSprite,
-                position + new Vector3(0,0,.03f), new Vector3(2.4f,.48f,1f),
-                new Color(.1f,.16f,.2f,.88f), 11, worldRoot.transform);
-            GameObject label = new GameObject("Hierro almacenado", typeof(TextMeshPro));
-            label.transform.SetParent(worldRoot.transform);
-            label.transform.position = position;
-            label.transform.localScale = Vector3.one * .32f;
-            mineWorldLabel = label.GetComponent<TextMeshPro>();
-            mineWorldLabel.font = TMP_Settings.defaultFontAsset;
-            mineWorldLabel.fontSize = 4f;
-            mineWorldLabel.alignment = TextAlignmentOptions.Center;
-            mineWorldLabel.color = SpaceFarmPalette.Iron;
-            mineWorldLabel.sortingOrder = 12;
-        }
-
-        private void StartMineCollection()
-        {
-            if (state.GameOver) { SetReport("La misión terminó. Reiniciá para volver a intentarlo."); return; }
+            if (paused) return;
+            SpaceFarmState.DepositState deposit = state.Deposit(depositId);
+            if (deposit == null || deposit.MineLevel == 0) { SetReport("Elegí una mina para recoger su hierro."); return; }
+            if (state.GameOver) { SetReport("La misión terminó. Abrí PAUSA (Esc) para reiniciar."); return; }
             if (travel != null || collectionActive) { SetReport("Esperá a que el rover termine su recorrido."); return; }
-            if (state.MineStored == 0) { SetReport("La mina todavía no tiene hierro almacenado."); return; }
+            if (deposit.MineStored == 0) { SetReport($"La mina de {deposit.Name} todavía no tiene hierro almacenado."); return; }
             collectionActive = true;
-            StartCoroutine(MineCollectionRoutine());
+            StartCoroutine(MineCollectionRoutine(depositId));
             RefreshHud();
         }
 
-        private IEnumerator MineCollectionRoutine()
+        private IEnumerator MineCollectionRoutine(int depositId)
         {
-            roverDestination = IronCell;
-            routeMarker.transform.position = CellPosition(IronCell);
+            Vector2Int mineCell = map.Deposits[depositId].Cell;
+            roverDestination = mineCell;
+            routeMarker.transform.position = CellPosition(mineCell);
             routeMarker.enabled = true;
+            SetReport($"Rover en camino a la mina de {map.Deposits[depositId].Name}.");
             travel = StartCoroutine(TravelTo());
             yield return travel;
-            state.LoadMineToRover(out string loaded);
+            state.LoadMineToRover(depositId, out string loaded);
             SetReport(loaded);
-            RefreshSystems();
+            RefreshWorld();
             RefreshHud();
             roverDestination = BaseCell;
             routeMarker.transform.position = CellPosition(BaseCell);
             routeMarker.enabled = true;
             travel = StartCoroutine(TravelTo());
             yield return travel;
+            // Cargo moves in two atomic steps (mine to rover, rover to habitat), so a pause in between cannot lose or duplicate iron.
             state.UnloadRover(out string unloaded);
             collectionActive = false;
             SetReport(unloaded);
@@ -339,7 +472,7 @@ namespace SpaceFarm
                 root.transform.SetParent(worldRoot.transform);
                 root.transform.position = CellPosition(BaseCell) +
                     (Vector3)(astronautStops[index % astronautStops.Length] + AstronautOffset(index));
-                SpriteRenderer body = CreateWorldSprite("Traje", circleSprite, root.transform.position,
+                CreateWorldSprite("Traje", circleSprite, root.transform.position,
                     new Vector3(.22f,.28f,1f), new Color(.94f,.91f,.78f), 9, root.transform);
                 CreateWorldSprite("Visor", circleSprite, root.transform.position + new Vector3(0,.08f,-.02f),
                     new Vector3(.14f,.12f,1f), SpaceFarmPalette.Ice, 10, root.transform);
