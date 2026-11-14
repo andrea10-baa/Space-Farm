@@ -107,3 +107,15 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Unity project is stored in the SpaceFarm subdirectory.
+/SpaceFarm/[Ll]ibrary/
+/SpaceFarm/[Tt]emp/
+/SpaceFarm/[Oo]bj/
+/SpaceFarm/[Bb]uild/
+/SpaceFarm/[Bb]uilds/
+/SpaceFarm/[Ll]ogs/
+/SpaceFarm/[Uu]ser[Ss]ettings/
+/SpaceFarm/[Mm]emoryCaptures/
+/SpaceFarm/[Rr]ecordings/
+/SpaceFarm/UIElementsSchema/
