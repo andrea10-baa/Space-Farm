@@ -2,6 +2,8 @@
 
 Prototipo inicial de un juego de estrategia y supervivencia educativa en Marte. El concepto completo está en [SPACE_FARM_CONCEPTO.md](SPACE_FARM_CONCEPTO.md).
 
+![Vista inicial de Space Farm](preview-space-farm.png)
+
 ## Abrir el proyecto
 
 1. Instalar **Unity 6.6.9f1** con soporte para Web si se quiere generar una versión Web.
@@ -23,5 +25,8 @@ La simulación es deliberadamente simplificada. La planta de oxígeno es una ext
 - `SpaceFarm/Assets/Scripts/SpaceFarmGame.cs`: mapa, rover, interacción e interfaz.
 - `SpaceFarm/Assets/Scripts/SpaceFarmPalette.cs`: colores del prototipo.
 - `SpaceFarm/Assets/Scenes/SpaceFarm.unity`: escena principal.
+- `SpaceFarm/Assets/Resources/Art/`: terreno y sprites originales de este prototipo.
+
+El arte es provisional y se puede sustituir sin cambiar las reglas del juego. Si Unity importa las imágenes como texturas normales en otra máquina, usar **Space Farm → Preparar arte 2D** dentro del editor.
 
 Los directorios `Library`, `Temp`, `Logs` y `UserSettings` del editor se excluyen de Git.

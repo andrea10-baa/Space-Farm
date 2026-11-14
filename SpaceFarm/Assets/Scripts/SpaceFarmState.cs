@@ -111,7 +111,7 @@ namespace SpaceFarm
             if (Iron < 9) return Fail("Otra planta de oxígeno necesita 9 de hierro.", out message);
             Iron -= 9;
             OxygenPlants++;
-            return Success("Nueva planta de oxígeno lista. Cada planta genera 4 de O₂ y consume 3 de energía por sol.", out message);
+            return Success("Nueva planta de oxígeno lista. Cada planta genera 4 de O2 y consume 3 de energía por sol.", out message);
         }
 
         public bool BuildBarrier(out string message)
@@ -127,9 +127,9 @@ namespace SpaceFarm
         {
             if (Population >= 4) return Fail("El hábitat de la demo admite como máximo 4 personas.", out message);
             if (OxygenPerSol < (Population + 1) * 1.25f)
-                return Fail("Falta producción de O₂ con un 25 % de reserva para otro colono.", out message);
+                return Fail("Falta producción de O2 con un 25 % de reserva para otro colono.", out message);
             if (Oxygen < 8 || Water < 8 || Food < 8)
-                return Fail("Necesitás al menos 8 de O₂, agua y comida antes de recibir otra persona.", out message);
+                return Fail("Necesitás al menos 8 de O2, agua y comida antes de recibir otra persona.", out message);
             Population++;
             return Success("Llegó un nuevo colono. Aumentó la mano de obra y también el consumo diario.", out message);
         }
@@ -160,7 +160,7 @@ namespace SpaceFarm
                 if (SpendEnergy(3)) oxygenMade += 4;
             }
             Oxygen = Mathf.Min(30, Oxygen + oxygenMade);
-            report += $"Plantas de O₂: +{oxygenMade}. ";
+            report += $"Plantas de O2: +{oxygenMade}. ";
 
             if (WaterExtractor && SpendEnergy(2))
             {
@@ -183,7 +183,7 @@ namespace SpaceFarm
             Oxygen = Mathf.Max(0, Oxygen - Population);
             Water = Mathf.Max(0, Water - Population);
             Food = Mathf.Max(0, Food - Population);
-            report += $"Tripulación ({Population}): -{Population} O₂, agua y comida. ";
+            report += $"Tripulación ({Population}): -{Population} O2, agua y comida. ";
 
             if (ShipmentArrivalSol != 0 && Sol >= ShipmentArrivalSol)
             {
