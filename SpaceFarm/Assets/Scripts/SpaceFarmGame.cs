@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -16,14 +17,19 @@ namespace SpaceFarm
         private const int Height = 11;
         private const float TileSize = 0.9f;
         private const int FogPixelsPerCell = 16;
+        private const float RoverSpeed = 5.2f;
+        private const float MinCameraSize = 2.6f;
+        private const float MaxCameraSize = 5.2f;
         private static readonly Vector2Int BaseCell = new Vector2Int(8, 5);
         private static readonly Vector2Int IronCell = new Vector2Int(12, 7);
         private static readonly Vector2Int IceCell = new Vector2Int(3, 8);
 
         private readonly bool[,] revealed = new bool[Width, Height];
+        private readonly float[,] revealAmount = new float[Width, Height];
         private readonly SpriteRenderer[,] markers = new SpriteRenderer[Width, Height];
         private Texture2D fogTexture;
         private bool fogDirty = true;
+        private bool fogAnimating;
         private SpaceFarmState state;
         private Camera gameCamera;
         private GameObject rover;
@@ -34,13 +40,47 @@ namespace SpaceFarm
         private GameObject mine;
         private Vector3 mineBaseScale;
         private Coroutine travel;
+        private Coroutine worldPing;
+        private Coroutine screenFlashRoutine;
+        private Vector2Int roverDestination = BaseCell;
         private Vector2Int roverCell = BaseCell;
+        private Vector2Int? lastRevealedDeposit;
+        private bool isPanning;
+        private bool cameraWasManuallyZoomed;
+        private Vector3 panWorldPosition;
+        private float lastCameraAspect;
+        private int lastScreenWidth;
+        private int lastScreenHeight;
+        private float roverIdleClock;
+        private Vector2Int lastRevealCenter = new Vector2Int(-1, -1);
+        private Vector3 roverBaseScale;
+        private float fogRefreshTimer;
         private TextMeshProUGUI statsText;
         private TextMeshProUGUI objectiveText;
         private TextMeshProUGUI reportText;
         private TextMeshProUGUI roverText;
+        private TextMeshProUGUI actionDetailText;
+        private RectTransform actionCardsRoot;
+        private readonly System.Collections.Generic.List<ActionCard> actionCards = new System.Collections.Generic.List<ActionCard>();
+        private readonly System.Collections.Generic.List<UnityEngine.UI.Button> categoryButtons = new System.Collections.Generic.List<UnityEngine.UI.Button>();
+        private int selectedCategory;
+        private Image screenFlash;
         private Sprite squareSprite;
         private Sprite circleSprite;
+        private Sprite ringSprite;
+        private SpriteRenderer routeMarker;
+        private SpriteRenderer scanPulse;
+        private SpriteRenderer signalPing;
+        private ParticleSystem scanTrail;
+        private Material scanParticleMaterial;
+        private GameObject worldRoot;
+        private bool previousMineDamaged;
+        private bool previousGreenhouse;
+        private bool previousWaterExtractor;
+        private bool previousBarrier;
+        private int previousMineLevel;
+        private int previousRoverLevel = 1;
+        private int previousOxygenPlants;
 
         private void Start()
         {
@@ -54,20 +94,35 @@ namespace SpaceFarm
             RefreshWorld();
             RefreshHud();
             SetReport(state.LastReport);
+            roverBaseScale = rover.transform.localScale;
+        }
+
+        private void OnDestroy()
+        {
+            if (scanParticleMaterial != null) Destroy(scanParticleMaterial);
+            if (fogTexture != null) Destroy(fogTexture);
+            if (squareSprite != null) Destroy(squareSprite);
+            if (circleSprite != null) Destroy(circleSprite);
+            if (ringSprite != null) Destroy(ringSprite);
         }
 
         private void Update()
         {
             Mouse mouse = Mouse.current;
-            if (mouse == null || !mouse.leftButton.wasPressedThisFrame || state.GameOver) return;
+            if (mouse == null) return;
+
+            UpdateFogReveal();
+            HandleCameraInput(mouse);
+            AnimateRover();
+
+            if (!mouse.leftButton.wasPressedThisFrame || state.GameOver) return;
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
             Vector3 world = gameCamera.ScreenToWorldPoint(mouse.position.ReadValue());
             Vector2Int target = new Vector2Int(
                 Mathf.RoundToInt(world.x / TileSize + (Width - 1) / 2f),
                 Mathf.RoundToInt(world.y / TileSize + (Height - 1) / 2f));
             if (!Inside(target)) return;
-            if (travel != null) StopCoroutine(travel);
-            travel = StartCoroutine(TravelTo(target));
+            SendRoverTo(target);
         }
 
         private void ConfigureCamera()
@@ -80,10 +135,14 @@ namespace SpaceFarm
                 gameCamera = cameraObject.AddComponent<Camera>();
             }
             gameCamera.orthographic = true;
-            gameCamera.orthographicSize = 6.4f;
-            gameCamera.transform.position = new Vector3(2.7f, 0f, -10f);
+            float aspect = Mathf.Max(.1f, gameCamera.aspect);
+            gameCamera.orthographicSize = Mathf.Clamp((Width * TileSize) / (2f * aspect), MinCameraSize, MaxCameraSize);
+            gameCamera.transform.position = new Vector3(0f, 0f, -10f);
             gameCamera.backgroundColor = SpaceFarmPalette.Background;
             gameCamera.clearFlags = CameraClearFlags.SolidColor;
+            lastCameraAspect = gameCamera.aspect;
+            lastScreenWidth = Screen.width;
+            lastScreenHeight = Screen.height;
         }
 
         private void CreateSprites()
@@ -109,14 +168,28 @@ namespace SpaceFarm
             circle.filterMode = FilterMode.Bilinear;
             circle.Apply();
             circleSprite = Sprite.Create(circle, new Rect(0, 0, 32, 32), new Vector2(.5f, .5f), 32);
+
+            Texture2D ring = new Texture2D(64, 64, TextureFormat.RGBA32, false);
+            Color[] ringPixels = new Color[64 * 64];
+            for (int y = 0; y < 64; y++)
+            for (int x = 0; x < 64; x++)
+            {
+                float distance = Vector2.Distance(new Vector2(x, y), new Vector2(31.5f, 31.5f));
+                float alpha = Mathf.Clamp01(1f - Mathf.Abs(distance - 25f) / 3.5f);
+                ringPixels[y * 64 + x] = new Color(1f, 1f, 1f, alpha);
+            }
+            ring.SetPixels(ringPixels);
+            ring.filterMode = FilterMode.Bilinear;
+            ring.Apply();
+            ringSprite = Sprite.Create(ring, new Rect(0, 0, 64, 64), new Vector2(.5f, .5f), 64);
         }
 
         private void CreateWorld()
         {
-            GameObject world = new GameObject("Mars Grid");
-            world.transform.SetParent(transform);
+            worldRoot = new GameObject("Mars Grid");
+            worldRoot.transform.SetParent(transform);
             SpriteRenderer terrain = CreateArtwork("Superficie de Marte", "Art/mars-terrain", Vector3.zero,
-                Width * TileSize, Height * TileSize, -10, world.transform);
+                Width * TileSize, Height * TileSize, -10, worldRoot.transform);
             terrain.color = Color.white;
             fogTexture = new Texture2D(Width * FogPixelsPerCell, Height * FogPixelsPerCell,
                 TextureFormat.RGBA32, false);
@@ -125,7 +198,7 @@ namespace SpaceFarm
                 new Rect(0, 0, fogTexture.width, fogTexture.height), new Vector2(.5f, .5f),
                 FogPixelsPerCell / TileSize);
             CreateWorldSprite("Niebla de guerra", fogSprite, Vector3.zero, Vector3.one, Color.white, 0,
-                world.transform);
+                worldRoot.transform);
             for (int y = 0; y < Height; y++)
             for (int x = 0; x < Width; x++)
             {
@@ -134,24 +207,34 @@ namespace SpaceFarm
                 {
                     markers[x, y] = CreateArtwork(cell == IronCell ? "Yacimiento de hierro" : "Depósito de hielo",
                         cell == IronCell ? "Art/iron-deposit" : "Art/ice-deposit",
-                        CellPosition(cell) + new Vector3(0, 0, -.1f), 1.55f, 1.03f, 3, world.transform);
+                        CellPosition(cell) + new Vector3(0, 0, -.1f), 1.55f, 1.03f, 3, worldRoot.transform);
                     markers[x, y].enabled = false;
                 }
             }
 
             CreateArtwork("Nave y hábitat", "Art/lander", CellPosition(BaseCell) + new Vector3(0, 0, -.2f),
-                3.1f, 2.07f, 5, world.transform);
+                3.1f, 2.07f, 5, worldRoot.transform);
             CreateArtwork("Planta de oxígeno", "Art/oxygen-plant",
                 CellPosition(BaseCell + new Vector2Int(2, 0)) + new Vector3(0, 0, -.2f),
-                1.7f, 1.14f, 6, world.transform);
+                1.7f, 1.14f, 6, worldRoot.transform);
             rover = CreateArtwork("Rover 1", "Art/rover", CellPosition(roverCell) + new Vector3(-.65f, -.5f, -.5f),
-                1.55f, 1.04f, 8, world.transform).gameObject;
-            greenhouse = CreateBuilding("Invernadero", "Art/greenhouse", BaseCell + new Vector2Int(-2, 1), world.transform);
-            waterExtractor = CreateBuilding("Extractor de hielo", "Art/water-extractor", IceCell, world.transform);
-            mine = CreateBuilding("Mina de hierro", "Art/iron-mine", IronCell, world.transform);
+                1.55f, 1.04f, 8, worldRoot.transform).gameObject;
+            greenhouse = CreateBuilding("Invernadero", "Art/greenhouse", BaseCell + new Vector2Int(-2, 1), worldRoot.transform);
+            waterExtractor = CreateBuilding("Extractor de hielo", "Art/water-extractor", IceCell, worldRoot.transform);
+            mine = CreateBuilding("Mina de hierro", "Art/iron-mine", IronCell, worldRoot.transform);
             mineBaseScale = mine.transform.localScale;
-            oxygenPlantTwo = CreateBuilding("Planta de oxígeno 2", "Art/oxygen-plant", BaseCell + new Vector2Int(2, 2), world.transform);
-            barrier = CreateBarriers(world.transform);
+            oxygenPlantTwo = CreateBuilding("Planta de oxígeno 2", "Art/oxygen-plant", BaseCell + new Vector2Int(2, 2), worldRoot.transform);
+            barrier = CreateBarriers(worldRoot.transform);
+            routeMarker = CreateWorldSprite("Destino del rover", ringSprite, CellPosition(roverCell),
+                new Vector3(.65f, .65f, 1f), SpaceFarmPalette.Ice, 9, worldRoot.transform);
+            routeMarker.enabled = false;
+            scanPulse = CreateWorldSprite("Pulso de exploración", ringSprite, CellPosition(roverCell),
+                new Vector3(.75f, .75f, 1f), SpaceFarmPalette.Ice, 10, worldRoot.transform);
+            scanPulse.enabled = false;
+            signalPing = CreateWorldSprite("Señal de descubrimiento", ringSprite, CellPosition(roverCell),
+                new Vector3(.8f, .8f, 1f), SpaceFarmPalette.Ice, 11, worldRoot.transform);
+            signalPing.enabled = false;
+            CreateScanTrail();
             greenhouse.SetActive(false);
             waterExtractor.SetActive(false);
             mine.SetActive(false);
@@ -218,6 +301,8 @@ namespace SpaceFarm
 
         private void Reveal(Vector2Int center, int radius)
         {
+            bool ironWasVisible = revealed[IronCell.x, IronCell.y];
+            bool iceWasVisible = revealed[IceCell.x, IceCell.y];
             for (int y = 0; y < Height; y++)
             for (int x = 0; x < Width; x++)
             {
@@ -226,8 +311,45 @@ namespace SpaceFarm
                 if (dx * dx + dy * dy <= radius * radius && !revealed[x, y])
                 {
                     revealed[x, y] = true;
+                    revealAmount[x, y] = 0f;
+                    fogAnimating = true;
                     fogDirty = true;
                 }
+            }
+            if (!ironWasVisible && revealed[IronCell.x, IronCell.y])
+            {
+                lastRevealedDeposit = IronCell;
+                SetReport("Señal de hierro detectada. Enviá el rover al noreste para estudiar el yacimiento.");
+                PlayWorldPing(CellPosition(IronCell), SpaceFarmPalette.Iron);
+            }
+            if (!iceWasVisible && revealed[IceCell.x, IceCell.y])
+            {
+                lastRevealedDeposit = IceCell;
+                SetReport("Señal de hielo detectada. Enviá el rover al noroeste para estudiar el depósito.");
+                PlayWorldPing(CellPosition(IceCell), SpaceFarmPalette.Ice);
+            }
+        }
+
+        private void UpdateFogReveal()
+        {
+            if (!fogAnimating) return;
+            bool changed = false;
+            bool stillAnimating = false;
+            for (int y = 0; y < Height; y++)
+            for (int x = 0; x < Width; x++)
+            {
+                if (!revealed[x, y] || revealAmount[x, y] >= 1f) continue;
+                revealAmount[x, y] = Mathf.MoveTowards(revealAmount[x, y], 1f, Time.deltaTime * 3.4f);
+                changed = true;
+                stillAnimating |= revealAmount[x, y] < 1f;
+            }
+            fogAnimating = stillAnimating;
+            if (changed) fogDirty = true;
+            fogRefreshTimer += Time.deltaTime;
+            if (fogDirty && fogRefreshTimer >= .045f)
+            {
+                fogRefreshTimer = 0f;
+                UpdateFogTexture();
             }
         }
 
@@ -244,16 +366,18 @@ namespace SpaceFarm
                 float gridY = (py + .5f) / FogPixelsPerCell - .5f;
                 int cellX = Mathf.Clamp(px / FogPixelsPerCell, 0, Width - 1);
                 int cellY = Mathf.Clamp(py / FogPixelsPerCell, 0, Height - 1);
-                float nearest = 2f;
+                float visibility = 0f;
                 for (int y = Mathf.Max(0, cellY - 2); y <= Mathf.Min(Height - 1, cellY + 2); y++)
                 for (int x = Mathf.Max(0, cellX - 2); x <= Mathf.Min(Width - 1, cellX + 2); x++)
                 {
                     if (!revealed[x, y]) continue;
                     float dx = Mathf.Max(0f, Mathf.Abs(gridX - x) - .5f);
                     float dy = Mathf.Max(0f, Mathf.Abs(gridY - y) - .5f);
-                    nearest = Mathf.Min(nearest, Mathf.Sqrt(dx * dx + dy * dy));
+                    float distance = Mathf.Sqrt(dx * dx + dy * dy);
+                    float softEdge = 1f - Mathf.SmoothStep(0f, .92f, distance);
+                    visibility = Mathf.Max(visibility, revealAmount[x, y] * softEdge);
                 }
-                float opacity = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(nearest / .72f));
+                float opacity = 1f - visibility;
                 fogColor.a = (byte)(SpaceFarmPalette.FogOverlay.a * 255f * opacity);
                 pixels[py * pixelWidth + px] = fogColor;
             }
@@ -262,27 +386,124 @@ namespace SpaceFarm
             fogDirty = false;
         }
 
-        private IEnumerator TravelTo(Vector2Int target)
+        private void SendRoverTo(Vector2Int target)
         {
-            while (roverCell != target)
+            if (target != IronCell && target != IceCell) lastRevealedDeposit = null;
+            roverDestination = target;
+            routeMarker.transform.position = CellPosition(target) + new Vector3(0f, 0f, -.35f);
+            routeMarker.enabled = target != roverCell;
+            roverText.text = target == roverCell
+                ? $"Rover listo · sector {target.x + 1},{target.y + 1}"
+                : $"Rover en ruta · sector {target.x + 1},{target.y + 1}";
+            SetReport(target == roverCell
+                ? "El rover ya está en este sector. Elegí una casilla explorada u oculta para continuar."
+                : "Rover en marcha. El anillo cian marca el destino; los sectores nuevos se revelan al avanzar.");
+            if (travel == null && target != roverCell) travel = StartCoroutine(TravelTo());
+        }
+
+        private IEnumerator TravelTo()
+        {
+            if (scanTrail != null) scanTrail.Play();
+            scanPulse.enabled = true;
+            while (roverCell != roverDestination)
             {
                 int x = roverCell.x;
                 int y = roverCell.y;
+                Vector2Int target = roverDestination;
                 if (x != target.x) x += Math.Sign(target.x - x);
                 else y += Math.Sign(target.y - y);
-                roverCell = new Vector2Int(x, y);
-                rover.transform.position = CellPosition(roverCell) + new Vector3(0, 0, -.5f);
+                Vector2Int nextCell = new Vector2Int(x, y);
+                Vector3 start = rover.transform.position;
+                Vector3 end = CellPosition(nextCell) + new Vector3(0f, 0f, -.5f);
+                Vector3 direction = (end - start).normalized;
+                float desiredAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+                float duration = Vector3.Distance(start, end) / RoverSpeed;
+                float elapsed = 0f;
+                while (elapsed < duration)
+                {
+                    elapsed += Time.deltaTime;
+                    float progress = Mathf.Clamp01(elapsed / duration);
+                    // Constant interpolation keeps the rover moving continuously across tile boundaries.
+                    rover.transform.position = Vector3.LerpUnclamped(start, end, progress);
+                    Quaternion rotation = Quaternion.Euler(0f, 0f, desiredAngle);
+                    rover.transform.rotation = Quaternion.RotateTowards(rover.transform.rotation, rotation, 720f * Time.deltaTime);
+                    Vector2Int revealCenter = WorldToCell(rover.transform.position);
+                    if (Inside(revealCenter) && revealCenter != lastRevealCenter)
+                    {
+                        lastRevealCenter = revealCenter;
+                        Reveal(revealCenter, state.ScanRadius);
+                        RefreshWorld();
+                    }
+                    yield return null;
+                }
+                rover.transform.position = end;
+                roverCell = nextCell;
                 Reveal(roverCell, state.ScanRadius);
                 RefreshWorld();
-                roverText.text = $"ROVER {state.RoverLevel} · RADIO {state.ScanRadius}";
-                yield return new WaitForSeconds(.13f);
             }
-            if (roverCell == IronCell) SetReport(state.SurveyIron());
-            else if (roverCell == IceCell) SetReport(state.SurveyIce());
-            else SetReport($"Rover en el sector {target.x},{target.y}. Elegí otro punto para seguir explorando.");
+            if (roverCell == IronCell)
+            {
+                SetReport(state.SurveyIron());
+                lastRevealedDeposit = null;
+            }
+            else if (roverCell == IceCell)
+            {
+                SetReport(state.SurveyIce());
+                lastRevealedDeposit = null;
+            }
+            else if (lastRevealedDeposit.HasValue)
+            {
+                string depositName = lastRevealedDeposit.Value == IronCell ? "Hierro" : "Hielo";
+                SetReport($"El rover llegó al sector {roverCell.x + 1},{roverCell.y + 1}. {depositName} quedó visible: enviá el rover hasta el marcador para estudiarlo.");
+            }
+            else SetReport($"El rover llegó al sector {roverCell.x + 1},{roverCell.y + 1} y reveló terreno nuevo.");
+            if (scanTrail != null) scanTrail.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            routeMarker.enabled = false;
+            roverText.text = $"Rover nivel {state.RoverLevel} · alcance {state.ScanRadius} sectores · listo";
+            PlayWorldPing(rover.transform.position, SpaceFarmPalette.Ice);
             RefreshWorld();
             RefreshHud();
             travel = null;
+        }
+
+        private Vector2Int WorldToCell(Vector3 world)
+        {
+            return new Vector2Int(Mathf.RoundToInt(world.x / TileSize + (Width - 1) / 2f),
+                Mathf.RoundToInt(world.y / TileSize + (Height - 1) / 2f));
+        }
+
+        private void CreateScanTrail()
+        {
+            GameObject trailObject = new GameObject("Rover · polvo de exploración");
+            trailObject.transform.SetParent(rover.transform, false);
+            trailObject.transform.localPosition = new Vector3(0f, -.34f, .2f);
+            scanTrail = trailObject.AddComponent<ParticleSystem>();
+            ParticleSystem.MainModule main = scanTrail.main;
+            main.loop = true;
+            main.startLifetime = .45f;
+            main.startSpeed = .08f;
+            main.startSize = new ParticleSystem.MinMaxCurve(.035f, .09f);
+            main.startColor = SpaceFarmPalette.Ice;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.maxParticles = 24;
+            ParticleSystem.EmissionModule emission = scanTrail.emission;
+            emission.rateOverTime = 7f;
+            ParticleSystem.ShapeModule shape = scanTrail.shape;
+            shape.shapeType = ParticleSystemShapeType.Circle;
+            shape.radius = .18f;
+            ParticleSystem.ColorOverLifetimeModule color = scanTrail.colorOverLifetime;
+            color.enabled = true;
+            Gradient gradient = new Gradient();
+            gradient.SetKeys(
+                new[] { new GradientColorKey(SpaceFarmPalette.Ice, 0f), new GradientColorKey(SpaceFarmPalette.Iron, 1f) },
+                new[] { new GradientAlphaKey(.55f, 0f), new GradientAlphaKey(0f, 1f) });
+            color.color = gradient;
+            ParticleSystemRenderer renderer = scanTrail.GetComponent<ParticleSystemRenderer>();
+            renderer.sortingOrder = 7;
+            scanParticleMaterial = new Material(Shader.Find("Sprites/Default"));
+            scanParticleMaterial.color = Color.white;
+            renderer.sharedMaterial = scanParticleMaterial;
+            scanTrail.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         }
 
         private bool Inside(Vector2Int cell) => cell.x >= 0 && cell.x < Width && cell.y >= 0 && cell.y < Height;
@@ -298,13 +519,37 @@ namespace SpaceFarm
                     markers[x, y].enabled = visible && (x != IronCell.x || y != IronCell.y || state.MineLevel == 0)
                         && (x != IceCell.x || y != IceCell.y || !state.WaterExtractor);
             }
-            mine.SetActive(state.MineLevel > 0);
+            bool mineActive = state.MineLevel > 0;
+            bool mineLevelChanged = state.MineLevel != previousMineLevel;
+            mine.SetActive(mineActive);
             mine.transform.localScale = mineBaseScale * (state.MineLevel >= 2 ? 1.16f : 1f);
             mine.GetComponent<SpriteRenderer>().color = state.MineDamaged ? SpaceFarmPalette.DamagedTint : Color.white;
+            if (mineActive && mineLevelChanged) AnimatePop(mine.transform, mine.transform.localScale);
+            if (state.MineDamaged && !previousMineDamaged) FlashScreen(SpaceFarmPalette.Danger, .13f, .28f);
+
+            bool roverUpgraded = state.RoverLevel != previousRoverLevel;
+            if (roverUpgraded)
+            {
+                roverBaseScale *= 1.12f;
+                PlayWorldPing(rover.transform.position, SpaceFarmPalette.Ice);
+            }
+
+            if (state.Greenhouse && !previousGreenhouse) AnimatePop(greenhouse.transform, greenhouse.transform.localScale);
+            if (state.WaterExtractor && !previousWaterExtractor) AnimatePop(waterExtractor.transform, waterExtractor.transform.localScale);
+            if (state.Barrier && !previousBarrier) AnimatePop(barrier.transform, barrier.transform.localScale);
+            if (state.OxygenPlants > previousOxygenPlants) AnimatePop(oxygenPlantTwo.transform, oxygenPlantTwo.transform.localScale);
+
             greenhouse.SetActive(state.Greenhouse);
             waterExtractor.SetActive(state.WaterExtractor);
             barrier.SetActive(state.Barrier);
             oxygenPlantTwo.SetActive(state.OxygenPlants > 1);
+            previousGreenhouse = state.Greenhouse;
+            previousWaterExtractor = state.WaterExtractor;
+            previousBarrier = state.Barrier;
+            previousMineLevel = state.MineLevel;
+            previousMineDamaged = state.MineDamaged;
+            previousRoverLevel = state.RoverLevel;
+            previousOxygenPlants = state.OxygenPlants;
         }
 
         private void CreateHud()
@@ -316,7 +561,7 @@ namespace SpaceFarm
             CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1280, 720);
-            scaler.matchWidthOrHeight = .5f;
+            scaler.matchWidthOrHeight = .35f;
 
             if (EventSystem.current == null)
             {
@@ -325,64 +570,99 @@ namespace SpaceFarm
             }
 
             GameObject header = Panel("Header", canvasObject.transform, SpaceFarmPalette.Panel,
-                new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1),
-                new Vector2(0, 0), new Vector2(0, 76));
-            Label("SPACE FARM", header.transform, 28, FontStyles.Bold, SpaceFarmPalette.Text,
+                new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1), Vector2.zero, new Vector2(0, 96));
+            Label("SPACE FARM", header.transform, 26, FontStyles.Bold, SpaceFarmPalette.Text,
                 new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1),
-                new Vector2(22, -12), new Vector2(230, 52));
-            statsText = Label("Recursos", header.transform, 18, FontStyles.Bold, SpaceFarmPalette.Text,
-                new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1),
-                new Vector2(270, -11), new Vector2(-620, 56));
+                new Vector2(18, -12), new Vector2(205, 35));
+            Label("MARTE · SUPERVIVENCIA", header.transform, 12, FontStyles.Bold, SpaceFarmPalette.MutedText,
+                new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1),
+                new Vector2(20, -45), new Vector2(205, 24));
+            objectiveText = Label("", header.transform, 16, FontStyles.Bold, SpaceFarmPalette.Oxygen,
+                new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1),
+                new Vector2(230, -10), new Vector2(470, 48));
+            objectiveText.enableAutoSizing = true;
+            objectiveText.fontSizeMin = 12;
+            objectiveText.fontSizeMax = 16;
+            roverText = Label("", header.transform, 13, FontStyles.Bold, SpaceFarmPalette.Ice,
+                new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1),
+                new Vector2(-176, -12), new Vector2(160, 48));
+            statsText = Label("", header.transform, 15, FontStyles.Bold, SpaceFarmPalette.Text,
+                new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 0),
+                Vector2.zero, new Vector2(-36, 28));
+            statsText.enableAutoSizing = true;
+            statsText.fontSizeMin = 11;
+            statsText.fontSizeMax = 15;
             Panel("Header Accent", header.transform, SpaceFarmPalette.Iron,
-                new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 0),
-                Vector2.zero, new Vector2(0, 3));
+                new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 0), Vector2.zero, new Vector2(0, 3));
 
-            GameObject side = Panel("Mission Panel", canvasObject.transform, SpaceFarmPalette.Panel,
-                new Vector2(1, 0), new Vector2(1, 1), new Vector2(1, 1),
-                new Vector2(-352, 82), new Vector2(336, -156));
-            RectTransform sideRect = side.GetComponent<RectTransform>();
-            sideRect.offsetMin = new Vector2(-352, 74);
-            sideRect.offsetMax = new Vector2(-16, -82);
-            VerticalLayoutGroup layout = side.AddComponent<VerticalLayoutGroup>();
-            layout.padding = new RectOffset(16, 16, 16, 16);
-            layout.spacing = 5;
-            layout.childAlignment = TextAnchor.UpperCenter;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
-            layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = false;
+            AddButton("AVANZAR SOL", header.transform, AdvanceSol, 15, SpaceFarmPalette.Iron,
+                SpaceFarmPalette.Background, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1),
+                new Vector2(-14, -17), new Vector2(148, 48));
 
-            LabelWithLayout("MISIÓN 01", side.transform, 20, FontStyles.Bold,
-                SpaceFarmPalette.Oxygen, 30);
-            objectiveText = LabelWithLayout("", side.transform, 17, FontStyles.Normal,
-                SpaceFarmPalette.Text, 88);
-            roverText = LabelWithLayout("", side.transform, 17, FontStyles.Bold,
-                SpaceFarmPalette.Ice, 26);
-            LabelWithLayout("OPERACIONES", side.transform, 15, FontStyles.Bold,
-                SpaceFarmPalette.MutedText, 20);
-            AddButton("Pasar un sol", side.transform, AdvanceSol);
-            AddActionPair(side.transform,
-                "Mina · 8 Fe", () => Act(state.BuildMine),
-                "Mejorar · 6 Fe", () => Act(state.UpgradeMine));
-            AddActionPair(side.transform,
-                "Reparar · 3 Fe", () => Act(state.RepairMine),
-                "Rover · 5 Fe", () => Act(state.UpgradeRover));
-            AddActionPair(side.transform,
-                "Agua · 6 Fe", () => Act(state.BuildWaterExtractor),
-                "Cultivo · 6 Fe", () => Act(state.BuildGreenhouse));
-            AddActionPair(side.transform,
-                "Oxígeno · 9 Fe", () => Act(state.BuildOxygenPlant),
-                "Barreras · 5 Fe", () => Act(state.BuildBarrier));
-            AddActionPair(side.transform,
-                "Nuevo colono", () => Act(state.AddColonist),
-                "Tierra · 4 Fe", () => Act(state.OrderFromEarth));
+            GameObject footer = Panel("Command Deck", canvasObject.transform, SpaceFarmPalette.Panel,
+                new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 0), Vector2.zero, new Vector2(0, 164));
+            reportText = Label("", footer.transform, 14, FontStyles.Normal, SpaceFarmPalette.Text,
+                new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1),
+                Vector2.zero, new Vector2(-36, 28));
+            reportText.enableAutoSizing = true;
+            reportText.fontSizeMin = 11;
+            reportText.fontSizeMax = 14;
+            CreateCategoryTabs(footer.transform);
+            actionDetailText = Label("Elegí una acción. Las tarjetas indican costo y requisito.", footer.transform,
+                12, FontStyles.Normal, SpaceFarmPalette.MutedText,
+                new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1),
+                new Vector2(354, -40), new Vector2(500, 28));
+            GameObject cards = new GameObject("Action Cards", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+            cards.transform.SetParent(footer.transform, false);
+            actionCardsRoot = cards.GetComponent<RectTransform>();
+            actionCardsRoot.anchorMin = new Vector2(0, 0);
+            actionCardsRoot.anchorMax = new Vector2(1, 0);
+            actionCardsRoot.pivot = new Vector2(.5f, 0);
+            actionCardsRoot.anchoredPosition = new Vector2(0, 12);
+            actionCardsRoot.sizeDelta = new Vector2(-32, 66);
+            HorizontalLayoutGroup cardLayout = cards.GetComponent<HorizontalLayoutGroup>();
+            cardLayout.padding = new RectOffset(16, 16, 0, 0);
+            cardLayout.spacing = 8;
+            cardLayout.childAlignment = TextAnchor.MiddleCenter;
+            cardLayout.childControlWidth = true;
+            cardLayout.childControlHeight = true;
+            cardLayout.childForceExpandWidth = true;
+            cardLayout.childForceExpandHeight = true;
 
-            GameObject footer = Panel("Event Log", canvasObject.transform, SpaceFarmPalette.Panel,
-                new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 0),
-                new Vector2(0, 0), new Vector2(-368, 70));
-            reportText = Label("", footer.transform, 17, FontStyles.Normal, SpaceFarmPalette.Text,
-                new Vector2(0, 0), new Vector2(1, 1), new Vector2(0, 0),
-                new Vector2(18, 8), new Vector2(-36, -16));
+            AddAction("Mina de hierro", "8 hierro", 0, () => state.BuildMine(out _),
+                () => !state.IronSurveyed ? "Estudiá el yacimiento de hierro" : state.MineLevel > 0 ? "La mina ya está construida" : MissingIron(8));
+            AddAction("Extractor de agua", "6 hierro", 0, () => state.BuildWaterExtractor(out _),
+                () => !state.IceSurveyed ? "Estudiá el depósito de hielo" : state.WaterExtractor ? "Ya hay un extractor" : MissingIron(6));
+            AddAction("Invernadero", "6 hierro", 0, () => state.BuildGreenhouse(out _),
+                () => state.Greenhouse ? "El invernadero ya está construido" : MissingIron(6));
+            AddAction("Planta de O₂", "9 hierro", 0, () => state.BuildOxygenPlant(out _),
+                () => state.OxygenPlants >= 2 ? "La demo admite 2 plantas de oxígeno" : MissingIron(9));
+            AddAction("Barreras", "5 hierro", 0, () => state.BuildBarrier(out _),
+                () => state.Barrier ? "El perímetro ya está protegido" : MissingIron(5));
+            AddAction("Mejorar mina", "6 hierro", 1, () => state.UpgradeMine(out _),
+                () => state.MineLevel == 0 ? "Construí primero la mina" : state.MineDamaged ? "Repará la mina primero" : state.MineLevel >= 2 ? "Nivel máximo de la demo" : MissingIron(6));
+            AddAction("Reparar mina", "3 hierro", 1, () => state.RepairMine(out _),
+                () => !state.MineDamaged ? "La mina no necesita reparación" : MissingIron(3));
+            AddAction("Mejorar rover", "5 hierro", 1, () => state.UpgradeRover(out _),
+                () => state.RoverLevel >= 2 ? "Nivel máximo de la demo" : MissingIron(5));
+            AddAction("Recibir colono", "reservas vitales", 2, () => state.AddColonist(out _),
+                () => state.Population >= 4 ? "El hábitat está completo" : state.OxygenPerSol < (state.Population + 1) * 1.25f ? "Aumentá O₂ y conservá un 25 % de reserva" : state.Oxygen < 8 || state.Water < 8 || state.Food < 8 ? "Necesitás al menos 8 de O₂, agua y comida" : string.Empty);
+            AddAction("Pedir a la Tierra", "4 hierro", 2, () => state.OrderFromEarth(out _),
+                () => state.ShipmentArrivalSol != 0 ? "Ya hay un pedido en camino" : MissingIron(4));
+
+            GameObject flashObject = new GameObject("Event Flash", typeof(RectTransform), typeof(Image));
+            flashObject.transform.SetParent(canvasObject.transform, false);
+            RectTransform flashRect = flashObject.GetComponent<RectTransform>();
+            flashRect.anchorMin = Vector2.zero;
+            flashRect.anchorMax = Vector2.one;
+            flashRect.offsetMin = Vector2.zero;
+            flashRect.offsetMax = Vector2.zero;
+            screenFlash = flashObject.GetComponent<Image>();
+            screenFlash.color = new Color(1f, 1f, 1f, 0f);
+            screenFlash.raycastTarget = false;
+            flashObject.transform.SetAsLastSibling();
+            RefreshActionCards();
+            SelectCategory(0);
         }
 
         private GameObject Panel(string name, Transform parent, Color color, Vector2 anchorMin, Vector2 anchorMax,
@@ -425,61 +705,361 @@ namespace SpaceFarm
             return text;
         }
 
-        private TextMeshProUGUI LabelWithLayout(string value, Transform parent, float size, FontStyles style,
-            Color color, float height)
+        private void CreateCategoryTabs(Transform parent)
         {
-            TextMeshProUGUI text = Label(value, parent, size, style, color, Vector2.zero, Vector2.one,
-                new Vector2(.5f, .5f), Vector2.zero, Vector2.zero);
-            LayoutElement element = text.gameObject.AddComponent<LayoutElement>();
-            element.preferredHeight = height;
-            text.alignment = TextAlignmentOptions.TopLeft;
-            return text;
+            string[] captions = { "CONSTRUIR", "MEJORAR", "COLONIA" };
+            for (int i = 0; i < captions.Length; i++)
+            {
+                int category = i;
+                UnityEngine.UI.Button button = AddButton(captions[i], parent, () => SelectCategory(category),
+                    13, SpaceFarmPalette.Button, SpaceFarmPalette.Text,
+                    new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1),
+                    new Vector2(18 + i * 108, -40), new Vector2(100, 30));
+                button.transition = Selectable.Transition.None;
+                categoryButtons.Add(button);
+            }
         }
 
-        private void AddActionPair(Transform parent, string leftCaption, Action leftAction,
-            string rightCaption, Action rightAction)
+        private void AddAction(string title, string cost, int category, Func<bool> action, Func<string> lockReason)
         {
-            GameObject row = new GameObject("Acciones", typeof(RectTransform), typeof(LayoutElement),
-                typeof(HorizontalLayoutGroup));
-            row.transform.SetParent(parent, false);
-            row.GetComponent<LayoutElement>().preferredHeight = 48;
-            HorizontalLayoutGroup layout = row.GetComponent<HorizontalLayoutGroup>();
-            layout.spacing = 6;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
-            layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = true;
-            AddButton(leftCaption, row.transform, leftAction);
-            AddButton(rightCaption, row.transform, rightAction);
+            GameObject item = new GameObject(title, typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
+            item.transform.SetParent(actionCardsRoot, false);
+            item.GetComponent<LayoutElement>().flexibleWidth = 1f;
+            item.GetComponent<LayoutElement>().minWidth = 112f;
+            Image image = item.GetComponent<Image>();
+            image.color = SpaceFarmPalette.Button;
+            Button button = item.GetComponent<Button>();
+            button.targetGraphic = image;
+            button.transition = Selectable.Transition.None;
+            ColorBlock colors = button.colors;
+            colors.normalColor = SpaceFarmPalette.Button;
+            colors.highlightedColor = SpaceFarmPalette.ButtonHover;
+            colors.pressedColor = SpaceFarmPalette.Ice;
+            colors.selectedColor = SpaceFarmPalette.ButtonHover;
+            colors.disabledColor = SpaceFarmPalette.PanelRaised;
+            button.colors = colors;
+
+            TextMeshProUGUI titleText = Label(title, item.transform, 15, FontStyles.Bold,
+                SpaceFarmPalette.Text, new Vector2(0, 1), new Vector2(1, 1), new Vector2(.5f, 1),
+                new Vector2(0, -7), new Vector2(-12, 26));
+            titleText.alignment = TextAlignmentOptions.Center;
+            titleText.enableAutoSizing = true;
+            titleText.fontSizeMin = 12;
+            titleText.fontSizeMax = 15;
+            TextMeshProUGUI detailText = Label(cost, item.transform, 11, FontStyles.Normal,
+                SpaceFarmPalette.MutedText, Vector2.zero, Vector2.one, new Vector2(.5f, .5f),
+                new Vector2(0, -13), new Vector2(-10, -26));
+            detailText.alignment = TextAlignmentOptions.Center;
+            detailText.textWrappingMode = TextWrappingModes.Normal;
+            detailText.enableAutoSizing = true;
+            detailText.fontSizeMin = 9;
+            detailText.fontSizeMax = 11;
+
+            ActionCard card = new ActionCard(category, item.transform, image, button, titleText, detailText,
+                cost, action, lockReason);
+            actionCards.Add(card);
+            button.onClick.AddListener(() =>
+            {
+                StartCoroutine(AnimateButton(card.Root));
+                string reason = card.LockReason();
+                if (!string.IsNullOrEmpty(reason))
+                {
+                    SetReport(reason + ". Costo: " + card.Cost + ".");
+                    return;
+                }
+                bool success = card.Action();
+                if (!success) SetReport(state.LastReport);
+                else
+                {
+                    SetReport(state.LastReport);
+                    FlashScreen(SpaceFarmPalette.Oxygen, .10f, .22f);
+                }
+                RefreshWorld();
+                RefreshHud();
+            });
         }
 
-        private void AddButton(string caption, Transform parent, Action callback)
+        private Button AddButton(string caption, Transform parent, Action callback, float fontSize,
+            Color normal, Color textColor, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot,
+            Vector2 position, Vector2 dimensions)
         {
-            GameObject item = new GameObject(caption, typeof(RectTransform), typeof(UnityEngine.UI.Image),
-                typeof(UnityEngine.UI.Button), typeof(LayoutElement));
+            GameObject item = new GameObject(caption, typeof(RectTransform), typeof(Image), typeof(Button));
             item.transform.SetParent(parent, false);
-            LayoutElement element = item.GetComponent<LayoutElement>();
-            element.preferredHeight = 48;
-            element.flexibleWidth = 1;
-            UnityEngine.UI.Image image = item.GetComponent<UnityEngine.UI.Image>();
-            image.color = Color.white;
-            UnityEngine.UI.Button button = item.GetComponent<UnityEngine.UI.Button>();
+            RectTransform rect = item.GetComponent<RectTransform>();
+            rect.anchorMin = anchorMin;
+            rect.anchorMax = anchorMax;
+            rect.pivot = pivot;
+            rect.anchoredPosition = position;
+            rect.sizeDelta = dimensions;
+            Image image = item.GetComponent<Image>();
+            image.color = normal;
+            Button button = item.GetComponent<Button>();
             button.targetGraphic = image;
             ColorBlock colors = button.colors;
-            colors.normalColor = caption == "Pasar un sol" ? SpaceFarmPalette.Iron : SpaceFarmPalette.Button;
+            colors.normalColor = normal;
             colors.highlightedColor = SpaceFarmPalette.ButtonHover;
             colors.pressedColor = SpaceFarmPalette.Ice;
             colors.selectedColor = SpaceFarmPalette.ButtonHover;
             button.colors = colors;
-            button.onClick.AddListener(() => callback());
-            TextMeshProUGUI text = Label(caption, item.transform, caption == "Pasar un sol" ? 18 : 16,
-                FontStyles.Bold, caption == "Pasar un sol" ? SpaceFarmPalette.Background : SpaceFarmPalette.Text,
+            button.onClick.AddListener(() =>
+            {
+                StartCoroutine(AnimateButton(item.transform));
+                callback();
+            });
+            TextMeshProUGUI text = Label(caption, item.transform, fontSize, FontStyles.Bold, textColor,
                 Vector2.zero, Vector2.one, new Vector2(.5f, .5f), Vector2.zero, new Vector2(-12, -4));
             text.alignment = TextAlignmentOptions.Center;
             text.textWrappingMode = TextWrappingModes.NoWrap;
+            return button;
+        }
+
+        private void SelectCategory(int category)
+        {
+            selectedCategory = category;
+            string[] hints =
+            {
+                "Clic en el mapa: enviar rover · rueda: zoom · botón central: desplazar.",
+                "Mejorá la mina y el rover; repará instalaciones dañadas.",
+                "Admití colonos solo con reservas, o pedí suministros a la Tierra."
+            };
+            actionDetailText.text = hints[Mathf.Clamp(category, 0, hints.Length - 1)];
+            for (int i = 0; i < categoryButtons.Count; i++)
+            {
+                Image image = categoryButtons[i].GetComponent<Image>();
+                image.color = i == category ? SpaceFarmPalette.Iron : SpaceFarmPalette.PanelRaised;
+                TextMeshProUGUI label = categoryButtons[i].GetComponentInChildren<TextMeshProUGUI>();
+                if (label != null) label.color = i == category ? SpaceFarmPalette.Background : SpaceFarmPalette.Text;
+            }
+            RefreshActionCards();
+        }
+
+        private void RefreshActionCards()
+        {
+            foreach (ActionCard card in actionCards)
+            {
+                bool visible = card.Category == selectedCategory;
+                card.Root.gameObject.SetActive(visible);
+                if (!visible) continue;
+                string reason = card.LockReason();
+                bool available = string.IsNullOrEmpty(reason);
+                card.Background.color = available ? SpaceFarmPalette.Button : SpaceFarmPalette.PanelRaised;
+                card.Title.color = available ? SpaceFarmPalette.Text : SpaceFarmPalette.MutedText;
+                card.Detail.color = available ? SpaceFarmPalette.Ice : SpaceFarmPalette.MutedText;
+                card.Detail.text = available ? card.Cost : card.Cost + " · " + reason;
+            }
+            LayoutRebuilder.ForceRebuildLayoutImmediate(actionCardsRoot);
+        }
+
+        private string MissingIron(int amount) => state.Iron < amount ? $"Faltan {amount - state.Iron} de hierro" : string.Empty;
+
+        private void HandleCameraInput(Mouse mouse)
+        {
+            bool screenChanged = Screen.width != lastScreenWidth || Screen.height != lastScreenHeight
+                || Mathf.Abs(gameCamera.aspect - lastCameraAspect) > .01f;
+            if (screenChanged)
+            {
+                if (!cameraWasManuallyZoomed)
+                    gameCamera.orthographicSize = Mathf.Clamp((Width * TileSize) / (2f * Mathf.Max(.1f, gameCamera.aspect)),
+                        MinCameraSize, MaxCameraSize);
+                lastCameraAspect = gameCamera.aspect;
+                lastScreenWidth = Screen.width;
+                lastScreenHeight = Screen.height;
+                ClampCamera();
+            }
+            bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+            Vector2 pointer = mouse.position.ReadValue();
+            if (mouse.middleButton.wasPressedThisFrame && !overUi)
+            {
+                isPanning = true;
+                panWorldPosition = ScreenToWorld(pointer);
+            }
+            if (mouse.middleButton.wasReleasedThisFrame) isPanning = false;
+            if (isPanning && mouse.middleButton.isPressed)
+            {
+                Vector3 current = ScreenToWorld(pointer);
+                gameCamera.transform.position += panWorldPosition - current;
+                ClampCamera();
+            }
+            Vector2 scroll = mouse.scroll.ReadValue();
+            if (!overUi && Mathf.Abs(scroll.y) > .01f)
+            {
+                Vector3 before = ScreenToWorld(pointer);
+                gameCamera.orthographicSize = Mathf.Clamp(gameCamera.orthographicSize - scroll.y * .0035f,
+                    MinCameraSize, MaxCameraSize);
+                cameraWasManuallyZoomed = true;
+                Vector3 after = ScreenToWorld(pointer);
+                gameCamera.transform.position += before - after;
+                ClampCamera();
+            }
+        }
+
+        private Vector3 ScreenToWorld(Vector2 screen)
+        {
+            return gameCamera.ScreenToWorldPoint(new Vector3(screen.x, screen.y, -gameCamera.transform.position.z));
+        }
+
+        private void ClampCamera()
+        {
+            float halfHeight = gameCamera.orthographicSize;
+            float halfWidth = halfHeight * gameCamera.aspect;
+            float worldHalfWidth = Width * TileSize * .5f;
+            float worldHalfHeight = Height * TileSize * .5f;
+            Vector3 position = gameCamera.transform.position;
+            position.x = worldHalfWidth <= halfWidth ? 0f : Mathf.Clamp(position.x, -worldHalfWidth + halfWidth, worldHalfWidth - halfWidth);
+            position.y = worldHalfHeight <= halfHeight ? 0f : Mathf.Clamp(position.y, -worldHalfHeight + halfHeight, worldHalfHeight - halfHeight);
+            position.z = -10f;
+            gameCamera.transform.position = position;
+        }
+
+        private void AnimateRover()
+        {
+            roverIdleClock += Time.deltaTime;
+            if (rover == null) return;
+            float movement = travel != null ? .018f : .008f;
+            float pulse = 1f + Mathf.Sin(roverIdleClock * (travel != null ? 15f : 3f)) * movement;
+            rover.transform.localScale = roverBaseScale * pulse;
+            if (scanPulse != null)
+            {
+                scanPulse.transform.position = rover.transform.position + new Vector3(0f, 0f, -.12f);
+                float size = travel != null ? .9f + Mathf.PingPong(roverIdleClock * 1.3f, .4f) : .74f;
+                scanPulse.transform.localScale = new Vector3(size, size, 1f);
+                scanPulse.enabled = travel != null;
+            }
+            if (routeMarker != null && routeMarker.enabled)
+            {
+                float size = .66f + Mathf.PingPong(roverIdleClock * .55f, .18f);
+                routeMarker.transform.localScale = new Vector3(size, size, 1f);
+            }
+        }
+
+        private void PlayWorldPing(Vector3 position, Color color)
+        {
+            if (signalPing == null) return;
+            if (worldPing != null) StopCoroutine(worldPing);
+            worldPing = StartCoroutine(WorldPing(position, color));
+        }
+
+        private IEnumerator WorldPing(Vector3 position, Color color)
+        {
+            signalPing.transform.position = position + new Vector3(0f, 0f, -.4f);
+            signalPing.color = color;
+            signalPing.enabled = true;
+            const float duration = .62f;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float eased = 1f - (1f - t) * (1f - t);
+                float size = Mathf.Lerp(.55f, 2.05f, eased);
+                signalPing.transform.localScale = new Vector3(size, size, 1f);
+                Color tint = color;
+                tint.a = 1f - t;
+                signalPing.color = tint;
+                yield return null;
+            }
+            signalPing.enabled = false;
+            worldPing = null;
+        }
+
+        private IEnumerator AnimateButton(Transform target)
+        {
+            if (target == null) yield break;
+            Vector3 baseline = Vector3.one;
+            float elapsed = 0f;
+            while (elapsed < .18f)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / .18f);
+                float bump = 1f + Mathf.Sin(t * Mathf.PI) * .055f;
+                target.localScale = baseline * bump;
+                yield return null;
+            }
+            target.localScale = baseline;
+        }
+
+        private void AnimatePop(Transform target, Vector3 finalScale)
+        {
+            if (target == null) return;
+            StartCoroutine(Pop(target, finalScale));
+        }
+
+        private IEnumerator Pop(Transform target, Vector3 finalScale)
+        {
+            Vector3 overshoot = finalScale * 1.12f;
+            target.localScale = finalScale * .82f;
+            float elapsed = 0f;
+            while (elapsed < .11f)
+            {
+                elapsed += Time.deltaTime;
+                target.localScale = Vector3.Lerp(finalScale * .82f, overshoot, Mathf.Clamp01(elapsed / .11f));
+                yield return null;
+            }
+            elapsed = 0f;
+            while (elapsed < .13f)
+            {
+                elapsed += Time.deltaTime;
+                target.localScale = Vector3.Lerp(overshoot, finalScale, Mathf.Clamp01(elapsed / .13f));
+                yield return null;
+            }
+            target.localScale = finalScale;
+        }
+
+        private void FlashScreen(Color color, float alpha, float duration)
+        {
+            if (screenFlash == null) return;
+            if (screenFlashRoutine != null) StopCoroutine(screenFlashRoutine);
+            screenFlashRoutine = StartCoroutine(ScreenFlash(color, alpha, duration));
+        }
+
+        private IEnumerator ScreenFlash(Color color, float alpha, float duration)
+        {
+            float half = Mathf.Max(.05f, duration * .5f);
+            for (float t = 0f; t < half; t += Time.unscaledDeltaTime)
+            {
+                color.a = alpha * (t / half);
+                screenFlash.color = color;
+                yield return null;
+            }
+            for (float t = 0f; t < half; t += Time.unscaledDeltaTime)
+            {
+                color.a = alpha * (1f - t / half);
+                screenFlash.color = color;
+                yield return null;
+            }
+            color.a = 0f;
+            screenFlash.color = color;
+            screenFlashRoutine = null;
         }
 
         private delegate bool GameAction(out string message);
+
+        private sealed class ActionCard
+        {
+            public readonly int Category;
+            public readonly Transform Root;
+            public readonly Image Background;
+            public readonly Button Button;
+            public readonly TextMeshProUGUI Title;
+            public readonly TextMeshProUGUI Detail;
+            public readonly string Cost;
+            public readonly Func<bool> Action;
+            public readonly Func<string> LockReason;
+
+            public ActionCard(int category, Transform root, Image background, Button button,
+                TextMeshProUGUI title, TextMeshProUGUI detail, string cost, Func<bool> action, Func<string> lockReason)
+            {
+                Category = category;
+                Root = root;
+                Background = background;
+                Button = button;
+                Title = title;
+                Detail = detail;
+                Cost = cost;
+                Action = action;
+                LockReason = lockReason;
+            }
+        }
 
         private void Act(GameAction action)
         {
@@ -488,16 +1068,24 @@ namespace SpaceFarm
                 SetReport("La misión terminó. Reiniciá la escena para volver a intentarlo.");
                 return;
             }
-            action(out string message);
+            bool success = action(out string message);
             SetReport(message);
+            if (success) FlashScreen(SpaceFarmPalette.Oxygen, .10f, .22f);
             RefreshWorld();
             RefreshHud();
         }
 
         private void AdvanceSol()
         {
-            if (travel != null) return;
-            SetReport(state.AdvanceSol());
+            if (travel != null)
+            {
+                SetReport("Esperá a que el rover termine su recorrido antes de avanzar el sol.");
+                return;
+            }
+            string report = state.AdvanceSol();
+            SetReport(report);
+            if (report.Contains("tormenta")) FlashScreen(SpaceFarmPalette.Iron, .18f, .32f);
+            if (report.Contains("Incursión")) FlashScreen(SpaceFarmPalette.Danger, .22f, .38f);
             RefreshWorld();
             RefreshHud();
         }
@@ -509,20 +1097,29 @@ namespace SpaceFarm
 
         private void RefreshHud()
         {
-            statsText.text = $"SOL {state.Sol}    HIERRO {state.Iron}    ENERGÍA {state.Energy}    O2 {state.Oxygen}\nAGUA {state.Water}    COMIDA {state.Food}    COLONOS {state.Population}    SALUD {state.Health}/3";
-            roverText.text = $"ROVER {state.RoverLevel} · RADIO {state.ScanRadius}";
-            if (state.GameOver) objectiveText.text = "MISIÓN PERDIDA\nSe agotó un recurso vital. Reiniciá la escena para volver a intentarlo.";
-            else if (state.MissionComplete) objectiveText.text = "¡MISIÓN COMPLETADA!\nLa colonia logró su primera cosecha y resistió la incursión.";
-            else
-            {
-                string iron = state.IronSurveyed ? "OK" : "--";
-                string ice = state.IceSurveyed ? "OK" : "--";
-                string mine = state.MineLevel > 0 ? "OK" : "--";
-                string crop = state.Greenhouse ? "OK" : "--";
-                string people = state.Population >= 3 ? "OK" : "--";
-                string wall = state.Barrier ? "OK" : "--";
-                objectiveText.text = $"Fe {iron} · Hielo {ice}\nMina {mine} · Cultivo {crop}\nColono {people} · Muro {wall}\nClic en mapa para explorar";
-            }
+            statsText.text = $"SOL <b>{state.Sol:00}</b>   <color=#E6A46A>Hierro</color> <b>{state.Iron}</b>   <color=#B5C3C6>Energía</color> <b>{state.Energy}</b>   <color=#77D7AF>Oxígeno</color> <b>{state.Oxygen}</b>   <color=#8ED6E6>Agua</color> <b>{state.Water}</b>   <color=#8CCB7B>Comida</color> <b>{state.Food}</b>   Colonos <b>{state.Population}</b>   Salud <b>{state.Health}/3</b>";
+            roverText.text = travel != null
+                ? $"ROVER {state.RoverLevel}\nEXPLORANDO · {state.ScanRadius} casillas"
+                : $"ROVER {state.RoverLevel}\nListo · alcance {state.ScanRadius}";
+            if (state.GameOver)
+                objectiveText.text = "MISIÓN EN RIESGO · Recursos vitales agotados. Revisá el informe y avanzá con reservas.";
+            else if (state.MissionComplete)
+                objectiveText.text = "MISIÓN COMPLETA · Primera cosecha y colonia protegida tras la incursión.";
+            else objectiveText.text = "SIGUIENTE PASO  ·  " + NextObjective();
+            RefreshActionCards();
+        }
+
+        private string NextObjective()
+        {
+            if (!state.IronSurveyed) return "Explorá al noreste y estudiá el yacimiento de hierro.";
+            if (state.MineLevel == 0) return "Construí la mina de hierro (8 de hierro).";
+            if (!state.IceSurveyed) return "Explorá al noroeste para localizar hielo.";
+            if (!state.WaterExtractor) return "Construí un extractor para asegurar agua (6 de hierro).";
+            if (!state.Greenhouse) return "Construí un invernadero para iniciar la cosecha (6 de hierro).";
+            if (state.Population < 3) return "Prepará reservas de O₂, agua y comida; luego recibí un colono.";
+            if (!state.Barrier) return "Instalá barreras antes de la incursión (5 de hierro).";
+            if (state.Sol < 7) return $"Mantené la colonia hasta el sol 7 (ahora {state.Sol}).";
+            return "Revisá recursos y preparate para el próximo evento.";
         }
     }
 }
