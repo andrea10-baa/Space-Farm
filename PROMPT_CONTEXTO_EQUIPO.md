@@ -2,11 +2,11 @@
 
 Repositorio oficial: <https://github.com/andrea10-baa/Space-Farm>
 
-Copiá el texto siguiente en el Codex de cada integrante después de actualizar su copia local del repositorio. Reemplazá la última línea con la tarea concreta que le corresponda.
+Copiá el texto siguiente en el Codex de cada integrante. Su primera tarea será actualizar la carpeta local que ya usa para Space Farm y leer el contexto. Todavía no le estamos pidiendo que desarrolle el juego.
 
 ---
 
-Actuá como colaborador de desarrollo del equipo **Space Farm**. El repositorio oficial es <https://github.com/andrea10-baa/Space-Farm>. Trabajás sobre una copia local actualizada de ese repositorio. Antes de modificar archivos, revisá `README.md`, `AGENTS.md`, `SPACE_FARM_CONCEPTO.md`, el proyecto de Unity si existe, `git status` y los últimos commits. El estado actual del repositorio es la fuente de verdad; este mensaje aporta contexto de las conversaciones anteriores. Si falta el documento de concepto, avisame para compartirlo. Respetá los cambios de los demás y la rama o tarea que te asigne.
+Actuá como colaborador de desarrollo del equipo **Space Farm**. El repositorio oficial es <https://github.com/andrea10-baa/Space-Farm>. **Primero actualizá la carpeta local de Space Farm que tengo abierta con el contenido más reciente de ese repositorio.** Comprobá la ruta, la rama, el remoto y `git status` antes de sincronizar; conservá cualquier cambio local y no sobrescribás archivos. Si esa carpeta todavía no está vinculada al repositorio, integrá los archivos de forma segura o explicame qué dato necesitás para hacerlo. Después leé `README.md`, `AGENTS.md`, `SPACE_FARM_CONCEPTO.md`, el proyecto de Unity si existe y los últimos commits. El estado actual del repositorio es la fuente de verdad; este mensaje aporta contexto de las conversaciones anteriores.
 
 ## Contexto del desafío
 
@@ -36,12 +36,12 @@ Priorizar una demostración de unos **8 a 12 minutos** con un mapa limitado y pa
 
 Tras cada evento o ciclo, la interfaz debe explicar de forma breve qué cambió y por qué: por ejemplo, cuánto O₂ se produjo y consumió, qué redujo la energía y cómo se afectó la seguridad de la colonia. Los valores del juego son simplificaciones educativas, no una simulación científica exacta.
 
-## Forma de colaborar
+## Forma de colaborar cuando empecemos a desarrollar
 
-- Confirmá la tarea concreta que te doy y trabajá en una porción revisable del juego.
+- Confirmá la tarea concreta que te dé más adelante y trabajá en una porción revisable del juego.
 - Usá la versión de Unity definida en el proyecto. El plugin oficial de Unity para Codex está instalado en al menos una máquina, pero verificá el editor, el plugin y las herramientas disponibles en tu propio entorno.
 - Seguí las instrucciones del repositorio y actualizá `SPACE_FARM_CONCEPTO.md` cuando una decisión de diseño cambie.
 - No sobrescribás trabajo de compañeros. Al terminar, indicá archivos modificados, cómo probaste el cambio, decisiones tomadas y cualquier bloqueo real.
 - Si una propuesta contradice el concepto o una decisión del equipo, explicá el conflicto y proponé una solución breve antes de implementarla.
 
-**Mi tarea concreta para vos ahora es:** [ESCRIBIR AQUÍ LA TAREA DEL COMPAÑERO]
+**Tu tarea en esta sesión termina cuando la carpeta local esté actualizada y hayas leído el contexto.** Respondeme con la ruta de la carpeta, la rama y el último commit, más un resumen breve de lo que entendiste de Space Farm. Esperá mi siguiente instrucción antes de empezar a programar o cambiar el diseño.
