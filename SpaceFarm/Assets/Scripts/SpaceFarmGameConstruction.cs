@@ -129,6 +129,8 @@ namespace SpaceFarm
             SetReport(message);
             if (!moved) { RefreshHud(); return; }
             CancelEditMove();
+            // Moving an obstacle can invalidate the rover's cached route. Recompute before its next step.
+            roverRouteDirty = true;
             RefreshWorld(); RefreshHud();
             PlayWorldPing(CellPosition(cell), SpaceFarmPalette.Oxygen);
         }
@@ -315,7 +317,12 @@ namespace SpaceFarm
             RefreshHud();
             if (kind == StructureKind.Greenhouse) SelectWorldBuilding("greenhouse", state.GreenhouseCells.Count - 1);
             else if (kind == StructureKind.OxygenPlant) SelectWorldBuilding("oxygen2", state.OxygenCells.Count - 1);
-            else SelectDeposit(map.DepositAt(cell).Id);
+            else
+            {
+                MapDeposit deposit = map.DepositAt(cell);
+                if (deposit != null) SelectDeposit(deposit.Id);
+                else HideWorldSelection();
+            }
         }
 
         private bool TryRoverAsideCell(Vector2Int builtCell, out Vector2Int result)

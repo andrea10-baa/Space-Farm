@@ -223,7 +223,7 @@ namespace SpaceFarm
             AddAction("Planta de O2", () => $"9 Fe · {state.OxygenPlants}/5", 0, null,
                 () => state.PlacementAvailability(StructureKind.OxygenPlant), StructureKind.OxygenPlant,
                 "Art/space-farm-world-modules#oxygen-3d", "Produce oxígeno para más colonos");
-            AddAction("Almacén de recursos", () => $"12 Fe · capacidad {state.WarehouseCapacity} Fe", 0, null,
+            AddAction("Almacén de recursos", () => $"12 Fe · capacidad compartida {state.WarehouseCapacity} unidades", 0, null,
                 () => state.PlacementAvailability(StructureKind.Warehouse), StructureKind.Warehouse,
                 "Art/space-farm-warehouse", "Amplía el espacio para hierro y minerales");
             AddAction("Construir muros", () => "1 Fe por muro", 0, null,
@@ -838,7 +838,7 @@ namespace SpaceFarm
             if (resourceLabels.Count == 0 || state == null) return;
             int[] now = { state.Iron, state.Energy, state.Oxygen, state.Water, state.Food, state.Population, state.Health };
             string[] names = { "Hierro", "Energía", "Oxígeno", "Agua", "Comida", "Colonos", "Salud" };
-            int[] capacities = { state.WarehouseCapacity, state.EnergyCapacity, 60, 60, 60, state.HabitatCapacity, 3 };
+            int[] capacities = { state.WarehouseCapacity, state.EnergyCapacity, state.WarehouseCapacity, state.WarehouseCapacity, state.WarehouseCapacity, state.HabitatCapacity, 3 };
             for (int i = 0; i < now.Length; i++)
             {
                 bool critical = (i == 2 || i == 3 || i == 4) && now[i] <= state.Population * 2;
@@ -1114,7 +1114,7 @@ namespace SpaceFarm
             {
                 infoTitle.text = $"Extractor {deposit.Name}";
                 int waterNominal = 8 + state.ActiveWorkers(CrewJob.Extractor, deposit.Id) * SpaceFarmState.WorkerBonus(CrewJob.Extractor);
-                infoBody.text = ResultText(deposit.LastResult, "Operativa", waterNominal, 2, $"Agua {state.Water}/60\n{place}");
+                infoBody.text = ResultText(deposit.LastResult, "Operativa", waterNominal, 2, $"Agua {state.Water}/{state.WarehouseCapacity}\n{place}");
                 infoPrimary.gameObject.SetActive(false);
             }
             else if (iron)

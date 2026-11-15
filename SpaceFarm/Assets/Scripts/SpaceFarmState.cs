@@ -297,7 +297,9 @@ namespace SpaceFarm
         public int AddMaterial(MaterialResource kind, int amount)
         {
             int current = kind == MaterialResource.Iron ? Iron : kind == MaterialResource.Oxygen ? Oxygen : kind == MaterialResource.Water ? Water : Food;
-            int perResourceCapacity = kind == MaterialResource.Iron ? WarehouseCapacity : 60;
+            // All stored supplies occupy one colony-wide pool. Each warehouse contributes capacity;
+            // no resource has an independent 60-unit ceiling.
+            int perResourceCapacity = WarehouseCapacity;
             int added = Mathf.Clamp(amount, 0, Mathf.Min(Mathf.Max(0, WarehouseCapacity - WarehouseUsed), Mathf.Max(0, perResourceCapacity - current)));
             switch (kind)
             {
@@ -464,6 +466,9 @@ namespace SpaceFarm
                 return "Esta instalación está anclada y no se puede mover";
             if (map != null && !map.Inside(cell)) return "Fuera del mapa";
             if (!revealed) return "Sector oculto: exploralo primero";
+            if (kind == StructureKind.Greenhouse && (index < 0 || index >= greenhouseCells.Count)) return "Invernadero inexistente";
+            if (kind == StructureKind.OxygenPlant && (index < 0 || index >= oxygenCells.Count)) return "Planta de oxígeno inexistente";
+            if (kind == StructureKind.Warehouse && (index < 0 || index >= warehouseCells.Count)) return "Almacén inexistente";
             if (kind == StructureKind.Barrier)
             {
                 if (index < 0 || index >= barriers.Count) return "Muro inexistente";
@@ -694,7 +699,7 @@ namespace SpaceFarm
                 warehouseCells.Add(cell);
                 warehouseLevels.Add(1);
                 GainXp(6);
-                return Success($"Almacén construido. Capacidad de hierro: {WarehouseCapacity}.", out message);
+                return Success($"Almacén construido. Capacidad compartida: {WarehouseCapacity} unidades.", out message);
             }
             OxygenPlants++;
             oxygenCells.Add(cell);

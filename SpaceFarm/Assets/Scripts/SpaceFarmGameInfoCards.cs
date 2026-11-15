@@ -217,7 +217,7 @@ namespace SpaceFarm
                     AddProduction(metrics, "Agua", 8 + state.ActiveWorkers(CrewJob.Extractor, d.Id) * 3, d.LastResult, waterIcon, "unid./sol juego");
                     metrics.Add(new[] { "Energía", $"-2/sol · real -{d.LastResult.EnergyUsed}", energyIcon.ToString() });
                     metrics.Add(new[] { "Depósito local", $"{d.WaterStored}/{SpaceFarmState.LocalStorageCapacity} agua", waterIcon.ToString() });
-                    metrics.Add(new[] { "Reserva utilizable", $"{state.Water}/60", waterIcon.ToString() });
+                    metrics.Add(new[] { "Reserva utilizable", $"{state.Water}/{state.WarehouseCapacity}", waterIcon.ToString() });
                     metrics.Add(new[] { "Carga del rover", $"{state.RoverWaterCargo}/{state.RoverCapacity} agua", ironIcon.ToString() });
                     facts = $"{distance}\n{d.LastResult.Reason}";
                     reality = "Orbitadores han cartografiado hielo subterráneo en algunas regiones de Marte. Su profundidad y accesibilidad varían; extraerlo requiere localizarlo, perforar y procesar el material.";
@@ -285,7 +285,7 @@ namespace SpaceFarm
                     showPrimary = true; primaryText = "RECOGER OXÍGENO"; primaryEnabled = state.OxygenLocal(oxygenIndex) > 0 && !RoverBusy && !state.GameOver;
                     actionReason = state.OxygenLocal(oxygenIndex) <= 0 ? "El depósito local todavía no tiene oxígeno." : RoverBusy ? "El rover está ocupado." : "";
                     metrics.Add(new[] { "Energía", $"-2/sol · real -{oxygenResult.EnergyUsed}", energyIcon.ToString() });
-                    metrics.Add(new[] { "Reserva", $"{state.Oxygen}/60", oxygenIcon.ToString() });
+                    metrics.Add(new[] { "Reserva", $"{state.Oxygen}/{state.WarehouseCapacity}", oxygenIcon.ToString() });
                     status = oxygenResult.Actual == 0 && state.Sol > 1 ? "Detenida o sin energía" : "Operativa";
                     facts = oxygenResult.Reason;
                     reality = "MOXIE fue un experimento tecnológico del rover Perseverance. Recogía dióxido de carbono marciano y lo separaba electroquímicamente para producir oxígeno; fue una demostración, no una planta capaz de sostener por sí sola a una colonia.";
@@ -355,9 +355,9 @@ namespace SpaceFarm
                 default:
                     title = "Hábitat principal"; level = $"Colonia nivel {state.ColonyLevel}/5"; sprite = habitatWorld.GetComponent<SpriteRenderer>().sprite;
                     metrics.Add(new[] { "Colonos", $"{state.Population}/{state.HabitatCapacity}", peopleIcon.ToString() });
-                    metrics.Add(new[] { "Oxígeno", $"{state.Oxygen}/60", oxygenIcon.ToString() });
-                    metrics.Add(new[] { "Agua", $"{state.Water}/60", waterIcon.ToString() });
-                    metrics.Add(new[] { "Comida", $"{state.Food}/60", foodIcon.ToString() });
+                    metrics.Add(new[] { "Oxígeno", $"{state.Oxygen}/{state.WarehouseCapacity}", oxygenIcon.ToString() });
+                    metrics.Add(new[] { "Agua", $"{state.Water}/{state.WarehouseCapacity}", waterIcon.ToString() });
+                    metrics.Add(new[] { "Comida", $"{state.Food}/{state.WarehouseCapacity}", foodIcon.ToString() });
                     metrics.Add(new[] { "Energía", $"{state.Energy}/{state.EnergyCapacity}", energyIcon.ToString() });
                     metrics.Add(new[] { "Salud", $"{state.Health}/3", "6" });
                     status = state.GameOver ? "Misión finalizada" : "Base operativa";

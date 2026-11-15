@@ -576,11 +576,20 @@ namespace SpaceFarm
                 if (state.SolarLevel > 1) AnimatePop(solarWorld.transform, size);
             }
             for (int i = 0; i < greenhouseWorlds.Count; i++)
+            {
+                greenhouseWorlds[i].transform.position = CellPosition(state.GreenhouseCells[i]) + new Vector3(0f, 0f, -.2f);
                 SetUpgradeArtwork(greenhouseWorlds[i], 'a', 0, state.GreenhouseLevel(i), 1.75f, 1.17f);
+            }
             for (int i = 0; i < oxygenWorlds.Count; i++)
+            {
+                oxygenWorlds[i].transform.position = CellPosition(state.OxygenCells[i]) + new Vector3(0f, 0f, -.2f);
                 SetUpgradeArtwork(oxygenWorlds[i], 'b', 1, state.OxygenLevel(i + 1), 1.75f, 1.17f);
+            }
             for (int i = 0; i < warehouseWorlds.Count; i++)
+            {
+                warehouseWorlds[i].transform.position = CellPosition(state.WarehouseCells[i]) + new Vector3(0f, 0f, -.18f);
                 SetUpgradeArtwork(warehouseWorlds[i], 'c', 1, state.WarehouseLevel(i), 2.05f, 1.42f);
+            }
             RefreshPickupMarkers();
             previousGreenhouse = state.Greenhouse;
             previousRoverLevel = state.RoverLevel;
