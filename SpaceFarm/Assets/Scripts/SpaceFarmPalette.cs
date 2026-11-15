@@ -18,7 +18,6 @@ namespace SpaceFarm
         public static readonly Color Oxygen = Hex("#77D7AF");
         public static readonly Color Greenhouse = Hex("#8CCB7B");
         public static readonly Color Danger = Hex("#EF806C");
-        public static readonly Color DamagedTint = Hex("#FF9C8B");
         public static readonly Color Text = Hex("#F3EEE2");
         public static readonly Color MutedText = Hex("#B5C3C6");
         public static readonly Color Button = Hex("#2F7D74");

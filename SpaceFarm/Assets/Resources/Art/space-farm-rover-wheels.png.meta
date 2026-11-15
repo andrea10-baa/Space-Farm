@@ -1,0 +1,500 @@
+fileFormatVersion: 2
+guid: 7fb5cd220f5b2649a80c963eea9acc5c
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -3496129002455183542
+    second: space-farm-rover-wheels_0
+  - first:
+      213: -4974581764048328259
+    second: space-farm-rover-wheels_1
+  - first:
+      213: 8526637765758919076
+    second: space-farm-rover-wheels_2
+  - first:
+      213: -1970665634643432631
+    second: space-farm-rover-wheels_3
+  - first:
+      213: 5510959231821823476
+    second: space-farm-rover-wheels_4
+  - first:
+      213: 4742889281514537979
+    second: space-farm-rover-wheels_5
+  - first:
+      213: -2889984588328900816
+    second: space-farm-rover-wheels_6
+  - first:
+      213: -1821129376588747545
+    second: space-farm-rover-wheels_7
+  - first:
+      213: -7327507721801312957
+    second: space-farm-rover-wheels_8
+  - first:
+      213: 4879119568019686805
+    second: space-farm-rover-wheels_9
+  - first:
+      213: 8617501910553405870
+    second: space-farm-rover-wheels_10
+  - first:
+      213: -253404629104934099
+    second: space-farm-rover-wheels_11
+  - first:
+      213: 655762838199265046
+    second: space-farm-rover-wheels_12
+  - first:
+      213: 1371451837121309109
+    second: space-farm-rover-wheels_13
+  - first:
+      213: -4439929903135159557
+    second: space-farm-rover-wheels_14
+  - first:
+      213: 823737288918433813
+    second: space-farm-rover-wheels_15
+  - first:
+      213: -5678550227340939686
+    second: space-farm-rover-wheels_16
+  - first:
+      213: -5107617726209789765
+    second: space-farm-rover-wheels_17
+  - first:
+      213: 6763385702760353567
+    second: space-farm-rover-wheels_18
+  - first:
+      213: 2509836924479036327
+    second: space-farm-rover-wheels_19
+  - first:
+      213: -6052539040582487601
+    second: space-farm-rover-wheels_20
+  - first:
+      213: -3622643613374853732
+    second: space-farm-rover-wheels_21
+  - first:
+      213: -1141934309553244857
+    second: space-farm-rover-wheels_22
+  - first:
+      213: -8074841936939010762
+    second: space-farm-rover-wheels_23
+  - first:
+      213: -3599376446444978090
+    second: space-farm-rover-wheels_24
+  - first:
+      213: 1633279790603775998
+    second: space-farm-rover-wheels_25
+  - first:
+      213: 2235203515573832193
+    second: space-farm-rover-wheels_26
+  - first:
+      213: -4227633360591091446
+    second: space-farm-rover-wheels_27
+  - first:
+      213: 7847802800551206079
+    second: space-farm-rover-wheels_28
+  - first:
+      213: 2102953388122043042
+    second: space-farm-rover-wheels_29
+  - first:
+      213: 6864117337809031181
+    second: space-farm-rover-wheels_30
+  - first:
+      213: 78653442283568876
+    second: space-farm-rover-wheels_31
+  - first:
+      213: -6852765484311461520
+    second: space-farm-rover-wheels_32
+  - first:
+      213: 5589841718935396998
+    second: space-farm-rover-wheels_33
+  - first:
+      213: 4785001665585628331
+    second: space-farm-rover-wheels_34
+  - first:
+      213: -4531760996973432969
+    second: space-farm-rover-wheels_35
+  - first:
+      213: -4970939446124820157
+    second: space-farm-rover-wheels_36
+  - first:
+      213: 3642336242540165854
+    second: space-farm-rover-wheels_37
+  - first:
+      213: 3334827078270703512
+    second: space-farm-rover-wheels_38
+  - first:
+      213: -3032287304864372297
+    second: space-farm-rover-wheels_39
+  - first:
+      213: -2172634128750704661
+    second: rover-wheel-north
+  - first:
+      213: -2702535911827076488
+    second: rover-wheel-northeast
+  - first:
+      213: 7377894177581476652
+    second: rover-wheel-east
+  - first:
+      213: -8852845054960707839
+    second: rover-wheel-southeast
+  - first:
+      213: -2677521060577024332
+    second: rover-wheel-south
+  - first:
+      213: -2784630203642680493
+    second: rover-wheel-southwest
+  - first:
+      213: 137020616492782835
+    second: rover-wheel-west
+  - first:
+      213: -5715711810203860744
+    second: rover-wheel-northwest
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: rover-wheel-north
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 832
+        width: 420
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: be78ce065c049d1e0800000000000000
+      internalID: -2172634128750704661
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rover-wheel-northeast
+      rect:
+        serializedVersion: 2
+        x: 420
+        y: 832
+        width: 420
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87a8fc628e9ae7ad0800000000000000
+      internalID: -2702535911827076488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rover-wheel-east
+      rect:
+        serializedVersion: 2
+        x: 840
+        y: 832
+        width: 421
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c2baa2d2aab836660800000000000000
+      internalID: 7377894177581476652
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rover-wheel-southeast
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 417
+        width: 420
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1075e7fa350642580800000000000000
+      internalID: -8852845054960707839
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rover-wheel-south
+      rect:
+        serializedVersion: 2
+        x: 420
+        y: 417
+        width: 420
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b6eda118c887dad0800000000000000
+      internalID: -2677521060577024332
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rover-wheel-southwest
+      rect:
+        serializedVersion: 2
+        x: 840
+        y: 417
+        width: 421
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35bed0955910b59d0800000000000000
+      internalID: -2784630203642680493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rover-wheel-west
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 2
+        width: 420
+        height: 417
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3f415f4568bc6e100800000000000000
+      internalID: 137020616492782835
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rover-wheel-northwest
+      rect:
+        serializedVersion: 2
+        x: 420
+        y: 2
+        width: 420
+        height: 417
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f04b4a4466bda0b0800000000000000
+      internalID: -5715711810203860744
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      rover-wheel-east: 7377894177581476652
+      rover-wheel-north: -2172634128750704661
+      rover-wheel-northeast: -2702535911827076488
+      rover-wheel-northwest: -5715711810203860744
+      rover-wheel-south: -2677521060577024332
+      rover-wheel-southeast: -8852845054960707839
+      rover-wheel-southwest: -2784630203642680493
+      rover-wheel-west: 137020616492782835
+      space-farm-rover-wheels_0: -3496129002455183542
+      space-farm-rover-wheels_1: -4974581764048328259
+      space-farm-rover-wheels_10: 8617501910553405870
+      space-farm-rover-wheels_11: -253404629104934099
+      space-farm-rover-wheels_12: 655762838199265046
+      space-farm-rover-wheels_13: 1371451837121309109
+      space-farm-rover-wheels_14: -4439929903135159557
+      space-farm-rover-wheels_15: 823737288918433813
+      space-farm-rover-wheels_16: -5678550227340939686
+      space-farm-rover-wheels_17: -5107617726209789765
+      space-farm-rover-wheels_18: 6763385702760353567
+      space-farm-rover-wheels_19: 2509836924479036327
+      space-farm-rover-wheels_2: 8526637765758919076
+      space-farm-rover-wheels_20: -6052539040582487601
+      space-farm-rover-wheels_21: -3622643613374853732
+      space-farm-rover-wheels_22: -1141934309553244857
+      space-farm-rover-wheels_23: -8074841936939010762
+      space-farm-rover-wheels_24: -3599376446444978090
+      space-farm-rover-wheels_25: 1633279790603775998
+      space-farm-rover-wheels_26: 2235203515573832193
+      space-farm-rover-wheels_27: -4227633360591091446
+      space-farm-rover-wheels_28: 7847802800551206079
+      space-farm-rover-wheels_29: 2102953388122043042
+      space-farm-rover-wheels_3: -1970665634643432631
+      space-farm-rover-wheels_30: 6864117337809031181
+      space-farm-rover-wheels_31: 78653442283568876
+      space-farm-rover-wheels_32: -6852765484311461520
+      space-farm-rover-wheels_33: 5589841718935396998
+      space-farm-rover-wheels_34: 4785001665585628331
+      space-farm-rover-wheels_35: -4531760996973432969
+      space-farm-rover-wheels_36: -4970939446124820157
+      space-farm-rover-wheels_37: 3642336242540165854
+      space-farm-rover-wheels_38: 3334827078270703512
+      space-farm-rover-wheels_39: -3032287304864372297
+      space-farm-rover-wheels_4: 5510959231821823476
+      space-farm-rover-wheels_5: 4742889281514537979
+      space-farm-rover-wheels_6: -2889984588328900816
+      space-farm-rover-wheels_7: -1821129376588747545
+      space-farm-rover-wheels_8: -7327507721801312957
+      space-farm-rover-wheels_9: 4879119568019686805
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

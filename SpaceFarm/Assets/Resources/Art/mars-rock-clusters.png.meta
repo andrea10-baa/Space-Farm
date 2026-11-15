@@ -1,0 +1,456 @@
+fileFormatVersion: 2
+guid: 12b16bca9bfbfec44ab38ed68bf1b4b8
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 1124823023292987150
+    second: mars-rock-clusters_0
+  - first:
+      213: 4055648864786284917
+    second: mars-rock-clusters_1
+  - first:
+      213: 2416268826113645153
+    second: mars-rock-clusters_2
+  - first:
+      213: 5892137968592029326
+    second: mars-rock-clusters_3
+  - first:
+      213: -3825996407517697050
+    second: mars-rock-clusters_4
+  - first:
+      213: -6298134348557742024
+    second: mars-rock-clusters_5
+  - first:
+      213: 4580946484073064797
+    second: mars-rock-clusters_6
+  - first:
+      213: -5152078715430060923
+    second: mars-rock-clusters_7
+  - first:
+      213: -2582368528191519863
+    second: mars-rock-clusters_8
+  - first:
+      213: -3345756679569289671
+    second: mars-rock-clusters_9
+  - first:
+      213: -6404058158158204253
+    second: mars-rock-clusters_10
+  - first:
+      213: 7124715494079286958
+    second: mars-rock-clusters_11
+  - first:
+      213: 9017939773636374433
+    second: mars-rock-clusters_12
+  - first:
+      213: 9000207463306781548
+    second: mars-rock-clusters_13
+  - first:
+      213: 4636696470875086370
+    second: mars-rock-clusters_14
+  - first:
+      213: -6215740624438332415
+    second: mars-rock-clusters_15
+  - first:
+      213: -1725703132879871971
+    second: mars-rock-clusters_16
+  - first:
+      213: -3664893403023123615
+    second: mars-rock-clusters_17
+  - first:
+      213: 2546138444304343745
+    second: mars-rock-clusters_18
+  - first:
+      213: 416502170339890393
+    second: mars-rock-clusters_19
+  - first:
+      213: 291531394726973052
+    second: mars-rock-clusters_20
+  - first:
+      213: -328055308346639549
+    second: mars-rock-clusters_21
+  - first:
+      213: -5458789985039809269
+    second: mars-rock-clusters_22
+  - first:
+      213: -379249874461388069
+    second: mars-rock-clusters_23
+  - first:
+      213: -3773514449859542664
+    second: mars-rock-clusters_24
+  - first:
+      213: -6790428713045583068
+    second: mars-rock-clusters_25
+  - first:
+      213: 542328518226649295
+    second: mars-rock-clusters_26
+  - first:
+      213: 5001201661511486065
+    second: mars-rock-clusters_27
+  - first:
+      213: -6666794650121544526
+    second: mars-rock-clusters_28
+  - first:
+      213: -4067161887477196531
+    second: mars-rock-clusters_29
+  - first:
+      213: -6810626986405403051
+    second: mars-rock-clusters_30
+  - first:
+      213: -3756954644150464863
+    second: mars-rock-clusters_31
+  - first:
+      213: 3966335263639241478
+    second: mars-rock-clusters_32
+  - first:
+      213: 3038787657953325230
+    second: mars-rock-clusters_33
+  - first:
+      213: 4873615387895028795
+    second: mars-rock-clusters_34
+  - first:
+      213: -8668963110382900961
+    second: mars-rock-clusters_35
+  - first:
+      213: 1171048810081279510
+    second: mars-rock-clusters_36
+  - first:
+      213: 1574256617689871903
+    second: mars-rock-clusters_37
+  - first:
+      213: -3324966482424372949
+    second: mars-rock-clusters_38
+  - first:
+      213: 7021083382231935328
+    second: mars-rock-clusters_39
+  - first:
+      213: 4615807029874100762
+    second: mars-rock-clusters_40
+  - first:
+      213: -8613737385585411307
+    second: mars-rock-clusters_41
+  - first:
+      213: -1148938889173072984
+    second: mars-rock-scattered
+  - first:
+      213: 7985902755672523845
+    second: mars-rock-boulders
+  - first:
+      213: -2588782226168197307
+    second: mars-rock-slabs
+  - first:
+      213: -5169711616039372943
+    second: mars-rock-fractured
+  - first:
+      213: -806719650726786012
+    second: mars-rock-gravel
+  - first:
+      213: 9019124145950798107
+    second: mars-rock-ridge
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: mars-rock-scattered
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 512
+        width: 512
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8a3053aea262e00f0800000000000000
+      internalID: -1148938889173072984
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mars-rock-boulders
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 512
+        width: 512
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5448ca2ce30a3de60800000000000000
+      internalID: 7985902755672523845
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mars-rock-slabs
+      rect:
+        serializedVersion: 2
+        x: 1024
+        y: 512
+        width: 512
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 54f4660084cc21cd0800000000000000
+      internalID: -2588782226168197307
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mars-rock-fractured
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 512
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17733ceecae7148b0800000000000000
+      internalID: -5169711616039372943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mars-rock-gravel
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 0
+        width: 512
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42c4a1970c4fdc4f0800000000000000
+      internalID: -806719650726786012
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mars-rock-ridge
+      rect:
+        serializedVersion: 2
+        x: 1024
+        y: 0
+        width: 512
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b11bb8810ad5a2d70800000000000000
+      internalID: 9019124145950798107
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      mars-rock-boulders: 7985902755672523845
+      mars-rock-clusters_0: 1124823023292987150
+      mars-rock-clusters_1: 4055648864786284917
+      mars-rock-clusters_10: -6404058158158204253
+      mars-rock-clusters_11: 7124715494079286958
+      mars-rock-clusters_12: 9017939773636374433
+      mars-rock-clusters_13: 9000207463306781548
+      mars-rock-clusters_14: 4636696470875086370
+      mars-rock-clusters_15: -6215740624438332415
+      mars-rock-clusters_16: -1725703132879871971
+      mars-rock-clusters_17: -3664893403023123615
+      mars-rock-clusters_18: 2546138444304343745
+      mars-rock-clusters_19: 416502170339890393
+      mars-rock-clusters_2: 2416268826113645153
+      mars-rock-clusters_20: 291531394726973052
+      mars-rock-clusters_21: -328055308346639549
+      mars-rock-clusters_22: -5458789985039809269
+      mars-rock-clusters_23: -379249874461388069
+      mars-rock-clusters_24: -3773514449859542664
+      mars-rock-clusters_25: -6790428713045583068
+      mars-rock-clusters_26: 542328518226649295
+      mars-rock-clusters_27: 5001201661511486065
+      mars-rock-clusters_28: -6666794650121544526
+      mars-rock-clusters_29: -4067161887477196531
+      mars-rock-clusters_3: 5892137968592029326
+      mars-rock-clusters_30: -6810626986405403051
+      mars-rock-clusters_31: -3756954644150464863
+      mars-rock-clusters_32: 3966335263639241478
+      mars-rock-clusters_33: 3038787657953325230
+      mars-rock-clusters_34: 4873615387895028795
+      mars-rock-clusters_35: -8668963110382900961
+      mars-rock-clusters_36: 1171048810081279510
+      mars-rock-clusters_37: 1574256617689871903
+      mars-rock-clusters_38: -3324966482424372949
+      mars-rock-clusters_39: 7021083382231935328
+      mars-rock-clusters_4: -3825996407517697050
+      mars-rock-clusters_40: 4615807029874100762
+      mars-rock-clusters_41: -8613737385585411307
+      mars-rock-clusters_5: -6298134348557742024
+      mars-rock-clusters_6: 4580946484073064797
+      mars-rock-clusters_7: -5152078715430060923
+      mars-rock-clusters_8: -2582368528191519863
+      mars-rock-clusters_9: -3345756679569289671
+      mars-rock-fractured: -5169711616039372943
+      mars-rock-gravel: -806719650726786012
+      mars-rock-ridge: 9019124145950798107
+      mars-rock-scattered: -1148938889173072984
+      mars-rock-slabs: -2588782226168197307
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

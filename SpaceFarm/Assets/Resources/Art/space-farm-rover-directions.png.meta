@@ -1,0 +1,580 @@
+fileFormatVersion: 2
+guid: e52304afbb3d2715695585fff4f0233d
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -977636490644732276
+    second: space-farm-rover-directions_0
+  - first:
+      213: 4833571101518352328
+    second: space-farm-rover-directions_1
+  - first:
+      213: -46132501044078693
+    second: space-farm-rover-directions_2
+  - first:
+      213: -401547750566129054
+    second: space-farm-rover-directions_3
+  - first:
+      213: 6299250784822584100
+    second: space-farm-rover-directions_4
+  - first:
+      213: -6174611371923910147
+    second: space-farm-rover-directions_5
+  - first:
+      213: -7405127982478947461
+    second: space-farm-rover-directions_6
+  - first:
+      213: -7406824085156744998
+    second: space-farm-rover-directions_7
+  - first:
+      213: 5953974559427560845
+    second: space-farm-rover-directions_8
+  - first:
+      213: -3998315267882708763
+    second: space-farm-rover-directions_9
+  - first:
+      213: -7509808801546088483
+    second: space-farm-rover-directions_10
+  - first:
+      213: -2622884803557808125
+    second: space-farm-rover-directions_11
+  - first:
+      213: -3722196638160770513
+    second: space-farm-rover-directions_12
+  - first:
+      213: -1945828605605520494
+    second: space-farm-rover-directions_13
+  - first:
+      213: 5979033220890421412
+    second: space-farm-rover-directions_14
+  - first:
+      213: 448749300585337869
+    second: space-farm-rover-directions_15
+  - first:
+      213: -6445595943790544189
+    second: space-farm-rover-directions_16
+  - first:
+      213: -4093835978088757112
+    second: space-farm-rover-directions_17
+  - first:
+      213: 2899468506757363730
+    second: space-farm-rover-directions_18
+  - first:
+      213: -4362420840410786087
+    second: space-farm-rover-directions_19
+  - first:
+      213: -8956798797869325155
+    second: space-farm-rover-directions_20
+  - first:
+      213: 5174245273672512545
+    second: space-farm-rover-directions_21
+  - first:
+      213: -3798404812715111070
+    second: space-farm-rover-directions_22
+  - first:
+      213: 4430299163930282399
+    second: space-farm-rover-directions_23
+  - first:
+      213: 7117298477601752861
+    second: space-farm-rover-directions_24
+  - first:
+      213: 986090812969910370
+    second: space-farm-rover-directions_25
+  - first:
+      213: -4442992324160650868
+    second: space-farm-rover-directions_26
+  - first:
+      213: 8971448642825641551
+    second: space-farm-rover-directions_27
+  - first:
+      213: 4142880174927666360
+    second: space-farm-rover-directions_28
+  - first:
+      213: 4692311095060003359
+    second: space-farm-rover-directions_29
+  - first:
+      213: 3737384493142207153
+    second: space-farm-rover-directions_30
+  - first:
+      213: -6987398403933972840
+    second: space-farm-rover-directions_31
+  - first:
+      213: -5563943464510007
+    second: space-farm-rover-directions_32
+  - first:
+      213: -8147953425030782464
+    second: space-farm-rover-directions_33
+  - first:
+      213: 4588794116933454448
+    second: space-farm-rover-directions_34
+  - first:
+      213: -7628929155997395243
+    second: space-farm-rover-directions_35
+  - first:
+      213: 353915244962008138
+    second: space-farm-rover-directions_36
+  - first:
+      213: 3126422889878035339
+    second: space-farm-rover-directions_37
+  - first:
+      213: -288389882074602386
+    second: space-farm-rover-directions_38
+  - first:
+      213: 2532609061215626933
+    second: space-farm-rover-directions_39
+  - first:
+      213: 5689171086857971910
+    second: space-farm-rover-directions_40
+  - first:
+      213: 8535808451383938876
+    second: space-farm-rover-directions_41
+  - first:
+      213: -1138295001939989517
+    second: space-farm-rover-directions_42
+  - first:
+      213: -7502380790349808959
+    second: space-farm-rover-directions_43
+  - first:
+      213: 3276260904215855291
+    second: space-farm-rover-directions_44
+  - first:
+      213: 4750058009768463193
+    second: space-farm-rover-directions_45
+  - first:
+      213: 5509734161821155960
+    second: space-farm-rover-directions_46
+  - first:
+      213: -2491260727478258611
+    second: space-farm-rover-directions_47
+  - first:
+      213: 7455112008228163415
+    second: space-farm-rover-directions_48
+  - first:
+      213: 3049283598470900653
+    second: space-farm-rover-directions_49
+  - first:
+      213: -5388975549827339083
+    second: space-farm-rover-directions_50
+  - first:
+      213: -2342376406050704370
+    second: space-farm-rover-directions_51
+  - first:
+      213: -796422927798706561
+    second: space-farm-rover-directions_52
+  - first:
+      213: -2406920994470481910
+    second: space-farm-rover-directions_53
+  - first:
+      213: -7832586418189665495
+    second: space-farm-rover-directions_54
+  - first:
+      213: 2841125246611570461
+    second: space-farm-rover-directions_55
+  - first:
+      213: -1733651876865301872
+    second: space-farm-rover-directions_56
+  - first:
+      213: 7503960443900614991
+    second: space-farm-rover-directions_57
+  - first:
+      213: 5103256153459364670
+    second: space-farm-rover-directions_58
+  - first:
+      213: 3242301088295093818
+    second: space-farm-rover-directions_59
+  - first:
+      213: 5387479045728070821
+    second: rover-facing-north
+  - first:
+      213: -5891935417244698008
+    second: rover-facing-northeast
+  - first:
+      213: -9006836684880157590
+    second: rover-facing-east
+  - first:
+      213: -411064007286339416
+    second: rover-facing-southeast
+  - first:
+      213: -111350553098585510
+    second: rover-facing-south
+  - first:
+      213: -7045649704533769000
+    second: rover-facing-southwest
+  - first:
+      213: -4134812321151588490
+    second: rover-facing-west
+  - first:
+      213: 2284195198635055807
+    second: rover-facing-northwest
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: rover-facing-north
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 832
+        width: 420
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5ac6b73e5ab24ca40800000000000000
+      internalID: 5387479045728070821
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rover-facing-northeast
+      rect:
+        serializedVersion: 2
+        x: 420
+        y: 832
+        width: 420
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86a369f64f3ab3ea0800000000000000
+      internalID: -5891935417244698008
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rover-facing-east
+      rect:
+        serializedVersion: 2
+        x: 840
+        y: 832
+        width: 421
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a64e2cf51c9410380800000000000000
+      internalID: -9006836684880157590
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rover-facing-southeast
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 417
+        width: 420
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8a8cfb9967b9b4af0800000000000000
+      internalID: -411064007286339416
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rover-facing-south
+      rect:
+        serializedVersion: 2
+        x: 420
+        y: 417
+        width: 420
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a5af30d0347647ef0800000000000000
+      internalID: -111350553098585510
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rover-facing-southwest
+      rect:
+        serializedVersion: 2
+        x: 840
+        y: 417
+        width: 421
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d4cd655ce2d83e90800000000000000
+      internalID: -7045649704533769000
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rover-facing-west
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 2
+        width: 420
+        height: 417
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 677e9d0e9123e96c0800000000000000
+      internalID: -4134812321151588490
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rover-facing-northwest
+      rect:
+        serializedVersion: 2
+        x: 420
+        y: 2
+        width: 420
+        height: 417
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fba9b445e6713bf10800000000000000
+      internalID: 2284195198635055807
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      rover-facing-east: -9006836684880157590
+      rover-facing-north: 5387479045728070821
+      rover-facing-northeast: -5891935417244698008
+      rover-facing-northwest: 2284195198635055807
+      rover-facing-south: -111350553098585510
+      rover-facing-southeast: -411064007286339416
+      rover-facing-southwest: -7045649704533769000
+      rover-facing-west: -4134812321151588490
+      space-farm-rover-directions_0: -977636490644732276
+      space-farm-rover-directions_1: 4833571101518352328
+      space-farm-rover-directions_10: -7509808801546088483
+      space-farm-rover-directions_11: -2622884803557808125
+      space-farm-rover-directions_12: -3722196638160770513
+      space-farm-rover-directions_13: -1945828605605520494
+      space-farm-rover-directions_14: 5979033220890421412
+      space-farm-rover-directions_15: 448749300585337869
+      space-farm-rover-directions_16: -6445595943790544189
+      space-farm-rover-directions_17: -4093835978088757112
+      space-farm-rover-directions_18: 2899468506757363730
+      space-farm-rover-directions_19: -4362420840410786087
+      space-farm-rover-directions_2: -46132501044078693
+      space-farm-rover-directions_20: -8956798797869325155
+      space-farm-rover-directions_21: 5174245273672512545
+      space-farm-rover-directions_22: -3798404812715111070
+      space-farm-rover-directions_23: 4430299163930282399
+      space-farm-rover-directions_24: 7117298477601752861
+      space-farm-rover-directions_25: 986090812969910370
+      space-farm-rover-directions_26: -4442992324160650868
+      space-farm-rover-directions_27: 8971448642825641551
+      space-farm-rover-directions_28: 4142880174927666360
+      space-farm-rover-directions_29: 4692311095060003359
+      space-farm-rover-directions_3: -401547750566129054
+      space-farm-rover-directions_30: 3737384493142207153
+      space-farm-rover-directions_31: -6987398403933972840
+      space-farm-rover-directions_32: -5563943464510007
+      space-farm-rover-directions_33: -8147953425030782464
+      space-farm-rover-directions_34: 4588794116933454448
+      space-farm-rover-directions_35: -7628929155997395243
+      space-farm-rover-directions_36: 353915244962008138
+      space-farm-rover-directions_37: 3126422889878035339
+      space-farm-rover-directions_38: -288389882074602386
+      space-farm-rover-directions_39: 2532609061215626933
+      space-farm-rover-directions_4: 6299250784822584100
+      space-farm-rover-directions_40: 5689171086857971910
+      space-farm-rover-directions_41: 8535808451383938876
+      space-farm-rover-directions_42: -1138295001939989517
+      space-farm-rover-directions_43: -7502380790349808959
+      space-farm-rover-directions_44: 3276260904215855291
+      space-farm-rover-directions_45: 4750058009768463193
+      space-farm-rover-directions_46: 5509734161821155960
+      space-farm-rover-directions_47: -2491260727478258611
+      space-farm-rover-directions_48: 7455112008228163415
+      space-farm-rover-directions_49: 3049283598470900653
+      space-farm-rover-directions_5: -6174611371923910147
+      space-farm-rover-directions_50: -5388975549827339083
+      space-farm-rover-directions_51: -2342376406050704370
+      space-farm-rover-directions_52: -796422927798706561
+      space-farm-rover-directions_53: -2406920994470481910
+      space-farm-rover-directions_54: -7832586418189665495
+      space-farm-rover-directions_55: 2841125246611570461
+      space-farm-rover-directions_56: -1733651876865301872
+      space-farm-rover-directions_57: 7503960443900614991
+      space-farm-rover-directions_58: 5103256153459364670
+      space-farm-rover-directions_59: 3242301088295093818
+      space-farm-rover-directions_6: -7405127982478947461
+      space-farm-rover-directions_7: -7406824085156744998
+      space-farm-rover-directions_8: 5953974559427560845
+      space-farm-rover-directions_9: -3998315267882708763
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
