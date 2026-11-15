@@ -98,8 +98,8 @@ namespace SpaceFarm
         public bool IsRevealed(Vector2Int cell) => map != null && map.Inside(cell) && revealed[cell.x, cell.y];
         /// <summary>Makes the next session (first load or restart) use this seed.</summary>
         public static void RequestSeed(int value) => pendingSeed = value;
-        public void OrderRover(Vector2Int cell) { if (map.Inside(cell)) SendRoverTo(cell); }
-        public void OrderCollection(int depositId) => StartMineCollection(depositId);
+        public void OrderRover(Vector2Int cell) { if (!arrivalSequenceActive && map.Inside(cell)) SendRoverTo(cell); }
+        public void OrderCollection(int depositId) { if (!arrivalSequenceActive) StartMineCollection(depositId); }
         public void SelectDepositForTools(int depositId) => SelectDeposit(depositId);
         public void FocusCell(Vector2Int cell) => FocusWorld(CellPosition(cell));
         public void RestartSameMap() => Restart(true);
@@ -144,8 +144,9 @@ namespace SpaceFarm
             Reveal(BaseCell, 5);
             roverBaseScale = rover.transform.localScale;
             RefreshWorld();
+            PrepareForInitialLanding();
             RefreshHud();
-            SetReport($"La nave aterrizó en una región nueva de Marte (semilla {seed}). Enviá el rover a explorar los sectores ocultos.");
+            SetReport($"Preparando el aterrizaje en una región nueva de Marte (semilla {seed}).");
             CreateTitleScreen();
             Debug.Log($"SPACE_FARM_MAP_READY: {map.Describe()} en {(Time.realtimeSinceStartup - started) * 1000f:0} ms");
         }
@@ -184,8 +185,7 @@ namespace SpaceFarm
 
         private void Update()
         {
-            if (state == null) return;
-            if (titleScreenOpen) return;
+            if (state == null || titleScreenOpen || arrivalSequenceActive) return;
             Keyboard keyboard = Keyboard.current;
             Mouse mouse = Mouse.current;
             if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
@@ -929,7 +929,7 @@ namespace SpaceFarm
 
         private void AdvanceSol()
         {
-            if (paused) return;
+            if (paused || arrivalSequenceActive) return;
             if (travel != null || collectionActive)
             {
                 SetReport("Esperá a que el rover termine su recorrido antes de avanzar el sol.");
@@ -942,6 +942,7 @@ namespace SpaceFarm
             }
             state.AdvanceSol();
             SetReport(SummarizeSol());
+            if (state.LastSol.ShipmentDelivered) QueueShipmentArrival();
             if (state.LastSol.Storm) FlashScreen(SpaceFarmPalette.Iron, .18f, .32f);
             if (state.LastSol.RaidFoodLoss > 0) FlashScreen(SpaceFarmPalette.Danger, .22f, .38f);
             RefreshWorld();

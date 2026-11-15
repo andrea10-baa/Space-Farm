@@ -131,6 +131,7 @@ namespace SpaceFarm
                 if (visibility.Key != null) visibility.Key.SetActive(visibility.Value);
             }
             titleVisibilityBeforeMenu.Clear();
+            BeginInitialLanding();
         }
     }
 }

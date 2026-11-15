@@ -89,6 +89,7 @@ namespace SpaceFarm
             public readonly List<SystemResult> OxygenUnits = new List<SystemResult>();
             public readonly List<SystemResult> GreenhouseUnits = new List<SystemResult>();
             public bool Storm;
+            public bool ShipmentDelivered;
             public int CrewConsumed;
             public int RaidFoodLoss;
         }
@@ -735,6 +736,7 @@ namespace SpaceFarm
                 ShipmentArrivalSol = 0;
                 Food = Mathf.Min(60, Food + 5);
                 Water = Mathf.Min(60, Water + 5);
+                LastSol.ShipmentDelivered = true;
                 report += "Llegó el pedido de la Tierra: +5 agua y +5 comida. ";
             }
             if (Sol == 5)

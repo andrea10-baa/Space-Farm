@@ -219,6 +219,21 @@ namespace SpaceFarm.Editor
             yield return Wait(.8);
             SpaceFarmGame colony = Game();
             colony.BeginFromTitleForTools();
+            Vector3 arrivalCameraPosition = colony.CameraWorldPosition;
+            colony.OrderRover(colony.Map.BaseCell + new Vector2Int(3, 0));
+            colony.PressAdvanceSol();
+            Require(colony.ArrivalSequenceActive && colony.State.Sol == 1 && !colony.RoverBusy &&
+                colony.CameraWorldPosition == arrivalCameraPosition,
+                "durante el aterrizaje inicial se bloquean órdenes y el sol, sin mover la cámara");
+            yield return Until(() => !colony.ArrivalSequenceActive, 8, "aterrizaje inicial");
+            Require(colony.transform.Find("Marte/Nave y hábitat").gameObject.activeSelf &&
+                colony.transform.Find("Marte/Planta de oxígeno").gameObject.activeSelf,
+                "la base y la planta aparecen al terminar el aterrizaje");
+            Transform rockRoot = colony.transform.Find("Marte/Rocas y grava marciana");
+            Require(rockRoot != null && rockRoot.GetComponent<MeshFilter>() != null &&
+                rockRoot.GetComponent<MeshFilter>().sharedMesh.vertexCount > 0 &&
+                rockRoot.GetComponentsInChildren<MeshRenderer>().Length == 1,
+                "las rocas del mapa se renderizan como una malla combinada");
             Vector2Int roverAtStart = colony.RoverCell;
             colony.OrderRover(new Vector2Int(1, 1));
             Require(colony.RoverCell == roverAtStart && !colony.RoverBusy,
@@ -357,6 +372,8 @@ namespace SpaceFarm.Editor
             yield return Wait(.8);
             SpaceFarmGame again = Game();
             again.BeginFromTitleForTools();
+            Require(again.ArrivalSequenceActive, "reiniciar vuelve a preparar la secuencia de aterrizaje");
+            yield return Until(() => !again.ArrivalSequenceActive, 8, "aterrizaje después de reiniciar");
             Require(again.Seed == 1 && again.Map.Signature == initialSignature, "reiniciar este mapa conserva la semilla y el mapa");
             Require(again.State.Sol == 1 && again.State.Iron == 36 && again.State.MineCount == 0 && again.State.BarrierCount == 0 &&
                 again.State.Population == 2 && !again.IsRevealed(iron.Cell + (iron.Cell - again.Map.BaseCell)),
@@ -372,6 +389,7 @@ namespace SpaceFarm.Editor
             yield return Wait(.8);
             SpaceFarmGame fresh = Game();
             fresh.BeginFromTitleForTools();
+            yield return Until(() => !fresh.ArrivalSequenceActive, 8, "aterrizaje del mapa nuevo");
             Require(fresh.Seed != 1 && fresh.Map.Signature != initialSignature, $"empezar un mapa nuevo usa otra semilla ({fresh.Seed})");
             Require(fresh.State.Sol == 1 && fresh.State.MineCount == 0 &&
                 UnityEngine.Object.FindObjectsByType<Canvas>().Length == 1 &&
@@ -394,6 +412,43 @@ namespace SpaceFarm.Editor
             PressCrewButton(crewPanel, "CERRAR");
             Require(!crewPanel.activeInHierarchy && fresh.State.FreeWorkers == 2,
                 "cerrar el panel vuelve al mapa y libera a la persona elegida");
+
+            // --- Earth shipment: state grants once; visuals pause and are destroyed on restart.
+            Require(fresh.State.OrderFromEarth(out _) && fresh.State.ShipmentArrivalSol == fresh.State.Sol + 2,
+                "el pedido conserva el plazo de dos soles");
+            fresh.PressAdvanceSol();
+            Require(!fresh.State.LastSol.ShipmentDelivered, "el primer sol no entrega antes de tiempo");
+            fresh.PressAdvanceSol();
+            Require(fresh.State.LastSol.ShipmentDelivered && fresh.State.ShipmentArrivalSol == 0 &&
+                fresh.ShipmentSequenceActive,
+                "al llegar, el estado entrega una vez y encola la animación de suministros");
+            fresh.SetPaused(true);
+            yield return Wait(.35);
+            Require(fresh.IsPaused && fresh.ShipmentSequenceActive,
+                "pausar conserva la animación de entrega sin bloquearla permanentemente");
+            fresh.SetPaused(false);
+            yield return Until(() => !fresh.ShipmentSequenceActive, 8, "despegue de la nave de suministros");
+            int deliveredWater = fresh.State.Water;
+            int deliveredFood = fresh.State.Food;
+            fresh.PressAdvanceSol();
+            Require(!fresh.State.LastSol.ShipmentDelivered && fresh.State.Water == deliveredWater - fresh.State.Population &&
+                fresh.State.Food == deliveredFood - fresh.State.Population,
+                "la entrega no vuelve a agregar recursos en el sol siguiente");
+
+            Require(fresh.State.OrderFromEarth(out _), "se puede solicitar otro envío tras completar el anterior");
+            fresh.PressAdvanceSol();
+            fresh.PressAdvanceSol();
+            Require(fresh.State.LastSol.ShipmentDelivered && fresh.ShipmentSequenceActive,
+                "un pedido posterior inicia una segunda animación sin superponer la primera");
+            fresh.RestartSameMap();
+            yield return Until(() => Game() != null && Game() != fresh, 30, "reinicio durante una entrega");
+            yield return Wait(.8);
+            SpaceFarmGame restartedDuringShipment = Game();
+            Require(!restartedDuringShipment.ShipmentSequenceActive && restartedDuringShipment.State.ShipmentArrivalSol == 0 &&
+                restartedDuringShipment.transform.Find("Marte/Nave de suministros") == null,
+                "reiniciar durante la animación elimina la nave y el pedido de la partida anterior");
+            restartedDuringShipment.BeginFromTitleForTools();
+            yield return Until(() => !restartedDuringShipment.ArrivalSequenceActive, 8, "aterrizaje posterior al reinicio de envío");
         }
     }
 }

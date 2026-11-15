@@ -18,7 +18,7 @@ namespace SpaceFarm
 
         public void SetPaused(bool value)
         {
-            if (pauseOverlay == null || paused == value) return;
+            if (pauseOverlay == null || paused == value || arrivalSequenceActive) return;
             if (value)
             {
                 CancelPlacement(false);

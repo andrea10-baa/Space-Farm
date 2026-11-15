@@ -13,7 +13,8 @@ namespace SpaceFarm.Editor
             CheckProgression();
             CheckWorkersAndUpgrades();
             CheckEconomyAndWalls();
-            Debug.Log("SPACE_FARM_CHECKS_OK: zonas con recursos, cinco niveles, trabajadores, descanso, mejoras temporizadas, economía y muros libres.");
+            CheckShipments();
+            Debug.Log("SPACE_FARM_CHECKS_OK: mapa, progresión, trabajadores, mejoras, economía, muros y entregas únicas.");
         }
 
         private static void CheckGeneratedZones()
@@ -146,6 +147,28 @@ namespace SpaceFarm.Editor
             for (int i = 0; i < 4; i++) grace.AdvanceSol();
             Require(!grace.GameOver && grace.Oxygen > 0 && grace.Water > 0 && grace.Food > 0,
                 "las reservas iniciales dan varios soles para descubrir y construir");
+        }
+
+        private static void CheckShipments()
+        {
+            SpaceFarmState shipment = new SpaceFarmState();
+            int ironBeforeOrder = shipment.Iron;
+            Require(shipment.OrderFromEarth(out _) && shipment.ShipmentArrivalSol == 3 &&
+                shipment.Iron == ironBeforeOrder - 4, "un pedido válido reserva su costo y fecha de llegada");
+            int ironAfterOrder = shipment.Iron;
+            Require(!shipment.OrderFromEarth(out _) && shipment.Iron == ironAfterOrder,
+                "un segundo pedido en tránsito no cobra recursos ni duplica la entrega");
+
+            shipment.AdvanceSol();
+            Require(!shipment.LastSol.ShipmentDelivered && shipment.ShipmentArrivalSol == 3,
+                "el pedido no se entrega antes del sol indicado");
+            shipment.AdvanceSol();
+            Require(shipment.LastSol.ShipmentDelivered && shipment.ShipmentArrivalSol == 0 &&
+                shipment.Water == 21 && shipment.Food == 21,
+                "el pedido entrega exactamente 5 agua y 5 comida al llegar");
+            shipment.AdvanceSol();
+            Require(!shipment.LastSol.ShipmentDelivered && shipment.Water == 19 && shipment.Food == 19,
+                "los soles posteriores no vuelven a entregar los suministros");
         }
 
         private static void Require(bool condition, string message)

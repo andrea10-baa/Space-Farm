@@ -10,6 +10,8 @@ Prototipo de un juego de estrategia y supervivencia educativa en Marte. El conce
 2. En Unity Hub, añadir la carpeta `SpaceFarm` de este repositorio como proyecto.
 3. Abrir `Assets/Scenes/SpaceFarm.unity` y pulsar **Play**.
 
+Al pulsar **Iniciar expedición**, la nave baja hasta la zona de la base durante unos cinco segundos. Los controles quedan bloqueados hasta que aparecen las instalaciones iniciales. La secuencia vuelve a reproducirse al reiniciar.
+
 ## Un Marte distinto en cada partida
 
 Cada partida genera una región de **128×80 sectores** a partir de una **semilla** entera. La misma semilla repite exactamente el mismo terreno, cráteres, yacimientos y puntos de interés; otra semilla los cambia. La semilla se ve en el título del minimapa y en el menú de pausa.
@@ -37,6 +39,7 @@ Cada partida genera una región de **128×80 sectores** a partir de una **semill
 - **Mejoras:** las minas, el rover y los paneles solares tardan 30 segundos reales en mejorar; la pausa detiene el contador. Los paneles mejorados generan más energía y amplían la batería. Las mejoras en curso no se cobran dos veces.
 - **Minimapa:** muestra terreno explorado, niebla, base, rover, yacimientos y puntos ya descubiertos y el recuadro de la cámara. Clic en zona explorada: centra la cámara sin mover al rover. `+`/`-` cambia el tamaño y `<`/`>` lo pasa de esquina; la preferencia se guarda.
 - **Pausa:** Escape o el botón **Pausa**. Detiene rover, astronautas y simulación. Ofrece reanudar, reiniciar este mapa (misma semilla), empezar un mapa nuevo (otra semilla), ver controles y elegir el lado del minimapa.
+- **Pedido a la Tierra:** cuesta 4 Fe y llega tras dos soles con +5 agua y +5 comida. Solo puede haber un pedido pendiente; su llegada se muestra con una nave que aterriza, entrega los suministros y despega. Pausar detiene la animación, y reiniciar elimina la nave de la partida anterior.
 - La tormenta ocurre en los soles 3 y 4 y la incursión en el sol 5. La primera victoria requiere llegar al sol 7 con al menos una mina, un invernadero y la colonia en nivel 3.
 
 La simulación es deliberadamente simplificada. La planta de oxígeno es una extrapolación ficticia inspirada en MOXIE; las criaturas son ciencia ficción.

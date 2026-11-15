@@ -812,6 +812,7 @@ namespace SpaceFarm
                 $"agua +{sol.Water.Actual}, comida +{sol.Greenhouse.Actual}, minas +{sol.Mine.Actual} Fe almacenado. " +
                 $"Tripulación -{sol.CrewConsumed} recursos vitales.";
             if (sol.Storm) text += " Tormenta de polvo.";
+            if (sol.ShipmentDelivered) text += " Llegó la nave de suministros: +5 agua y +5 comida.";
             if (sol.RaidFoodLoss > 0)
                 text += $" Incursión: -{sol.RaidFoodLoss} comida. Los muros cercanos al hábitat reducen la pérdida.";
             if (state.GameOver) text += " Misión perdida.";

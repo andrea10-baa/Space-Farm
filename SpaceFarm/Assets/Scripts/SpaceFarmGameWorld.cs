@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 
 namespace SpaceFarm
 {
@@ -61,6 +62,8 @@ namespace SpaceFarm
         private GameObject barrierPreview;
         private GameObject solarWorld;
         private GameObject dormWorld;
+        private GameObject habitatWorld;
+        private GameObject oxygenPlantWorld;
         private readonly List<GameObject> greenhouseWorlds = new List<GameObject>();
         private readonly List<GameObject> oxygenWorlds = new List<GameObject>();
         private bool barrierMode;
@@ -90,11 +93,11 @@ namespace SpaceFarm
             CreateFog();
             CreateDepositViews();
 
-            CreateArtwork("Nave y hábitat", "Art/space-farm-world-modules#habitat-3d", CellPosition(BaseCell) + new Vector3(0, 0, -.2f),
-                3.1f, 2.07f, 5, worldRoot.transform);
-            CreateArtwork("Planta de oxígeno", "Art/space-farm-world-modules#oxygen-3d",
+            habitatWorld = CreateArtwork("Nave y hábitat", "Art/space-farm-world-modules#habitat-3d", CellPosition(BaseCell) + new Vector3(0, 0, -.2f),
+                3.1f, 2.07f, 5, worldRoot.transform).gameObject;
+            oxygenPlantWorld = CreateArtwork("Planta de oxígeno", "Art/space-farm-world-modules#oxygen-3d",
                 CellPosition(BaseCell + new Vector2Int(2, 0)) + new Vector3(0, 0, -.2f),
-                1.7f, 1.14f, 6, worldRoot.transform);
+                1.7f, 1.14f, 6, worldRoot.transform).gameObject;
             roverRenderer = CreateArtwork("Rover 1", "Art/space-farm-rover-directions#rover-facing-south",
                 CellPosition(roverCell) + new Vector3(0f, 0f, -.5f),
                 1.55f, 1.55f, 8, worldRoot.transform);
@@ -158,12 +161,13 @@ namespace SpaceFarm
             Sprite[] variants = Resources.LoadAll<Sprite>("Art/mars-rock-clusters");
             if (variants == null || variants.Length == 0) return;
 
-            Transform root = new GameObject("Rocas y grava marciana").transform;
-            root.SetParent(worldRoot.transform);
             SpaceFarmRandom random = new SpaceFarmRandom((ulong)(uint)map.Seed * 47UL + 193UL);
             int desiredCount = SpaceFarmMap.Width * SpaceFarmMap.Height / 13;
             int placed = 0;
             int attempts = desiredCount * 5;
+            List<Vector3> vertices = new List<Vector3>(desiredCount * 4);
+            List<Vector2> uvs = new List<Vector2>(desiredCount * 4);
+            List<int> triangles = new List<int>(desiredCount * 6);
             for (int i = 0; i < attempts && placed < desiredCount; i++)
             {
                 float x = random.Range(2f, SpaceFarmMap.Width - 3f);
@@ -180,10 +184,46 @@ namespace SpaceFarm
                 position.y += random.Range(-.11f, .11f) * SpaceFarmMap.TerrainPerspectiveYScale;
                 position.z = -.08f;
                 float scale = width / sprite.bounds.size.x;
-                CreateWorldSprite("Afloramiento marciano", sprite, position,
-                    new Vector3(scale, scale * depth, 1f), Color.white, -1, root);
+                Vector2[] spriteVertices = sprite.vertices;
+                Vector2[] spriteUvs = sprite.uv;
+                ushort[] spriteTriangles = sprite.triangles;
+                int firstVertex = vertices.Count;
+                for (int vertex = 0; vertex < spriteVertices.Length; vertex++)
+                {
+                    Vector2 local = spriteVertices[vertex];
+                    vertices.Add(new Vector3(position.x + local.x * scale,
+                        position.y + local.y * scale * depth, position.z));
+                    uvs.Add(spriteUvs[vertex]);
+                }
+                for (int triangle = 0; triangle < spriteTriangles.Length; triangle++)
+                    triangles.Add(firstVertex + spriteTriangles[triangle]);
                 placed++;
             }
+
+            if (vertices.Count == 0) return;
+            GameObject root = new GameObject("Rocas y grava marciana");
+            root.transform.SetParent(worldRoot.transform, false);
+            Mesh mesh = new Mesh { name = "Rocas y grava combinadas", indexFormat = IndexFormat.UInt32 };
+            mesh.SetVertices(vertices);
+            mesh.SetUVs(0, uvs);
+            mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateBounds();
+            MeshFilter filter = root.AddComponent<MeshFilter>();
+            filter.sharedMesh = mesh;
+            MeshRenderer renderer = root.AddComponent<MeshRenderer>();
+            Shader shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
+            if (shader == null) shader = Shader.Find("Sprites/Default");
+            if (shader == null)
+            {
+                Destroy(root);
+                Destroy(mesh);
+                return;
+            }
+            Material material = new Material(shader) { mainTexture = variants[0].texture };
+            renderer.sharedMaterial = material;
+            renderer.sortingOrder = -1;
+            runtimeAssets.Add(mesh);
+            runtimeAssets.Add(material);
         }
 
         private void CreateDepositViews()
