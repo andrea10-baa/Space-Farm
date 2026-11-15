@@ -60,6 +60,7 @@ namespace SpaceFarm
             editKind = StructureKind.None; editIndex = -1;
             if (selectedBuilding == "wall") { editKind = StructureKind.Barrier; editIndex = selectedBuildingIndex; }
             else if (selectedBuilding == "greenhouse") { editKind = StructureKind.Greenhouse; editIndex = selectedBuildingIndex; }
+            else if (selectedBuilding == "oxygen1") { editKind = StructureKind.OxygenPlant; editIndex = -1; }
             else if (selectedBuilding == "oxygen2") { editKind = StructureKind.OxygenPlant; editIndex = selectedBuildingIndex; }
             else if (selectedBuilding == "warehouse") { editKind = StructureKind.Warehouse; editIndex = selectedBuildingIndex; }
             if (editKind == StructureKind.None)
@@ -86,6 +87,7 @@ namespace SpaceFarm
             kind = StructureKind.None; index = selectedBuildingIndex; movable = false;
             if (selectedBuilding == "wall") { kind = StructureKind.Barrier; movable = true; }
             else if (selectedBuilding == "greenhouse") { kind = StructureKind.Greenhouse; movable = true; }
+            else if (selectedBuilding == "oxygen1") { kind = StructureKind.OxygenPlant; index = -1; movable = true; }
             else if (selectedBuilding == "oxygen2") { kind = StructureKind.OxygenPlant; movable = true; }
             else if (selectedBuilding == "warehouse") { kind = StructureKind.Warehouse; movable = true; }
             else if (selectedBuilding == "deposit")

@@ -14,6 +14,9 @@ namespace SpaceFarm
         private RectTransform infoMetricsRoot;
         private Button infoRepair;
         private Button infoCrew;
+        private Button infoCrop;
+        private GameObject cropPicker;
+        private readonly Button[] cropChoiceButtons = new Button[3];
         private readonly List<GameObject> infoMetricCards = new List<GameObject>();
 
         private void CreateEducationalInfoCard(Transform canvas)
@@ -143,10 +146,78 @@ namespace SpaceFarm
                 new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0),
                 new Vector2(224, 13), new Vector2(230, 38));
             infoRepair = AddButton("REPARAR", card.transform, RepairSelected, 12, SpaceFarmPalette.Danger, SpaceFarmPalette.Background,
-                new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(462, 13), new Vector2(145, 38));
+                new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(462, 13), new Vector2(205, 38));
             infoCrew = AddButton("ADMINISTRAR ASTRONAUTAS", card.transform, OpenCrewFromInfo, 11, SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
                 new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(-14, 13), new Vector2(220, 38));
+            infoCrop = AddButton("ELEGIR CULTIVO", card.transform, OpenCropPicker, 11, SpaceFarmPalette.Greenhouse, SpaceFarmPalette.Background,
+                new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(675, 13), new Vector2(140, 38));
+            CreateCropPicker();
             infoPanel.SetActive(false);
+        }
+
+        private void CreateCropPicker()
+        {
+            cropPicker = Panel("Selector de cultivo", infoPanel.transform, SpaceFarmPalette.Panel,
+                new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(440, 320));
+            cropPicker.GetComponent<Image>().raycastTarget = true;
+            cropPicker.SetActive(false);
+            Label("ELEGÍ QUÉ CULTIVAR", cropPicker.transform, 18, FontStyles.Bold, SpaceFarmPalette.Ice,
+                new Vector2(0, 1), new Vector2(1, 1), new Vector2(.5f, 1), new Vector2(0, -15), new Vector2(-32, 34))
+                .alignment = TextAlignmentOptions.Center;
+            AddButton("×", cropPicker.transform, () => cropPicker.SetActive(false), 16,
+                SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
+                new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-9, -9), new Vector2(34, 32));
+            GreenhouseCrop[] crops = { GreenhouseCrop.Wheat, GreenhouseCrop.Lettuce, GreenhouseCrop.Corn };
+            for (int i = 0; i < crops.Length; i++)
+            {
+                GreenhouseCrop crop = crops[i];
+                cropChoiceButtons[i] = AddButton("", cropPicker.transform, () => ChooseGreenhouseCrop(crop), 12,
+                    SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
+                    new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(18, 211 - i * 64), new Vector2(404, 52));
+            }
+            Label("Los ciclos avanzan con cada sol. Si falta agua o energía, el cultivo espera.",
+                cropPicker.transform, 11, FontStyles.Normal, SpaceFarmPalette.MutedText,
+                new Vector2(0, 0), new Vector2(1, 0), new Vector2(.5f, 0), new Vector2(0, 13), new Vector2(-32, 30))
+                .alignment = TextAlignmentOptions.Center;
+        }
+
+        private void OpenCropPicker()
+        {
+            if (selectedBuilding != "greenhouse" || state == null || cropPicker == null) return;
+            RefreshCropPicker();
+            cropPicker.SetActive(true);
+            cropPicker.transform.SetAsLastSibling();
+        }
+
+        private void RefreshCropPicker()
+        {
+            if (state == null || selectedBuilding != "greenhouse") return;
+            int level = state.GreenhouseLevel(selectedBuildingIndex);
+            GreenhouseCrop[] crops = { GreenhouseCrop.Wheat, GreenhouseCrop.Lettuce, GreenhouseCrop.Corn };
+            for (int i = 0; i < crops.Length; i++)
+            {
+                GreenhouseCrop crop = crops[i];
+                int unlock = SpaceFarmState.GreenhouseCropUnlockLevel(crop);
+                int yield = SpaceFarmState.GreenhouseCropYield(crop, level);
+                int duration = SpaceFarmState.GreenhouseCropDuration(crop);
+                TextMeshProUGUI label = cropChoiceButtons[i].GetComponentInChildren<TextMeshProUGUI>();
+                label.text = $"{SpaceFarmState.GreenhouseCropName(crop).ToUpperInvariant()}  ·  +{yield} COMIDA / {duration} SOL{(duration == 1 ? "" : "ES")}  ·  NIVEL {unlock}";
+                cropChoiceButtons[i].interactable = level >= unlock && !state.GameOver;
+                cropChoiceButtons[i].GetComponent<Image>().color = state.GreenhouseCropAt(selectedBuildingIndex) == crop
+                    ? SpaceFarmPalette.Greenhouse : SpaceFarmPalette.PanelRaised;
+            }
+        }
+
+        private void ChooseGreenhouseCrop(GreenhouseCrop crop)
+        {
+            if (selectedBuilding != "greenhouse" || state == null) return;
+            if (state.SetGreenhouseCrop(selectedBuildingIndex, crop, out string message))
+            {
+                if (cropPicker != null) cropPicker.SetActive(false);
+                SetReport(message);
+                RefreshWorld();
+                RefreshHud();
+            }
         }
 
         private void EnsureInfoCardUsesCanvasRect()
@@ -178,7 +249,7 @@ namespace SpaceFarm
             SpaceFarmState.CrewMember worker = job == CrewJob.None ? null : state.WorkerOn(job, target);
             bool damaged = false;
             bool hasWorkerAccess = job != CrewJob.None;
-            bool showPrimary = false, showSecondary = false, showRepair = false;
+            bool showPrimary = false, showSecondary = false, showRepair = false, showCrop = false;
             string primaryText = "", secondaryText = "";
             bool primaryEnabled = false, secondaryEnabled = false;
             string actionReason = "";
@@ -299,7 +370,12 @@ namespace SpaceFarm
                     title = $"Invernadero {greenhouseIndex + 1}"; level = $"Nivel {state.GreenhouseLevel(greenhouseIndex)}/{SpaceFarmState.MaxLevel}"; damaged = state.IsDamaged(DamagedStructureKind.Greenhouse, greenhouseIndex);
                     sprite = greenhouseWorlds[greenhouseIndex].GetComponent<SpriteRenderer>().sprite;
                     SpaceFarmState.SystemResult greenhouseResult = greenhouseIndex < state.LastSol.GreenhouseUnits.Count ? state.LastSol.GreenhouseUnits[greenhouseIndex] : new SpaceFarmState.SystemResult();
-                    AddProduction(metrics, "Comida", 7 + state.ActiveWorkers(CrewJob.Greenhouse, greenhouseIndex) * 3, greenhouseResult, foodIcon, "unid./sol");
+                    GreenhouseCrop crop = state.GreenhouseCropAt(greenhouseIndex);
+                    int cropDuration = SpaceFarmState.GreenhouseCropDuration(crop);
+                    int cropProgress = state.GreenhouseCropProgress(greenhouseIndex);
+                    int cropYield = state.GreenhouseCropYield(greenhouseIndex);
+                    metrics.Add(new[] { "Cultivo", $"{SpaceFarmState.GreenhouseCropName(crop)} · +{cropYield} comida", foodIcon.ToString() });
+                    metrics.Add(new[] { "Ciclo", $"{cropProgress}/{cropDuration} soles · último +{greenhouseResult.Actual}", foodIcon.ToString() });
                     metrics.Add(new[] { "Depósito local", $"{state.GreenhouseLocal(greenhouseIndex)}/{SpaceFarmState.LocalStorageCapacity} comida", foodIcon.ToString() });
                     showPrimary = true; primaryText = "RECOGER COMIDA"; primaryEnabled = state.GreenhouseLocal(greenhouseIndex) > 0 && !RoverBusy && !state.GameOver;
                     actionReason = state.GreenhouseLocal(greenhouseIndex) <= 0 ? "El depósito local todavía no tiene comida." : RoverBusy ? "El rover está ocupado." : "";
@@ -308,11 +384,12 @@ namespace SpaceFarm
                     status = damaged ? "Averiado" : greenhouseResult.Actual == 0 && state.Sol > 1 ? "Sin producción" : "Operativo";
                     facts = greenhouseResult.Reason;
                     reality = "Las plantas necesitan luz, agua, nutrientes y un ambiente controlado. En el espacio, los equipos estudian cómo cultivar alimentos con recursos limitados y proteger los cultivos de condiciones extremas.";
-                    game = "El invernadero convierte agua y energía en comida. La simulación no modela nutrientes, temperatura, iluminación por cultivo ni tiempos biológicos; el jugador decide cuándo puede sostener ese gasto.";
+                    game = "Cada invernadero tiene su propio cultivo. Trigo: nivel 1, 7 alimentos en 1 sol; lechuga: nivel 2, 16 en 2 soles; maíz: nivel 3, hasta 24 en 3 soles. Cada sol de crecimiento consume agua y energía; si faltan, el ciclo espera. Los astronautas asignados suman comida a la cosecha.";
                     showSecondary = state.GreenhouseLevel(greenhouseIndex) < SpaceFarmState.MaxLevel;
                     secondaryText = UpgradeActionText("greenhouse", greenhouseIndex, state.GreenhouseUpgradeCost(greenhouseIndex));
                     secondaryEnabled = !state.HasUpgrade("greenhouse", greenhouseIndex) && !state.GameOver && state.Iron >= state.GreenhouseUpgradeCost(greenhouseIndex);
                     showRepair = damaged;
+                    showCrop = true;
                     break;
                 case "dormitory":
                     title = "Dormitorio de astronautas"; level = "Sin niveles"; damaged = state.IsDamaged(DamagedStructureKind.Dormitory);
@@ -376,7 +453,7 @@ namespace SpaceFarm
                 showPrimary = movable;
                 primaryText = "MOVER";
                 primaryEnabled = movable && !RoverBusy && !state.GameOver;
-                showSecondary = hasSelection;
+                showSecondary = hasSelection && !(editKind == StructureKind.OxygenPlant && editIndex == -1);
                 secondaryText = "ELIMINAR";
                 secondaryEnabled = hasSelection && editRemovalReason.Length == 0 && !state.GameOver;
                 actionReason = movable ? RoverBusy ? "Esperá a que el rover termine su recorrido." : "Elegí MOVER y luego un sector válido." : "Las minas y los extractores quedan anclados al yacimiento.";
@@ -404,6 +481,13 @@ namespace SpaceFarm
                 else if (selectedBuilding == "solar") secondaryReason = state.HasUpgrade("solar", 0) ? $"Mejora en curso: {state.UpgradeRemaining("solar", 0)} s." : $"Faltan {Mathf.Max(0, state.SolarUpgradeCost - state.Iron)} Fe para mejorar.";
             }
             string nextStep = actionReason.Length > 0 ? actionReason : secondaryReason;
+            if (damaged && state.DamagedStructure != DamagedStructureKind.None)
+            {
+                if (repairOrderPending) nextStep = "Reparación programada: el rover irá al llegar su turno.";
+                else if (state.Iron < state.RepairIronCost) nextStep = $"Faltan {state.RepairIronCost - state.Iron} Fe para reparar.";
+                else if (state.Energy < state.RepairEnergyCost) nextStep = $"Faltan {state.RepairEnergyCost - state.Energy} de energía para reparar.";
+                else if (RoverBusy) nextStep = "Al confirmar, la reparación quedará en cola hasta que el rover termine su recorrido.";
+            }
             string reasonLine = nextStep.Length > 0 ? $"\n\n<b>SIGUIENTE PASO</b>  {nextStep}" : "";
             infoEducationText.text = $"<b>DATOS DE ESTA INSTALACIÓN</b>\n{facts}\n\n<b>¿CÓMO FUNCIONA EN LA REALIDAD?</b>\n{reality}\n\n<b>EN SPACE FARM</b>\n{game}{reasonLine}";
             infoEducationText.fontSize = Screen.height < 600 ? 13 : 15;
@@ -417,14 +501,19 @@ namespace SpaceFarm
             if (showSecondary) infoSecondary.GetComponentInChildren<TextMeshProUGUI>().text = secondaryText;
             bool globalRepair = state.DamagedStructure != DamagedStructureKind.None && DamagedSelectionMatches();
             infoRepair.gameObject.SetActive(showRepair || globalRepair);
-            infoRepair.interactable = state.Iron >= state.RepairIronCost && state.Energy >= state.RepairEnergyCost && !state.GameOver && !RoverBusy && !state.IsRepairing;
+            infoRepair.interactable = state.Iron >= state.RepairIronCost && state.Energy >= state.RepairEnergyCost && !state.GameOver && !state.IsRepairing && !repairOrderPending;
             if (infoRepair.gameObject.activeSelf)
                 infoRepair.GetComponentInChildren<TextMeshProUGUI>().text = state.IsRepairing
                     ? $"REPARACIÓN · {state.RepairSecondsRemaining} s"
                     : state.DamagedStructure == DamagedStructureKind.Rover
-                        ? $"REPARAR EN TALLER · {state.RepairIronCost} Fe · 30 s"
-                        : $"{(RoverAdjacentToSelected() ? "INICIAR REPARACIÓN" : "ENVIAR ROVER A REPARAR")} · {state.RepairIronCost} Fe · 30 s";
+                        ? $"REPARAR ROVER · {state.RepairIronCost} Fe · 30 s"
+                        : repairOrderPending ? "REPARACIÓN EN COLA" : $"REPARAR · {state.RepairIronCost} Fe · 30 s";
             infoCrew.gameObject.SetActive(hasWorkerAccess);
+            infoCrop.gameObject.SetActive(showCrop && !editMode);
+            infoCrop.interactable = !state.GameOver;
+            if (showCrop)
+                infoCrop.GetComponentInChildren<TextMeshProUGUI>().text = $"CULTIVO · {SpaceFarmState.GreenhouseCropName(state.GreenhouseCropAt(selectedBuildingIndex)).ToUpperInvariant()}";
+            if (cropPicker != null && cropPicker.activeSelf) RefreshCropPicker();
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(infoMetricsRoot);
         }
@@ -488,7 +577,7 @@ namespace SpaceFarm
 
         private string UpgradeActionText(string kind, int target, int cost) => state.HasUpgrade(kind, target)
             ? $"MEJORA EN CURSO · {state.UpgradeRemaining(kind, target)} s"
-            : $"{(RoverAdjacentToSelected() ? "MEJORAR" : "ENVIAR ROVER")} · {cost} Fe";
+            : $"{(kind == "rover" ? "MEJORAR ROVER" : "MEJORAR ESTRUCTURA")} · {cost} Fe";
 
         private Sprite FindWorldSprite(int depositId, bool mine)
         {

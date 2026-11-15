@@ -14,6 +14,7 @@ namespace SpaceFarm
         private GameObject pauseOverlay;
         private GameObject pauseMainPage;
         private GameObject pauseControlsPage;
+        private GameObject pauseAudioPage;
         private TextMeshProUGUI pauseMinimapLabel;
 
         public void SetPaused(bool value)
@@ -44,6 +45,7 @@ namespace SpaceFarm
         {
             pauseMainPage.SetActive(!controls);
             pauseControlsPage.SetActive(controls);
+            if (pauseAudioPage != null) pauseAudioPage.SetActive(false);
         }
 
         private void CreatePauseMenu()
@@ -66,6 +68,7 @@ namespace SpaceFarm
             PauseButton(main, "REINICIAR ESTE MAPA", () => Restart(true), SpaceFarmPalette.Button, SpaceFarmPalette.Text, ref y);
             PauseButton(main, "EMPEZAR UN MAPA NUEVO", () => Restart(false), SpaceFarmPalette.Button, SpaceFarmPalette.Text, ref y);
             PauseButton(main, "CONTROLES", () => ShowPausePage(true), SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text, ref y);
+            PauseButton(main, "SONIDO", ShowAudioPage, SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text, ref y);
             Button side = PauseButton(main, "MINIMAPA", () => SetMinimapSide(!minimapRight),
                 SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text, ref y);
             pauseMinimapLabel = side.GetComponentInChildren<TextMeshProUGUI>();
@@ -101,7 +104,16 @@ namespace SpaceFarm
             pauseControlsPage.GetComponent<RectTransform>().sizeDelta = new Vector2(560, 392);
 
             pauseControlsPage.SetActive(false);
+            CreateAudioSettingsPage();
             pauseOverlay.SetActive(false);
+        }
+
+        private void ShowAudioPage()
+        {
+            pauseMainPage.SetActive(false);
+            pauseControlsPage.SetActive(false);
+            pauseAudioPage.SetActive(true);
+            pauseAudioPage.transform.SetAsLastSibling();
         }
 
         private GameObject PausePanel(string name, float height)

@@ -85,6 +85,9 @@ namespace SpaceFarm
         private int previousRoverLevel = 1;
         private int previousOxygenPlants;
         private float upgradeHudClock;
+        private const float SolDurationSeconds = 120f;
+        private float solCountdown = SolDurationSeconds;
+        private float solCountdownHudClock;
 
         // ---------- Hooks for checks and tools; the game itself never depends on them ----------
 
@@ -156,6 +159,8 @@ namespace SpaceFarm
             CreateSprites();
             CreateWorld();
             CreateHud();
+            CreateAudioSystem();
+            CreateDamageAlert(hudCanvas.transform);
             CreateCrewMenu();
             InitializeSystems();
             CreateMinimap();
@@ -223,6 +228,21 @@ namespace SpaceFarm
             }
             // Paused: nothing below runs, so no order, build or sol can happen behind the menu.
             if (paused) return;
+            if (!state.GameOver)
+            {
+                solCountdownHudClock += Time.deltaTime;
+                solCountdown = Mathf.Max(0f, solCountdown - Time.deltaTime);
+                if (solCountdownHudClock >= 1f)
+                {
+                    solCountdownHudClock = 0f;
+                    RefreshSolCountdownLabel();
+                }
+                if (solCountdown <= 0f)
+                {
+                    solCountdown = SolDurationSeconds;
+                    AdvanceSol(true);
+                }
+            }
             if (state.Tick(Time.deltaTime))
             {
                 SetReport(state.LastReport);
@@ -991,10 +1011,12 @@ namespace SpaceFarm
             return success;
         }
 
-        private void AdvanceSol()
+        private void AdvanceSol() => AdvanceSol(false);
+
+        private void AdvanceSol(bool automatic)
         {
             if (paused || arrivalSequenceActive) return;
-            if (travel != null || collectionActive)
+            if (!automatic && (travel != null || collectionActive))
             {
                 SetReport("Esperá a que el rover termine su recorrido antes de avanzar el sol.");
                 return;
@@ -1005,7 +1027,11 @@ namespace SpaceFarm
                 return;
             }
             state.AdvanceSol();
+            solCountdown = SolDurationSeconds;
+            solCountdownHudClock = 0f;
             SetReport(SummarizeSol());
+            if (state.LastSol.DamagedStructure != DamagedStructureKind.None)
+                ShowDamageAlert(state.DamagedStructureName(state.LastSol.DamagedStructure, state.LastSol.DamagedTarget));
             if (state.LastSol.ShipmentDelivered) QueueShipmentArrival();
             if (state.LastSol.Storm) FlashScreen(SpaceFarmPalette.Iron, .18f, .32f);
             if (state.LastSol.RaidFoodLoss > 0) FlashScreen(SpaceFarmPalette.Danger, .22f, .38f);

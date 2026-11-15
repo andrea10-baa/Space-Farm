@@ -115,6 +115,7 @@ namespace SpaceFarm
         private bool barrierMode;
         private bool collectionActive;
         private bool upgradeOrderPending;
+        private bool repairOrderPending;
         private Vector2Int hoveredBarrierCell;
         private int observedPopulation;
         private int observedHabitatLevel;
@@ -143,7 +144,7 @@ namespace SpaceFarm
                 3.1f, 2.07f, 5, worldRoot.transform).gameObject;
             SetUpgradeArtwork(habitatWorld, 'b', 2, 1, 3.1f, 2.07f);
             oxygenPlantWorld = CreateArtwork("Planta de oxígeno", "Art/space-farm-world-modules#oxygen-3d",
-                CellPosition(BaseCell + new Vector2Int(2, 0)) + new Vector3(0, 0, -.2f),
+                CellPosition(state.StartingOxygenCell) + new Vector3(0, 0, -.2f),
                 1.7f, 1.14f, 6, worldRoot.transform).gameObject;
             SetUpgradeArtwork(oxygenPlantWorld, 'b', 1, 1, 1.7f, 1.14f);
             roverRenderer = CreateArtwork("Rover 1", "Art/space-farm-rover-directions#rover-facing-south",
@@ -440,7 +441,7 @@ namespace SpaceFarm
             for (int i = 0; i < warehouseWorlds.Count; i++)
                 if (Vector2.Distance(world, warehouseWorlds[i].transform.position) < 1f)
                     return SelectWorldBuilding("warehouse", i);
-            if (Vector2.Distance(world, CellPosition(BaseCell + new Vector2Int(2,0))) < .78f)
+            if (Vector2.Distance(world, CellPosition(state.StartingOxygenCell)) < .78f)
                 return SelectWorldBuilding("oxygen1");
             if (Vector2.Distance(world, solarWorld.transform.position + new Vector3(.33f,0,0)) < .9f)
                 return SelectWorldBuilding("solar");
@@ -556,6 +557,7 @@ namespace SpaceFarm
                 AnimatePop(built.transform, built.transform.localScale);
             }
             SetUpgradeArtwork(oxygenPlantWorld, 'b', 1, state.OxygenLevel(0), 1.7f, 1.14f);
+            oxygenPlantWorld.transform.position = CellPosition(state.StartingOxygenCell) + new Vector3(0f, 0f, -.2f);
             if (state.ColonyLevel != observedHabitatLevel)
             {
                 observedHabitatLevel = state.ColonyLevel;
@@ -820,10 +822,19 @@ namespace SpaceFarm
         private bool RoverAdjacentToSelected()
         {
             GameObject target = SelectedUpgradeTarget();
+            return RoverCanWorkAt(target);
+        }
+
+        private bool RoverCanWorkAt(GameObject target)
+        {
             if (target == null || rover == null) return false;
+            if (target == rover) return true;
+
+            // Structures occupy a 3x3 footprint in the navigation grid. The rover
+            // works from the first free service sector outside that footprint.
             Vector2Int targetCell = WorldToCell(target.transform.position);
-            Vector2Int delta = roverCell - targetCell;
-            return Mathf.Abs(delta.x) + Mathf.Abs(delta.y) <= 1;
+            int distance = Mathf.Abs(roverCell.x - targetCell.x) + Mathf.Abs(roverCell.y - targetCell.y);
+            return distance is > 0 and <= 2 && map.Inside(roverCell) && !state.IsCellBlocked(roverCell);
         }
 
         private bool SendRoverNextToSelected()
@@ -835,6 +846,7 @@ namespace SpaceFarm
         {
             if (target == null) { SetReport("Seleccioná una instalación construida primero."); return false; }
             if (RoverBusy) { SetReport("El rover ya está ocupado; la acción puede enviarse al terminar su recorrido."); return false; }
+            if (RoverCanWorkAt(target)) return true;
             Vector2Int center = WorldToCell(target.transform.position);
             Vector2Int best = default;
             int bestPath = int.MaxValue;
@@ -849,6 +861,7 @@ namespace SpaceFarm
                 if (path.Count < bestPath) { best = candidate; bestPath = path.Count; }
             }
             if (bestPath == int.MaxValue) { SetReport("No hay una ruta accesible hasta esta instalación. Despejá un paso entre los muros."); return false; }
+            if (best == roverCell) return true;
             SendRoverTo(best);
             return RoverBusy;
         }
@@ -856,6 +869,16 @@ namespace SpaceFarm
         private void OrderRepairSelected()
         {
             if (paused || state == null || state.DamagedStructure == DamagedStructureKind.None || !DamagedSelectionMatches()) return;
+            if (repairOrderPending || state.IsRepairing) return;
+            if (state.Iron < state.RepairIronCost || state.Energy < state.RepairEnergyCost)
+            {
+                string shortage = state.Iron < state.RepairIronCost
+                    ? $"Faltan {state.RepairIronCost - state.Iron} Fe para reparar."
+                    : $"Faltan {state.RepairEnergyCost - state.Energy} de energía para reparar.";
+                SetReport(shortage);
+                RefreshHud();
+                return;
+            }
             if (state.DamagedStructure == DamagedStructureKind.Rover)
             {
                 Act((out string message) => state.RepairDamagedStructure(out message));
@@ -863,28 +886,46 @@ namespace SpaceFarm
             }
             GameObject target = SelectedUpgradeTarget();
             if (target == null) { SetReport("No se pudo localizar la instalación averiada."); return; }
-            if (!RoverAdjacentToSelected())
+            DamagedStructureKind targetKind = state.DamagedStructure;
+            int targetIndex = state.DamagedTarget;
+            if (RoverBusy || !RoverCanWorkAt(target))
             {
-                if (!SendRoverNextToSelected()) { RefreshHud(); return; }
-                Vector2Int repairCell = WorldToCell(target.transform.position);
-                StartCoroutine(RepairAfterRoverArrives(state.DamagedStructure, state.DamagedTarget, repairCell));
-                RefreshHud(); return;
+                repairOrderPending = true;
+                StartCoroutine(RepairWhenRoverAvailable(targetKind, targetIndex, target));
+                SetReport("Reparación programada. El rover irá a la instalación y empezará al llegar.");
+                RefreshHud();
+                return;
             }
             Act((out string message) => state.RepairDamagedStructure(out message));
             RefreshWorld(); RefreshHud();
         }
 
-        private IEnumerator RepairAfterRoverArrives(DamagedStructureKind targetKind, int targetIndex, Vector2Int repairCell)
+        private IEnumerator RepairWhenRoverAvailable(DamagedStructureKind targetKind, int targetIndex, GameObject target)
         {
+            while ((paused || RoverBusy) && state != null && !state.GameOver) yield return null;
+            if (target == null || state == null || state.GameOver || state.DamagedStructure != targetKind || state.DamagedTarget != targetIndex)
+            {
+                repairOrderPending = false;
+                RefreshHud();
+                yield break;
+            }
+
+            if (!RoverCanWorkAt(target) && !SendRoverNextTo(target))
+            {
+                repairOrderPending = false;
+                RefreshHud();
+                yield break;
+            }
+
             collectionActive = true;
             while (travel != null) yield return null;
             collectionActive = false;
-            Vector2Int delta = roverCell - repairCell;
-            bool arrived = Mathf.Abs(delta.x) + Mathf.Abs(delta.y) <= 1;
+            bool arrived = RoverCanWorkAt(target);
             if (!arrived)
                 SetReport("El rover no llegó a una celda junto a la instalación. No se cobró la reparación; despejá la ruta y volvé a intentarlo.");
             else if (state != null && !state.GameOver && state.DamagedStructure == targetKind && state.DamagedTarget == targetIndex)
                 Act((out string message) => state.RepairDamagedStructure(out message));
+            repairOrderPending = false;
             RefreshWorld(); RefreshHud();
         }
 
@@ -915,9 +956,7 @@ namespace SpaceFarm
                 upgradeOrderPending = false;
                 yield break;
             }
-            Vector2Int targetCell = WorldToCell(target.transform.position);
-            Vector2Int delta = roverCell - targetCell;
-            if (Mathf.Abs(delta.x) + Mathf.Abs(delta.y) > 1 && !SendRoverNextTo(target))
+            if (!RoverCanWorkAt(target) && !SendRoverNextTo(target))
             {
                 upgradeOrderPending = false;
                 RefreshHud();
@@ -925,8 +964,7 @@ namespace SpaceFarm
             }
             collectionActive = true;
             while (travel != null) yield return null;
-            delta = roverCell - targetCell;
-            if (state != null && !state.GameOver && Mathf.Abs(delta.x) + Mathf.Abs(delta.y) <= 1)
+            if (state != null && !state.GameOver && RoverCanWorkAt(target))
                 upgrade();
             else SetReport("El rover no llegó a la instalación. No se cobró la mejora; revisá la ruta.");
             collectionActive = false;
@@ -998,7 +1036,7 @@ namespace SpaceFarm
                     cell = map.Deposits[source].Cell; return true;
                 case MaterialResource.Oxygen:
                     if (source < 0 || source >= state.OxygenPlants) return false;
-                    cell = source == 0 ? BaseCell + new Vector2Int(2, 0) : state.OxygenCells[source - 1]; return true;
+                    cell = source == 0 ? state.StartingOxygenCell : state.OxygenCells[source - 1]; return true;
                 case MaterialResource.Food:
                     if (source < 0 || source >= state.GreenhouseCells.Count) return false;
                     cell = state.GreenhouseCells[source]; return true;
@@ -1107,7 +1145,7 @@ namespace SpaceFarm
         private void TickAutomaticLogistics()
         {
             if (paused || titleScreenOpen || arrivalSequenceActive || state == null || state.GameOver) return;
-            if (upgradeOrderPending) return;
+            if (upgradeOrderPending || repairOrderPending) return;
             logisticsScheduleClock -= Time.deltaTime;
             if (logisticsScheduleClock > 0f) return;
             logisticsScheduleClock = 1f;
@@ -1425,7 +1463,7 @@ namespace SpaceFarm
             else if (member.Job == CrewJob.Greenhouse && member.Target >= 0 && member.Target < state.GreenhouseCells.Count)
                 cell = state.GreenhouseCells[member.Target];
             else if (member.Job == CrewJob.Oxygen)
-                cell = member.Target == 0 ? BaseCell + new Vector2Int(2, 0) :
+                cell = member.Target == 0 ? state.StartingOxygenCell :
                     member.Target - 1 < state.OxygenCells.Count ? state.OxygenCells[member.Target - 1] : BaseCell;
             else if (member.Job == CrewJob.Solar)
                 cell = BaseCell + new Vector2Int(-2, -1);

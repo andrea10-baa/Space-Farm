@@ -8,6 +8,7 @@ namespace SpaceFarm
     public enum CrewJob { None, Mine, Extractor, Greenhouse, Oxygen, Solar }
     public enum DamagedStructureKind { None, Solar, Dormitory, Greenhouse, Rover, Mine }
     public enum MaterialResource { Iron, Oxygen, Water, Food }
+    public enum GreenhouseCrop { Wheat, Lettuce, Corn }
 
     /// <summary>Small deterministic simulation for the colony loop. Knows deposits by id, not by map position.</summary>
     [Serializable]
@@ -32,6 +33,8 @@ namespace SpaceFarm
         private readonly List<int> greenhouseLocal = new List<int>();
         private readonly List<int> oxygenLevels = new List<int>();
         private readonly List<int> greenhouseLevels = new List<int>();
+        private readonly List<GreenhouseCrop> greenhouseCrops = new List<GreenhouseCrop>();
+        private readonly List<int> greenhouseCropProgress = new List<int>();
         private readonly List<CrewMember> crew = new List<CrewMember>();
         private readonly List<UpgradeTask> upgrades = new List<UpgradeTask>();
         private readonly bool[] discoveries;
@@ -121,8 +124,11 @@ namespace SpaceFarm
             public int RoverCargo, RoverOxygenCargo, RoverWaterCargo, RoverFoodCargo, ShipmentArrivalSol;
             public int ShipmentFoodRemaining, ShipmentWaterRemaining;
             public int DamagedKind, DamagedTarget, LastStormSol;
+            public bool HasStartingOxygenCell;
+            public CellSnapshot StartingOxygenCell;
             public bool AutomaticCollection;
             public int[] OxygenLevels, GreenhouseLevels, WarehouseLevels, OxygenLocal, GreenhouseLocal;
+            public int[] GreenhouseCrops, GreenhouseCropProgress;
             public int[] Discoveries;
             public DepositSnapshot[] Deposits;
             public CrewSnapshot[] Crew;
@@ -175,6 +181,7 @@ namespace SpaceFarm
         public bool Greenhouse { get; private set; }
         public Vector2Int? GreenhouseCell { get; private set; }
         public Vector2Int? OxygenPlantTwoCell { get; private set; }
+        public Vector2Int StartingOxygenCell { get; private set; }
         public int BarrierCount => barriers.Count;
         public int RoverCargo { get; private set; }
         public int RoverOxygenCargo { get; private set; }
@@ -215,6 +222,30 @@ namespace SpaceFarm
         public IReadOnlyList<Vector2Int> WarehouseCells => warehouseCells;
         public int OxygenLevel(int index) => index >= 0 && index < OxygenPlants ? (index == 0 ? BaseOxygenLevel : oxygenLevels[index - 1]) : 0;
         public int GreenhouseLevel(int index) => index >= 0 && index < greenhouseLevels.Count ? greenhouseLevels[index] : 0;
+        public GreenhouseCrop GreenhouseCropAt(int index) => index >= 0 && index < greenhouseCrops.Count ? greenhouseCrops[index] : GreenhouseCrop.Wheat;
+        public int GreenhouseCropProgress(int index) => index >= 0 && index < greenhouseCropProgress.Count ? greenhouseCropProgress[index] : 0;
+        public static string GreenhouseCropName(GreenhouseCrop crop) => crop == GreenhouseCrop.Lettuce ? "Lechuga" : crop == GreenhouseCrop.Corn ? "Maíz" : "Trigo";
+        public static int GreenhouseCropUnlockLevel(GreenhouseCrop crop) => crop == GreenhouseCrop.Corn ? 3 : crop == GreenhouseCrop.Lettuce ? 2 : 1;
+        public static int GreenhouseCropDuration(GreenhouseCrop crop) => crop == GreenhouseCrop.Corn ? 3 : crop == GreenhouseCrop.Lettuce ? 2 : 1;
+        public int GreenhouseCropYield(int index)
+        {
+            return GreenhouseCropYield(GreenhouseCropAt(index), GreenhouseLevel(index));
+        }
+        public static int GreenhouseCropYield(GreenhouseCrop crop, int level)
+        {
+            int baseYield = crop == GreenhouseCrop.Corn ? 20 : crop == GreenhouseCrop.Lettuce ? 16 : 7;
+            return Mathf.Min(LocalStorageCapacity, baseYield + Mathf.Max(0, level - GreenhouseCropUnlockLevel(crop)) * 2);
+        }
+        public bool SetGreenhouseCrop(int index, GreenhouseCrop crop, out string message)
+        {
+            if (index < 0 || index >= greenhouseCells.Count) return Fail("Seleccioná un invernadero válido.", out message);
+            if (GreenhouseCropUnlockLevel(crop) > GreenhouseLevel(index))
+                return Fail($"{GreenhouseCropName(crop)} se desbloquea en el nivel {GreenhouseCropUnlockLevel(crop)}.", out message);
+            if (greenhouseCrops[index] == crop) return Success($"El invernadero {index + 1} ya cultiva {GreenhouseCropName(crop)}.", out message);
+            greenhouseCrops[index] = crop;
+            greenhouseCropProgress[index] = 0;
+            return Success($"Invernadero {index + 1}: nuevo cultivo de {GreenhouseCropName(crop)}. El ciclo empieza desde cero.", out message);
+        }
         public int WarehouseLevel(int index) => index >= 0 && index < warehouseLevels.Count ? warehouseLevels[index] : 0;
         public IReadOnlyList<CrewMember> Crew => crew;
         public IReadOnlyList<UpgradeTask> Upgrades => upgrades;
@@ -248,6 +279,7 @@ namespace SpaceFarm
         public SpaceFarmState(SpaceFarmMap map) : this(map.Deposits, PointKinds(map))
         {
             this.map = map;
+            StartingOxygenCell = map.BaseCell + new Vector2Int(2, 0);
             warehouseCells[0] = map.BaseCell + new Vector2Int(-4, 0);
             eventRandom = new SpaceFarmRandom((ulong)(uint)map.Seed * 104729UL + 320203UL);
         }
@@ -467,7 +499,8 @@ namespace SpaceFarm
             if (map != null && !map.Inside(cell)) return "Fuera del mapa";
             if (!revealed) return "Sector oculto: exploralo primero";
             if (kind == StructureKind.Greenhouse && (index < 0 || index >= greenhouseCells.Count)) return "Invernadero inexistente";
-            if (kind == StructureKind.OxygenPlant && (index < 0 || index >= oxygenCells.Count)) return "Planta de oxígeno inexistente";
+            if (kind == StructureKind.OxygenPlant && index != -1 && (index < 0 || index >= oxygenCells.Count)) return "Planta de oxígeno inexistente";
+            if (kind == StructureKind.OxygenPlant && index == -1 && OxygenPlants <= 0) return "Planta de oxígeno inexistente";
             if (kind == StructureKind.Warehouse && (index < 0 || index >= warehouseCells.Count)) return "Almacén inexistente";
             if (kind == StructureKind.Barrier)
             {
@@ -490,6 +523,7 @@ namespace SpaceFarm
                 if (!(kind == StructureKind.Greenhouse && i == index) && Near(cell, greenhouseCells[i], 2)) return "Demasiado cerca de un invernadero";
             for (int i = 0; i < oxygenCells.Count; i++)
                 if (!(kind == StructureKind.OxygenPlant && i == index) && Near(cell, oxygenCells[i], 2)) return "Demasiado cerca de una planta de O2";
+            if (map != null && !(kind == StructureKind.OxygenPlant && index == -1) && Near(cell, StartingOxygenCell, 2)) return "Demasiado cerca de una planta de O2";
             for (int i = 0; i < warehouseCells.Count; i++)
                 if (!(kind == StructureKind.Warehouse && i == index) && Within(cell, warehouseCells[i], 1, 1)) return "Ese sector está ocupado por un almacén";
             foreach (DepositState deposit in deposits)
@@ -503,6 +537,7 @@ namespace SpaceFarm
             if (blocker.Length > 0) return Fail(blocker + ".", out message);
             if (kind == StructureKind.Barrier) barriers[index].Cell = cell;
             else if (kind == StructureKind.Greenhouse) greenhouseCells[index] = cell;
+            else if (kind == StructureKind.OxygenPlant && index == -1) StartingOxygenCell = cell;
             else if (kind == StructureKind.OxygenPlant) oxygenCells[index] = cell;
             else warehouseCells[index] = cell;
             return Success($"{StructureEditName(kind, index)} movida al sector {cell.x + 1},{cell.y + 1}.", out message);
@@ -556,6 +591,7 @@ namespace SpaceFarm
             else if (kind == StructureKind.Greenhouse)
             {
                 greenhouseCells.RemoveAt(index); greenhouseLevels.RemoveAt(index); greenhouseLocal.RemoveAt(index);
+                greenhouseCrops.RemoveAt(index); greenhouseCropProgress.RemoveAt(index);
                 ShiftCrewTargets(CrewJob.Greenhouse, index); ShiftUpgradeTargets("greenhouse", index);
                 if (DamagedStructure == DamagedStructureKind.Greenhouse)
                 {
@@ -636,11 +672,12 @@ namespace SpaceFarm
             if (map == null) return false;
             Vector2Int baseCell = map.BaseCell;
             if (Within(cell, baseCell, 2, 1) ||
-                Within(cell, baseCell + new Vector2Int(2, 0), 1, 1) ||
+                Within(cell, StartingOxygenCell, 1, 1) ||
                 Within(cell, baseCell + new Vector2Int(-2, -1), 1, 1) ||
                 Within(cell, baseCell + new Vector2Int(-1, 2), 1, 1)) return true;
             foreach (Vector2Int placed in greenhouseCells) if (Within(cell, placed, 1, 1)) return true;
             foreach (Vector2Int placed in oxygenCells) if (Within(cell, placed, 1, 1)) return true;
+            if (Within(cell, StartingOxygenCell, 1, 1)) return true;
             foreach (Vector2Int placed in warehouseCells) if (Within(cell, placed, 1, 1)) return true;
             foreach (DepositState deposit in deposits)
                 if ((deposit.MineLevel > 0 || deposit.Extractor) && Within(cell, map.Deposits[deposit.Id].Cell, 1, 1)) return true;
@@ -690,9 +727,11 @@ namespace SpaceFarm
                 greenhouseCells.Add(cell);
                 greenhouseLevels.Add(1);
                 greenhouseLocal.Add(0);
+                greenhouseCrops.Add(GreenhouseCrop.Wheat);
+                greenhouseCropProgress.Add(0);
                 if (!GreenhouseCell.HasValue) GreenhouseCell = cell;
                 GainXp(6);
-                return Success("Invernadero listo: transforma agua y energía en 7 de comida por sol.", out message);
+                return Success("Invernadero listo: empieza con trigo y cosecha 7 de comida cada sol.", out message);
             }
             if (kind == StructureKind.Warehouse)
             {
@@ -1123,6 +1162,9 @@ namespace SpaceFarm
                 DamagedKind = (int)DamagedStructure, DamagedTarget = DamagedTarget, LastStormSol = lastStormSol,
                 Discoveries = new int[discoveries.Length], OxygenLevels = oxygenLevels.ToArray(), GreenhouseLevels = greenhouseLevels.ToArray(),
                 WarehouseLevels = warehouseLevels.ToArray(), OxygenLocal = oxygenLocal.ToArray(), GreenhouseLocal = greenhouseLocal.ToArray(),
+                GreenhouseCrops = CropValues(greenhouseCrops), GreenhouseCropProgress = greenhouseCropProgress.ToArray(),
+                HasStartingOxygenCell = true,
+                StartingOxygenCell = new CellSnapshot { X = StartingOxygenCell.x, Y = StartingOxygenCell.y },
                 Deposits = new DepositSnapshot[deposits.Count],
                 Crew = new CrewSnapshot[crew.Count], Upgrades = new UpgradeSnapshot[upgrades.Count],
                 Barriers = new CellSnapshot[barriers.Count], Greenhouses = Cells(greenhouseCells),
@@ -1189,8 +1231,18 @@ namespace SpaceFarm
                 barriers.Add(new BarrierState { Cell = new Vector2Int(b.X, b.Y), Vertical = b.Vertical });
             ReplaceCells(greenhouseCells, snapshot.Greenhouses); ReplaceCells(oxygenCells, snapshot.OxygenCells);
             ReplaceCells(warehouseCells, snapshot.WarehouseCells);
+            StartingOxygenCell = snapshot.HasStartingOxygenCell
+                ? new Vector2Int(snapshot.StartingOxygenCell.X, snapshot.StartingOxygenCell.Y)
+                : map != null ? map.BaseCell + new Vector2Int(2, 0) : Vector2Int.zero;
             ReplaceInts(oxygenLevels, snapshot.OxygenLevels, Mathf.Max(0, OxygenPlants - 1), 1);
             ReplaceInts(greenhouseLevels, snapshot.GreenhouseLevels, greenhouseCells.Count, 1);
+            ReplaceGreenhouseCrops(greenhouseCrops, snapshot.GreenhouseCrops, greenhouseCells.Count);
+            ReplaceInts(greenhouseCropProgress, snapshot.GreenhouseCropProgress, greenhouseCells.Count, 0);
+            for (int i = 0; i < greenhouseCropProgress.Count; i++)
+            {
+                if (GreenhouseCropUnlockLevel(greenhouseCrops[i]) > GreenhouseLevel(i)) greenhouseCrops[i] = GreenhouseCrop.Wheat;
+                greenhouseCropProgress[i] = Mathf.Clamp(greenhouseCropProgress[i], 0, GreenhouseCropDuration(greenhouseCrops[i]) - 1);
+            }
             ReplaceInts(warehouseLevels, snapshot.WarehouseLevels, warehouseCells.Count, 1);
             ReplaceInts(oxygenLocal, snapshot.OxygenLocal, Mathf.Max(0, OxygenPlants - 1), 0);
             ReplaceInts(greenhouseLocal, snapshot.GreenhouseLocal, greenhouseCells.Count, 0);
@@ -1220,6 +1272,21 @@ namespace SpaceFarm
         {
             destination.Clear();
             for (int i = 0; i < count; i++) destination.Add(source != null && i < source.Length ? Mathf.Max(0, source[i]) : fallback);
+        }
+        private static int[] CropValues(List<GreenhouseCrop> source)
+        {
+            int[] values = new int[source.Count];
+            for (int i = 0; i < source.Count; i++) values[i] = (int)source[i];
+            return values;
+        }
+        private static void ReplaceGreenhouseCrops(List<GreenhouseCrop> destination, int[] source, int count)
+        {
+            destination.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                int value = source != null && i < source.Length ? source[i] : (int)GreenhouseCrop.Wheat;
+                destination.Add((GreenhouseCrop)Mathf.Clamp(value, (int)GreenhouseCrop.Wheat, (int)GreenhouseCrop.Corn));
+            }
         }
 
         public bool UnloadRover(out string message)
@@ -1335,7 +1402,10 @@ namespace SpaceFarm
 
             for (int i = 0; i < greenhouseCells.Count; i++)
             {
-                SystemResult result = new SystemResult { Nominal = 7 + 3 * (GreenhouseLevel(i) - 1) + ActiveWorkers(CrewJob.Greenhouse, i) * WorkerBonus(CrewJob.Greenhouse) };
+                GreenhouseCrop crop = GreenhouseCropAt(i);
+                int cropDuration = GreenhouseCropDuration(crop);
+                int cropYield = GreenhouseCropYield(i);
+                SystemResult result = new SystemResult { Nominal = cropYield };
                 LastSol.GreenhouseUnits.Add(result);
                 if (IsDamaged(DamagedStructureKind.Greenhouse, i)) result.Reason = "Invernadero averiado: reparalo.";
                 else if (greenhouseLocal[i] >= LocalStorageCapacity) result.Reason = "Depósito local lleno: enviá el rover.";
@@ -1346,9 +1416,16 @@ namespace SpaceFarm
                     result.EnergyUsed = 2;
                     result.OtherUsed = 1;
                     Water--;
-                    result.Actual = Mathf.Min(result.Nominal, LocalStorageCapacity - greenhouseLocal[i]);
-                    greenhouseLocal[i] += result.Actual;
-                    result.Reason = result.Actual < result.Nominal ? "Depósito local lleno; enviá el rover." : "Operativa.";
+                    greenhouseCropProgress[i]++;
+                    if (greenhouseCropProgress[i] >= cropDuration)
+                    {
+                        greenhouseCropProgress[i] = 0;
+                        int harvest = cropYield + ActiveWorkers(CrewJob.Greenhouse, i) * WorkerBonus(CrewJob.Greenhouse);
+                        result.Actual = Mathf.Min(harvest, LocalStorageCapacity - greenhouseLocal[i]);
+                        greenhouseLocal[i] += result.Actual;
+                        result.Reason = result.Actual < harvest ? $"Cosecha parcial de {GreenhouseCropName(crop)}: depósito local casi lleno." : $"Cosecha de {GreenhouseCropName(crop)} lista.";
+                    }
+                    else result.Reason = $"Cultivando {GreenhouseCropName(crop)}: {greenhouseCropProgress[i]}/{cropDuration} soles.";
                 }
                 Accumulate(LastSol.Greenhouse, result);
             }

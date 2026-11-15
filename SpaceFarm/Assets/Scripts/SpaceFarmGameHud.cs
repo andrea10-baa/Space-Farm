@@ -28,6 +28,7 @@ namespace SpaceFarm
         private TextMeshProUGUI infoBody;
         private Button infoPrimary;
         private Button infoSecondary;
+        private Button advanceSolButton;
         private Button followButton;
         private Button baseNavButton;
         private Button roverNavButton;
@@ -126,7 +127,7 @@ namespace SpaceFarm
             Panel("Header Accent", header.transform, SpaceFarmPalette.Iron,
                 new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 0), Vector2.zero, new Vector2(0, 3));
 
-            AddButton("AVANZAR SOL", header.transform, AdvanceSol, 15, SpaceFarmPalette.Iron,
+            advanceSolButton = AddButton("AVANZAR SOL", header.transform, AdvanceSol, 13, SpaceFarmPalette.Iron,
                 SpaceFarmPalette.Background, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1),
                 new Vector2(-14, -17), new Vector2(148, 48));
             AddButton("II  PAUSA", header.transform, () => SetPaused(true), 12, SpaceFarmPalette.PanelRaised,
@@ -677,6 +678,7 @@ namespace SpaceFarm
         {
             if (statsText == null) return;
             statsText.text = $"SOL <b>{state.Sol:00}</b>";
+            RefreshSolCountdownLabel();
             roverText.text = collectionActive
                 ? $"ROVER {state.RoverLevel} · LOGÍSTICA\nCarga {state.RoverCargoTotal}/{state.RoverCapacity} · Fe {state.RoverCargo} O2 {state.RoverOxygenCargo}\nAg {state.RoverWaterCargo} Co {state.RoverFoodCargo}"
                 : travel != null
@@ -697,6 +699,16 @@ namespace SpaceFarm
             RefreshResourceHud();
             RefreshSystemsHud();
             if (crewMenuOpen) RefreshCrewMenu();
+        }
+
+        private void RefreshSolCountdownLabel()
+        {
+            if (advanceSolButton == null) return;
+            TextMeshProUGUI label = advanceSolButton.GetComponentInChildren<TextMeshProUGUI>();
+            if (label == null) return;
+            if (state != null && state.GameOver) { label.text = "MISIÓN FINALIZADA"; return; }
+            int seconds = Mathf.CeilToInt(Mathf.Max(0f, solCountdown));
+            label.text = $"AVANZAR SOL\nAUTO {seconds / 60:00}:{seconds % 60:00}";
         }
 
         private void CreateResourceHud(Transform header)
