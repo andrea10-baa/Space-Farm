@@ -1,0 +1,626 @@
+fileFormatVersion: 2
+guid: 969b38d55777d57698100277ac7f48bf
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3866272576571457634
+    second: space-farm-wall-post_0
+  - first:
+      213: -3822076648838131066
+    second: space-farm-wall-post_1
+  - first:
+      213: -5442205442912072855
+    second: space-farm-wall-post_2
+  - first:
+      213: -4948897719326377206
+    second: space-farm-wall-post_3
+  - first:
+      213: 4281054675623343465
+    second: space-farm-wall-post_4
+  - first:
+      213: 7884831384228824978
+    second: space-farm-wall-post_5
+  - first:
+      213: 578199285921548745
+    second: space-farm-wall-post_6
+  - first:
+      213: -7013935751961636930
+    second: space-farm-wall-post_7
+  - first:
+      213: -3655876127021171950
+    second: space-farm-wall-post_8
+  - first:
+      213: 9110802639132895260
+    second: space-farm-wall-post_9
+  - first:
+      213: -574113111693122370
+    second: space-farm-wall-post_10
+  - first:
+      213: 2120610499083010299
+    second: space-farm-wall-post_11
+  - first:
+      213: 2370811242440987025
+    second: space-farm-wall-post_12
+  - first:
+      213: 4207213107010494548
+    second: space-farm-wall-post_13
+  - first:
+      213: 4777498200874755621
+    second: space-farm-wall-post_14
+  - first:
+      213: -718301324825414976
+    second: space-farm-wall-post_15
+  - first:
+      213: 8105254275021609785
+    second: space-farm-wall-post_16
+  - first:
+      213: 6811350634167266040
+    second: space-farm-wall-post_17
+  - first:
+      213: 295269093624595731
+    second: space-farm-wall-post_18
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: space-farm-wall-post_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1285
+        height: 1142
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 260406b8c62c7a530800000000000000
+      internalID: 3866272576571457634
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_1
+      rect:
+        serializedVersion: 2
+        x: 1136
+        y: 331
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68210b1c98145fac0800000000000000
+      internalID: -3822076648838131066
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_2
+      rect:
+        serializedVersion: 2
+        x: 262
+        y: 96
+        width: 13
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 96b4784dbf66974b0800000000000000
+      internalID: -5442205442912072855
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_3
+      rect:
+        serializedVersion: 2
+        x: 456
+        y: 112
+        width: 19
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a0b7fc1aebbf15bb0800000000000000
+      internalID: -4948897719326377206
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_4
+      rect:
+        serializedVersion: 2
+        x: 503
+        y: 112
+        width: 8
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 965fd84ab8c596b30800000000000000
+      internalID: 4281054675623343465
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_5
+      rect:
+        serializedVersion: 2
+        x: 566
+        y: 110
+        width: 31
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2978fca4e5c8c6d60800000000000000
+      internalID: 7884831384228824978
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_6
+      rect:
+        serializedVersion: 2
+        x: 830
+        y: 99
+        width: 21
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c90db6ef2d260800800000000000000
+      internalID: 578199285921548745
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_7
+      rect:
+        serializedVersion: 2
+        x: 910
+        y: 100
+        width: 19
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ebf0ae2589e79ae90800000000000000
+      internalID: -7013935751961636930
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_8
+      rect:
+        serializedVersion: 2
+        x: 200
+        y: 96
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 21b721a3808b34dc0800000000000000
+      internalID: -3655876127021171950
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_9
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 99
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c18253caab2107e70800000000000000
+      internalID: 9110802639132895260
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_10
+      rect:
+        serializedVersion: 2
+        x: 430
+        y: 82
+        width: 17
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eb423acaa275808f0800000000000000
+      internalID: -574113111693122370
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_11
+      rect:
+        serializedVersion: 2
+        x: 474
+        y: 78
+        width: 59
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf08ec0730ced6d10800000000000000
+      internalID: 2120610499083010299
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_12
+      rect:
+        serializedVersion: 2
+        x: 304
+        y: 80
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 191923f8340d6e020800000000000000
+      internalID: 2370811242440987025
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_13
+      rect:
+        serializedVersion: 2
+        x: 534
+        y: 81
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4506ab1b706036a30800000000000000
+      internalID: 4207213107010494548
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_14
+      rect:
+        serializedVersion: 2
+        x: 688
+        y: 80
+        width: 23
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 526253a2d451d4240800000000000000
+      internalID: 4777498200874755621
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_15
+      rect:
+        serializedVersion: 2
+        x: 712
+        y: 78
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c2b61430c41806f0800000000000000
+      internalID: -718301324825414976
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_16
+      rect:
+        serializedVersion: 2
+        x: 836
+        y: 78
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 93b11e4d1d5ab7070800000000000000
+      internalID: 8105254275021609785
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_17
+      rect:
+        serializedVersion: 2
+        x: 462
+        y: 46
+        width: 21
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8faeb2e4057c68e50800000000000000
+      internalID: 6811350634167266040
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space-farm-wall-post_18
+      rect:
+        serializedVersion: 2
+        x: 676
+        y: 38
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 31545ae1da1091400800000000000000
+      internalID: 295269093624595731
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    outline: []
+    customData:
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices:
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      space-farm-wall-post_0: 3866272576571457634
+      space-farm-wall-post_1: -3822076648838131066
+      space-farm-wall-post_10: -574113111693122370
+      space-farm-wall-post_11: 2120610499083010299
+      space-farm-wall-post_12: 2370811242440987025
+      space-farm-wall-post_13: 4207213107010494548
+      space-farm-wall-post_14: 4777498200874755621
+      space-farm-wall-post_15: -718301324825414976
+      space-farm-wall-post_16: 8105254275021609785
+      space-farm-wall-post_17: 6811350634167266040
+      space-farm-wall-post_18: 295269093624595731
+      space-farm-wall-post_2: -5442205442912072855
+      space-farm-wall-post_3: -4948897719326377206
+      space-farm-wall-post_4: 4281054675623343465
+      space-farm-wall-post_5: 7884831384228824978
+      space-farm-wall-post_6: 578199285921548745
+      space-farm-wall-post_7: -7013935751961636930
+      space-farm-wall-post_8: -3655876127021171950
+      space-farm-wall-post_9: 9110802639132895260
+  mipmapLimitGroupName:
+  pSDRemoveMatte: 0
+  userData:
+  assetBundleName:
+  assetBundleVariant:

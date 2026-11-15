@@ -16,8 +16,11 @@ namespace SpaceFarm
         private readonly HashSet<Vector2Int> reservedShipmentCells = new HashSet<Vector2Int>();
         private bool arrivalSequenceActive;
         private bool initialLandingStarted;
+        private bool startingBaseLanded;
         private bool shipmentSequenceActive;
         private Sprite landerSprite;
+        private Texture2D softParticleTexture;
+        private Material softParticleMaterial;
         private CanvasGroup hudInputGroup;
         private Coroutine shipmentQueueRoutine;
 
@@ -49,6 +52,8 @@ namespace SpaceFarm
             if (solarWorld != null) solarWorld.SetActive(visible);
             if (dormWorld != null) dormWorld.SetActive(visible);
             if (rover != null) rover.SetActive(visible);
+            for (int i = 0; i < warehouseWorlds.Count; i++)
+                if (warehouseWorlds[i] != null) warehouseWorlds[i].SetActive(visible);
             for (int i = 0; i < astronauts.Count; i++)
                 if (astronauts[i].Root != null) astronauts[i].Root.gameObject.SetActive(visible);
         }
@@ -98,6 +103,9 @@ namespace SpaceFarm
             yield return FadeShip(shipRenderer, .3f);
             if (ship != null) Destroy(ship);
             SetStartingBaseVisible(true);
+            startingBaseLanded = true;
+            RefreshWorld();
+            RefreshHud();
             arrivalSequenceActive = false;
             SetHudControlsEnabled(true);
             SetReport($"Aterrizaje completado en Marte (semilla {seed}). Enviá el rover a explorar los sectores ocultos.");
@@ -257,6 +265,7 @@ namespace SpaceFarm
             shape.angle = 13f;
             shape.radius = .1f;
             ParticleSystemRenderer renderer = exhaust.GetComponent<ParticleSystemRenderer>();
+            renderer.sharedMaterial = GetSoftParticleMaterial();
             renderer.sortingOrder = sortingOrder - 1;
             return exhaust;
         }
@@ -281,10 +290,42 @@ namespace SpaceFarm
             shape.shapeType = ParticleSystemShapeType.Circle;
             shape.radius = .28f;
             ParticleSystemRenderer renderer = dust.GetComponent<ParticleSystemRenderer>();
+            renderer.sharedMaterial = GetSoftParticleMaterial();
             renderer.sortingOrder = 15;
             dust.Play();
             dust.Emit(24);
             Destroy(dustObject, 1.4f);
+        }
+
+        private Material GetSoftParticleMaterial()
+        {
+            if (softParticleMaterial != null) return softParticleMaterial;
+            softParticleTexture = new Texture2D(64, 64, TextureFormat.RGBA32, false)
+            {
+                name = "Soft radial particle texture",
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+            Color[] pixels = new Color[64 * 64];
+            for (int y = 0; y < 64; y++)
+            for (int x = 0; x < 64; x++)
+            {
+                float distance = Vector2.Distance(new Vector2(x, y), new Vector2(31.5f, 31.5f)) / 31.5f;
+                float alpha = 1f - Mathf.SmoothStep(.38f, 1f, distance);
+                pixels[y * 64 + x] = new Color(1f, 1f, 1f, alpha);
+            }
+            softParticleTexture.SetPixels(pixels);
+            softParticleTexture.Apply(false, true);
+
+            Shader shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
+            if (shader == null) shader = Shader.Find("Sprites/Default");
+            if (shader == null) return null;
+            softParticleMaterial = new Material(shader) { name = "Soft Mars particle material" };
+            if (softParticleMaterial.HasProperty("_MainTex")) softParticleMaterial.SetTexture("_MainTex", softParticleTexture);
+            if (softParticleMaterial.HasProperty("_BaseMap")) softParticleMaterial.SetTexture("_BaseMap", softParticleTexture);
+            runtimeAssets.Add(softParticleTexture);
+            runtimeAssets.Add(softParticleMaterial);
+            return softParticleMaterial;
         }
 
         private static IEnumerator MoveShip(Transform ship, Vector3 from, Vector3 to, float duration,

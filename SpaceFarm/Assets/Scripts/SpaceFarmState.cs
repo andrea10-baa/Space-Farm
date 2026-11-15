@@ -4,8 +4,9 @@ using UnityEngine;
 
 namespace SpaceFarm
 {
-    public enum StructureKind { None, Mine, Extractor, Greenhouse, OxygenPlant, Barrier }
+    public enum StructureKind { None, Mine, Extractor, Greenhouse, OxygenPlant, Barrier, Warehouse }
     public enum CrewJob { None, Mine, Extractor, Greenhouse, Oxygen, Solar }
+    public enum DamagedStructureKind { None, Solar, Dormitory, Greenhouse, Rover, Mine }
 
     /// <summary>Small deterministic simulation for the colony loop. Knows deposits by id, not by map position.</summary>
     [Serializable]
@@ -17,15 +18,20 @@ namespace SpaceFarm
         private static readonly int[] RoverRanges = { 0, 11, 24, 39, 56, 999 };
         public const int MaxMineCount = 3;
         public const int MaxExtractors = 5;
+        public const int MaxWarehouses = 5;
+        public const int WarehouseStorage = 50;
         private readonly List<BarrierState> barriers = new List<BarrierState>();
         private readonly List<Vector2Int> greenhouseCells = new List<Vector2Int>();
         private readonly List<Vector2Int> oxygenCells = new List<Vector2Int>();
+        private readonly List<Vector2Int> warehouseCells = new List<Vector2Int>();
         private readonly List<CrewMember> crew = new List<CrewMember>();
         private readonly List<UpgradeTask> upgrades = new List<UpgradeTask>();
         private readonly bool[] discoveries;
         private readonly int[] discoveryKinds;
         private readonly List<DepositState> deposits = new List<DepositState>();
         private readonly SpaceFarmMap map;
+        private SpaceFarmRandom eventRandom;
+        private int lastStormSol = -100;
 
         public sealed class SystemResult
         {
@@ -74,6 +80,7 @@ namespace SpaceFarm
             public string Kind { get; internal set; }
             public int Target { get; internal set; }
             public float Remaining { get; internal set; }
+            public float Duration { get; internal set; }
         }
 
         public sealed class SolResults
@@ -92,6 +99,8 @@ namespace SpaceFarm
             public bool ShipmentDelivered;
             public int CrewConsumed;
             public int RaidFoodLoss;
+            public DamagedStructureKind DamagedStructure;
+            public int DamagedTarget = -1;
         }
 
         public SolResults LastSol { get; private set; } = new SolResults();
@@ -120,6 +129,12 @@ namespace SpaceFarm
         public int RoverCargo { get; private set; }
         public int RoverCapacity => RoverLevel == 2 ? 24 : 12;
         public int ShipmentArrivalSol { get; private set; }
+        public DamagedStructureKind DamagedStructure { get; private set; }
+        public int DamagedTarget { get; private set; } = -1;
+        public int RepairIronCost => RepairCost(DamagedStructure);
+        public int RepairEnergyCost => DamagedStructure == DamagedStructureKind.None ? 0 : 3;
+        public int WarehouseCapacity => warehouseCells.Count * WarehouseStorage;
+        public int WarehouseCount => warehouseCells.Count;
         public bool GameOver => Health <= 0;
         public bool MissionComplete => Sol >= 7 && MineCount > 0 && Greenhouse && ColonyLevel >= 3 && !GameOver;
         public int ScanRadius => 1 + ColonyLevel + (RoverLevel > 1 ? 1 : 0);
@@ -132,6 +147,7 @@ namespace SpaceFarm
         public IReadOnlyList<BarrierState> Barriers => barriers;
         public IReadOnlyList<Vector2Int> GreenhouseCells => greenhouseCells;
         public IReadOnlyList<Vector2Int> OxygenCells => oxygenCells;
+        public IReadOnlyList<Vector2Int> WarehouseCells => warehouseCells;
         public IReadOnlyList<CrewMember> Crew => crew;
         public IReadOnlyList<UpgradeTask> Upgrades => upgrades;
         public bool CanRoverReach(Vector2Int cell) => map == null || ColonyLevel == MaxLevel ||
@@ -156,10 +172,17 @@ namespace SpaceFarm
         /// <summary>Minimal layout for rule checks: one iron deposit (id 0), one ice deposit (id 1) and three discoveries.</summary>
         public SpaceFarmState() : this(DefaultDeposits(), new[] { 0, 1, 2 }) { }
 
-        public SpaceFarmState(SpaceFarmMap map) : this(map.Deposits, PointKinds(map)) { this.map = map; }
+        public SpaceFarmState(SpaceFarmMap map) : this(map.Deposits, PointKinds(map))
+        {
+            this.map = map;
+            warehouseCells[0] = map.BaseCell + new Vector2Int(-4, 0);
+            eventRandom = new SpaceFarmRandom((ulong)(uint)map.Seed * 104729UL + 320203UL);
+        }
 
         public SpaceFarmState(IReadOnlyList<MapDeposit> layout, IReadOnlyList<int> pointKinds)
         {
+            warehouseCells.Add(Vector2Int.zero);
+            eventRandom = new SpaceFarmRandom(371921UL);
             crew.Add(new CrewMember { Id = 1 });
             crew.Add(new CrewMember { Id = 2 });
             for (int i = 0; i < layout.Count; i++)
@@ -195,6 +218,86 @@ namespace SpaceFarm
             return count;
         }
 
+        private int AddIron(int amount)
+        {
+            int added = Mathf.Clamp(amount, 0, Mathf.Max(0, WarehouseCapacity - Iron));
+            Iron += added;
+            return added;
+        }
+
+        private static int RepairCost(DamagedStructureKind kind)
+        {
+            switch (kind)
+            {
+                case DamagedStructureKind.Solar: return 8;
+                case DamagedStructureKind.Dormitory: return 6;
+                case DamagedStructureKind.Greenhouse: return 6;
+                case DamagedStructureKind.Rover: return 5;
+                case DamagedStructureKind.Mine: return 8;
+                default: return 0;
+            }
+        }
+
+        public bool IsDamaged(DamagedStructureKind kind, int target = -1) =>
+            DamagedStructure == kind && (target < 0 || DamagedTarget == target);
+
+        public bool RepairDamagedStructure(out string message)
+        {
+            if (DamagedStructure == DamagedStructureKind.None) return Fail("No hay ninguna instalación averiada.", out message);
+            int ironCost = RepairIronCost;
+            int energyCost = RepairEnergyCost;
+            if (Iron < ironCost) return Fail($"La reparación necesita {ironCost} Fe.", out message);
+            if (Energy < energyCost) return Fail($"La reparación necesita {energyCost} de energía.", out message);
+            string name = DamagedStructureName(DamagedStructure, DamagedTarget);
+            Iron -= ironCost;
+            Energy -= energyCost;
+            DamagedStructure = DamagedStructureKind.None;
+            DamagedTarget = -1;
+            return Success($"{name} reparado: -{ironCost} Fe y -{energyCost} energía.", out message);
+        }
+
+        public string DamagedStructureName(DamagedStructureKind kind, int target = -1)
+        {
+            switch (kind)
+            {
+                case DamagedStructureKind.Solar: return "Paneles solares";
+                case DamagedStructureKind.Dormitory: return "Dormitorio";
+                case DamagedStructureKind.Greenhouse: return $"Invernadero {target + 1}";
+                case DamagedStructureKind.Rover: return "Rover";
+                case DamagedStructureKind.Mine: return $"Mina {Deposit(target)?.Name ?? "marciana"}";
+                default: return "Instalación";
+            }
+        }
+
+        private bool RollStorm()
+        {
+            if (Sol < 3 || Sol - lastStormSol < 2) return false;
+            float chance = Mathf.Clamp(.18f + (ColonyLevel - 1) * .06f + Mathf.Max(0, Sol - 6) * .015f, .18f, .55f);
+            return eventRandom.Value() < chance;
+        }
+
+        private bool TryDamageRandomStructure()
+        {
+            if (DamagedStructure != DamagedStructureKind.None) return false;
+            float chance = Mathf.Clamp(.24f + (ColonyLevel - 1) * .05f + Mathf.Max(0, Sol - 6) * .01f, .24f, .55f);
+            if (eventRandom.Value() >= chance) return false;
+
+            List<KeyValuePair<DamagedStructureKind, int>> candidates = new List<KeyValuePair<DamagedStructureKind, int>>
+            {
+                new KeyValuePair<DamagedStructureKind, int>(DamagedStructureKind.Solar, 0),
+                new KeyValuePair<DamagedStructureKind, int>(DamagedStructureKind.Dormitory, 0),
+                new KeyValuePair<DamagedStructureKind, int>(DamagedStructureKind.Rover, 0)
+            };
+            for (int i = 0; i < greenhouseCells.Count; i++) candidates.Add(new KeyValuePair<DamagedStructureKind, int>(DamagedStructureKind.Greenhouse, i));
+            for (int i = 0; i < deposits.Count; i++)
+                if (deposits[i].MineLevel > 0) candidates.Add(new KeyValuePair<DamagedStructureKind, int>(DamagedStructureKind.Mine, i));
+            if (candidates.Count == 0) return false;
+            KeyValuePair<DamagedStructureKind, int> chosen = candidates[eventRandom.Range(0, candidates.Count)];
+            DamagedStructure = chosen.Key;
+            DamagedTarget = chosen.Value;
+            return true;
+        }
+
         public int StructureCost(StructureKind kind)
         {
             switch (kind)
@@ -204,6 +307,7 @@ namespace SpaceFarm
                 case StructureKind.Greenhouse: return 6;
                 case StructureKind.OxygenPlant: return 9;
                 case StructureKind.Barrier: return 1;
+                case StructureKind.Warehouse: return 12;
                 default: return 0;
             }
         }
@@ -211,6 +315,7 @@ namespace SpaceFarm
         /// <summary>Catalog availability, independent of the pointer position.</summary>
         public string PlacementAvailability(StructureKind kind)
         {
+            if (kind == StructureKind.Warehouse && WarehouseCount >= MaxWarehouses) return $"Límite de {MaxWarehouses} almacenes";
             if (kind == StructureKind.Greenhouse && greenhouseCells.Count >= 5) return "Límite de 5 invernaderos";
             if (kind == StructureKind.OxygenPlant && OxygenPlants >= 5) return "Límite de 5 plantas de O2";
             if (kind == StructureKind.Mine)
@@ -246,6 +351,8 @@ namespace SpaceFarm
             if (availability.Length > 0) return availability;
             if (HasBarrierInFootprint(cell, 1, 1)) return "No se puede colocar una estructura sobre un muro";
             if (IsCellOccupiedByStructure(cell)) return "Ese sector está ocupado por una estructura";
+            foreach (Vector2Int stored in warehouseCells)
+                if (Within(cell, stored, 1, 1)) return "Ese sector está ocupado por un almacén";
             if (kind == StructureKind.Mine || kind == StructureKind.Extractor)
             {
                 MapDeposit deposit = map?.DepositAt(cell);
@@ -280,6 +387,7 @@ namespace SpaceFarm
                 Within(cell, baseCell + new Vector2Int(-1, 2), 1, 1)) return true;
             foreach (Vector2Int placed in greenhouseCells) if (Within(cell, placed, 1, 1)) return true;
             foreach (Vector2Int placed in oxygenCells) if (Within(cell, placed, 1, 1)) return true;
+            foreach (Vector2Int placed in warehouseCells) if (Within(cell, placed, 1, 1)) return true;
             foreach (DepositState deposit in deposits)
                 if ((deposit.MineLevel > 0 || deposit.Extractor) && Within(cell, map.Deposits[deposit.Id].Cell, 1, 1)) return true;
             return false;
@@ -330,6 +438,12 @@ namespace SpaceFarm
                 GainXp(6);
                 return Success("Invernadero listo: transforma agua y energía en 7 de comida por sol.", out message);
             }
+            if (kind == StructureKind.Warehouse)
+            {
+                warehouseCells.Add(cell);
+                GainXp(6);
+                return Success($"Almacén construido. Capacidad de hierro: {WarehouseCapacity}.", out message);
+            }
             OxygenPlants++;
             oxygenCells.Add(cell);
             if (!OxygenPlantTwoCell.HasValue) OxygenPlantTwoCell = cell;
@@ -348,8 +462,10 @@ namespace SpaceFarm
             GainXp(8);
             if (deposit.Kind == DepositKind.Iron)
             {
-                Iron += sample;
-                return LastReport = $"Rover: yacimiento {deposit.Name} confirmado. Trajo {sample} Fe de muestra. Seleccionalo para construir una mina.";
+                int received = AddIron(sample);
+                return LastReport = received == sample
+                    ? $"Rover: yacimiento {deposit.Name} confirmado. Dejó {received} Fe de muestra en el almacén. Seleccionalo para construir una mina."
+                    : $"Rover: {deposit.Name} confirmado. El almacén solo tenía espacio para {received} Fe de muestra.";
             }
             Water = Mathf.Min(60, Water + sample);
             return LastReport = $"Rover: depósito {deposit.Name} confirmado. Trajo {sample} de agua. Seleccionalo para construir un extractor.";
@@ -386,20 +502,24 @@ namespace SpaceFarm
             if (deposit == null || deposit.MineLevel == 0) return Fail("Construí primero la mina.", out message);
             if (deposit.MineLevel >= 2) return Fail("El nivel 2 es el máximo de esta demo.", out message);
             if (HasUpgrade("mine", id)) return Fail("Esa mina ya se está mejorando.", out message);
-            if (Iron < 6) return Fail("La mejora necesita 6 de hierro.", out message);
-            Iron -= 6;
-            upgrades.Add(new UpgradeTask { Kind = "mine", Target = id, Remaining = UpgradeSeconds });
-            return Success($"Mejora de {deposit.Name} iniciada: 30 segundos.", out message);
+            int cost = MineUpgradeCost(id);
+            int duration = UpgradeSecondsForNextLevel("mine", id);
+            if (Iron < cost) return Fail($"La mejora necesita {cost} de hierro.", out message);
+            Iron -= cost;
+            upgrades.Add(new UpgradeTask { Kind = "mine", Target = id, Remaining = duration, Duration = duration });
+            return Success($"Mejora de {deposit.Name} iniciada: {duration} segundos, {cost} Fe.", out message);
         }
 
         public bool UpgradeRover(out string message)
         {
             if (RoverLevel >= 2) return Fail("El nivel 2 es el máximo de esta demo.", out message);
             if (HasUpgrade("rover", 0)) return Fail("El rover ya se está mejorando.", out message);
-            if (Iron < 5) return Fail("El rover necesita 5 de hierro para la mejora.", out message);
-            Iron -= 5;
-            upgrades.Add(new UpgradeTask { Kind = "rover", Remaining = UpgradeSeconds });
-            return Success("Mejora del rover iniciada: 30 segundos; tendrá más capacidad y visión.", out message);
+            int cost = RoverUpgradeCost;
+            int duration = UpgradeSecondsForNextLevel("rover", 0);
+            if (Iron < cost) return Fail($"El rover necesita {cost} de hierro para la mejora.", out message);
+            Iron -= cost;
+            upgrades.Add(new UpgradeTask { Kind = "rover", Remaining = duration, Duration = duration });
+            return Success($"Mejora del rover iniciada: {duration} segundos, {cost} Fe; tendrá más capacidad y visión.", out message);
         }
 
         public bool UpgradeSolar(out string message)
@@ -407,13 +527,33 @@ namespace SpaceFarm
             if (SolarLevel >= MaxLevel) return Fail("Los paneles están en nivel máximo.", out message);
             if (HasUpgrade("solar", 0)) return Fail("Los paneles ya se están mejorando.", out message);
             int cost = SolarUpgradeCost;
+            int duration = UpgradeSecondsForNextLevel("solar", 0);
             if (Iron < cost) return Fail($"La mejora solar necesita {cost} Fe.", out message);
             Iron -= cost;
-            upgrades.Add(new UpgradeTask { Kind = "solar", Remaining = UpgradeSeconds });
-            return Success($"Ampliación solar iniciada: 30 segundos. Costo: {cost} Fe.", out message);
+            upgrades.Add(new UpgradeTask { Kind = "solar", Remaining = duration, Duration = duration });
+            return Success($"Ampliación solar iniciada: {duration} segundos. Costo: {cost} Fe.", out message);
         }
 
-        public int SolarUpgradeCost => 5 + SolarLevel * 3;
+        public int MineUpgradeCost(int id)
+        {
+            DepositState deposit = Deposit(id);
+            return 6 + Mathf.Max(0, (deposit?.MineLevel ?? 1) - 1) * 2;
+        }
+
+        public int RoverUpgradeCost => 5 + Mathf.Max(0, RoverLevel - 1) * 2;
+        public int SolarUpgradeCost => 8 + Mathf.Max(0, SolarLevel - 1) * 2;
+
+        public int UpgradeSecondsForNextLevel(string kind, int target)
+        {
+            int level = 1;
+            if (kind == "mine") level = Deposit(target)?.MineLevel ?? 1;
+            else if (kind == "rover") level = RoverLevel;
+            else if (kind == "solar") level = SolarLevel;
+            return Mathf.RoundToInt(UpgradeSeconds * Mathf.Pow(2f, Mathf.Max(0, level - 1)));
+        }
+
+        public int UpgradeSecondsToDisplay(string kind, int target) =>
+            HasUpgrade(kind, target) ? UpgradeRemaining(kind, target) : UpgradeSecondsForNextLevel(kind, target);
         public bool HasUpgrade(string kind, int target)
         {
             foreach (UpgradeTask task in upgrades)
@@ -448,12 +588,13 @@ namespace SpaceFarm
             {
                 if (member.Resting)
                 {
-                    member.Energy = Mathf.Min(100f, member.Energy + seconds * 5f);
+                    float recovery = IsDamaged(DamagedStructureKind.Dormitory) ? 1.25f : 2.5f;
+                    member.Energy = Mathf.Min(100f, member.Energy + seconds * recovery);
                     if (member.Energy >= 95f) { member.Resting = false; changed = true; }
                 }
                 else if (member.Job != CrewJob.None)
                 {
-                    member.Energy = Mathf.Max(0f, member.Energy - seconds * 1.8f);
+                    member.Energy = Mathf.Max(0f, member.Energy - seconds * .9f);
                     if (member.Energy <= 15f) { member.Resting = true; changed = true; }
                 }
             }
@@ -598,11 +739,13 @@ namespace SpaceFarm
         public bool UnloadRover(out string message)
         {
             if (RoverCargo == 0) return Fail("El rover no lleva carga.", out message);
-            int amount = RoverCargo;
-            Iron += amount;
-            RoverCargo = 0;
+            int amount = AddIron(RoverCargo);
+            if (amount == 0) return Fail("El almacén está lleno. Construí otro para descargar el rover.", out message);
+            RoverCargo -= amount;
             GainXp(2);
-            return Success($"Rover descargó +{amount} Fe en el hábitat.", out message);
+            return Success(RoverCargo == 0
+                ? $"Rover descargó +{amount} Fe en el almacén ({Iron}/{WarehouseCapacity})."
+                : $"Almacén recibió +{amount} Fe ({Iron}/{WarehouseCapacity}). El rover conserva {RoverCargo} Fe; ampliá el almacén para descargarlo.", out message);
         }
 
         public string ClaimDiscovery(int index)
@@ -613,7 +756,7 @@ namespace SpaceFarm
             GainXp(12);
             switch (discoveryKinds[index])
             {
-                case 0: Iron += 2; return LastReport = "Cápsula científica: +2 Fe recuperado.";
+                case 0: return LastReport = $"Cápsula científica: +{AddIron(2)} Fe guardado en el almacén.";
                 case 1: Water = Mathf.Min(60, Water + 3); return LastReport = "Hielo superficial: +3 agua recuperada.";
                 case 2: Energy = Mathf.Min(EnergyCapacity, Energy + 4); return LastReport = "Batería abandonada: +4 energía recuperada.";
                 default: Food = Mathf.Min(60, Food + 3); return LastReport = "Contenedor de víveres: +3 comida recuperada.";
@@ -639,18 +782,26 @@ namespace SpaceFarm
             if (GameOver) return LastReport = "La misión terminó. Abrí el menú de pausa para reiniciar.";
             Sol++;
             GainXp(4);
-            bool storm = Sol == 3 || Sol == 4;
-            int solarNominal = SolarPerSol + ActiveWorkers(CrewJob.Solar, 0) * WorkerBonus(CrewJob.Solar);
-            int solar = storm ? Mathf.Max(3, solarNominal / 3) : solarNominal;
+            bool storm = RollStorm();
+            if (storm) lastStormSol = Sol;
+            bool damagedThisSol = storm && TryDamageRandomStructure();
             LastSol = new SolResults { Storm = storm };
+            if (damagedThisSol)
+            {
+                LastSol.DamagedStructure = DamagedStructure;
+                LastSol.DamagedTarget = DamagedTarget;
+            }
+            int solarNominal = IsDamaged(DamagedStructureKind.Solar) ? 0 : SolarPerSol + ActiveWorkers(CrewJob.Solar, 0) * WorkerBonus(CrewJob.Solar);
+            int solar = IsDamaged(DamagedStructureKind.Solar) ? 0 : storm ? Mathf.Max(3, solarNominal / 3) : solarNominal;
             LastSol.Solar.Nominal = solarNominal;
             LastSol.Solar.Actual = Mathf.Min(solar, EnergyCapacity - Energy);
-            LastSol.Solar.Reason = storm ? "Tormenta de polvo: llega menos luz." :
+            LastSol.Solar.Reason = IsDamaged(DamagedStructureKind.Solar) ? "Paneles averiados: reparación necesaria." : storm ? "Tormenta de polvo: llega menos luz." :
                 LastSol.Solar.Actual < solar ? "Batería llena." : "Operativa.";
             Energy += LastSol.Solar.Actual;
             string report = $"Sol {Sol}: los paneles generaron {LastSol.Solar.Actual} de energía";
             if (storm) report += " por la tormenta de polvo";
             report += ". ";
+            if (damagedThisSol) report += $"La tormenta averió {DamagedStructureName(DamagedStructure, DamagedTarget)}. Reparación: {RepairIronCost} Fe y {RepairEnergyCost} energía. ";
 
             int oxygenMade = 0;
             for (int i = 0; i < OxygenPlants; i++)
@@ -692,7 +843,8 @@ namespace SpaceFarm
             {
                 SystemResult result = new SystemResult { Nominal = 7 + ActiveWorkers(CrewJob.Greenhouse, i) * WorkerBonus(CrewJob.Greenhouse) };
                 LastSol.GreenhouseUnits.Add(result);
-                if (Food >= 60) result.Reason = "Almacén de comida lleno.";
+                if (IsDamaged(DamagedStructureKind.Greenhouse, i)) result.Reason = "Invernadero averiado: reparalo.";
+                else if (Food >= 60) result.Reason = "Almacén de comida lleno.";
                 else if (Water == 0) result.Reason = "Falta agua.";
                 else if (!SpendEnergy(2)) result.Reason = "Falta energía.";
                 else
@@ -712,7 +864,8 @@ namespace SpaceFarm
             {
                 if (deposit.MineLevel == 0) continue;
                 SystemResult result = deposit.LastResult = new SystemResult { Nominal = deposit.MineNominal + ActiveWorkers(CrewJob.Mine, deposit.Id) * WorkerBonus(CrewJob.Mine) };
-                if (deposit.MineStored >= deposit.MineCapacity) result.Reason = "Almacén lleno: enviá el rover.";
+                if (IsDamaged(DamagedStructureKind.Mine, deposit.Id)) result.Reason = "Mina averiada: reparala.";
+                else if (deposit.MineStored >= deposit.MineCapacity) result.Reason = "Almacén lleno: enviá el rover.";
                 else if (!SpendEnergy(deposit.MineEnergy)) result.Reason = "Falta energía.";
                 else
                 {

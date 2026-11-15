@@ -19,6 +19,13 @@ namespace SpaceFarm
             public float Phase;
         }
 
+        private sealed class UpgradeProgressVisual
+        {
+            public SpriteRenderer Track;
+            public SpriteRenderer Fill;
+            public GameObject Root;
+        }
+
         private sealed class AstronautView
         {
             public Transform Root;
@@ -30,6 +37,11 @@ namespace SpaceFarm
             public float Speed;
             public float WalkCycle;
             public int FacingIndex = 4;
+        public Vector2Int GoalCell;
+        public List<Vector2Int> Path = new List<Vector2Int>();
+        public int PathIndex;
+        public bool PathDirty = true;
+        public float RetryPathAt;
         }
 
         private sealed class DepositView
@@ -42,10 +54,42 @@ namespace SpaceFarm
             public SpriteRenderer LabelBacking;
             public bool Seen;
             public int ShownLevel;
+            public int ShownVisualLevel;
             public RectTransform MiniMarker;
         }
 
-        private readonly Dictionary<Vector2Int, GameObject> barrierSegments = new Dictionary<Vector2Int, GameObject>();
+        private readonly Dictionary<string, UpgradeProgressVisual> upgradeProgressVisuals = new Dictionary<string, UpgradeProgressVisual>();
+        private readonly HashSet<string> activeUpgradeProgressKeys = new HashSet<string>();
+        private readonly Dictionary<string, Sprite> upgradeArtCache = new Dictionary<string, Sprite>();
+        // The generated sheets have uneven gutters. These are the visible column bounds for
+        // each atlas and row, measured in pixels from the left edge (end values are exclusive).
+        private static readonly int[][][] UpgradeColumnBounds =
+        {
+            new[]
+            {
+                new[] { 49, 297, 349, 644, 675, 975, 1001, 1317, 1336, 1658 },
+                new[] { 46, 269, 353, 613, 675, 961, 1001, 1306, 1335, 1656 },
+                new[] { 31, 273, 341, 613, 660, 954, 980, 1299, 1320, 1663 }
+            },
+            new[]
+            {
+                new[] { 65, 257, 359, 588, 661, 927, 969, 1268, 1299, 1645 },
+                new[] { 60, 254, 356, 572, 664, 909, 993, 1256, 1321, 1634 },
+                new[] { 39, 270, 334, 597, 643, 927, 960, 1257, 1290, 1648 }
+            },
+            new[]
+            {
+                new[] { 43, 278, 346, 598, 652, 948, 988, 1302, 1328, 1666 },
+                new[] { 17, 272, 308, 600, 634, 949, 971, 1291, 1311, 1666 },
+                new[] { 25, 272, 331, 602, 654, 948, 989, 1293, 1331, 1666 }
+            }
+        };
+        private static readonly int[][] UpgradeRowBounds =
+        {
+            new[] { 25, 265, 316, 567, 610, 880 },
+            new[] { 32, 355, 381, 610, 631, 896 },
+            new[] { 27, 300, 359, 584, 635, 884 }
+        };
         private readonly List<AstronautView> astronauts = new List<AstronautView>();
         private readonly List<MineDrillVisual> mineDrills = new List<MineDrillVisual>();
         private readonly Vector2[] astronautStops =
@@ -66,8 +110,8 @@ namespace SpaceFarm
         private GameObject oxygenPlantWorld;
         private readonly List<GameObject> greenhouseWorlds = new List<GameObject>();
         private readonly List<GameObject> oxygenWorlds = new List<GameObject>();
+        private readonly List<GameObject> warehouseWorlds = new List<GameObject>();
         private bool barrierMode;
-        private bool barrierVertical;
         private bool collectionActive;
         private Vector2Int hoveredBarrierCell;
         private int observedPopulation;
@@ -95,9 +139,11 @@ namespace SpaceFarm
 
             habitatWorld = CreateArtwork("Nave y hábitat", "Art/space-farm-world-modules#habitat-3d", CellPosition(BaseCell) + new Vector3(0, 0, -.2f),
                 3.1f, 2.07f, 5, worldRoot.transform).gameObject;
+            SetUpgradeArtwork(habitatWorld, 'b', 2, 1, 3.1f, 2.07f);
             oxygenPlantWorld = CreateArtwork("Planta de oxígeno", "Art/space-farm-world-modules#oxygen-3d",
                 CellPosition(BaseCell + new Vector2Int(2, 0)) + new Vector3(0, 0, -.2f),
                 1.7f, 1.14f, 6, worldRoot.transform).gameObject;
+            SetUpgradeArtwork(oxygenPlantWorld, 'b', 1, 1, 1.7f, 1.14f);
             roverRenderer = CreateArtwork("Rover 1", "Art/space-farm-rover-directions#rover-facing-south",
                 CellPosition(roverCell) + new Vector3(0f, 0f, -.5f),
                 1.55f, 1.55f, 8, worldRoot.transform);
@@ -108,6 +154,7 @@ namespace SpaceFarm
             dormWorld = CreateArtwork("Dormitorio de astronautas", "Art/space-farm-world-modules#habitat-3d",
                 CellPosition(BaseCell + new Vector2Int(-1, 2)) + new Vector3(0f, 0f, -.22f),
                 1.65f, 1.1f, 6, worldRoot.transform).gameObject;
+            SetUpgradeArtwork(dormWorld, 'c', 0, 1, 1.65f, 1.1f);
             dormBaseScale = dormWorld.transform.localScale;
             CreatePointsOfInterest();
             routeMarker = CreateWorldSprite("Destino del rover", ringSprite, CellPosition(roverCell),
@@ -262,44 +309,57 @@ namespace SpaceFarm
             }
         }
 
-        private void CreateBarrierWorld()
-        {
-            GameObject root = new GameObject("Muros colocados por el jugador");
-            root.transform.SetParent(worldRoot.transform);
-            barrierPreview = CreateBarrierVisual(map.BaseCell, false, true, root.transform);
-            barrierPreview.name = "Vista previa del muro";
-            barrierPreview.SetActive(false);
-        }
-
-        private GameObject CreateBarrierVisual(Vector2Int cell, bool vertical, bool preview, Transform parent)
-        {
-            GameObject root = new GameObject(preview ? "Vista previa" : $"Muro {cell.x + 1},{cell.y + 1}");
-            root.transform.SetParent(parent);
-            root.transform.position = CellPosition(cell) + new Vector3(0f, 0f, -.24f);
-            root.transform.rotation = Quaternion.Euler(0f, 0f, vertical ? 90f : 0f);
-            float length = .82f;
-            Color body = preview ? new Color(.5f,.94f,.91f,.55f) : SpaceFarmPalette.Rover;
-            Color trim = preview ? new Color(.75f,1f,1f,.55f) : SpaceFarmPalette.Iron;
-            CreateWorldSprite("Viga", squareSprite, root.transform.position,
-                new Vector3(length,.2f,1f),
-                body, 7, root.transform);
-            CreateWorldSprite("Refuerzo", squareSprite, root.transform.position + new Vector3(0,0,-.01f),
-                new Vector3(length,.055f,1f),
-                trim, 8, root.transform);
-            for (int end = -1; end <= 1; end += 2)
-            {
-                Vector3 offset = new Vector3(end * length * .5f,0,-.02f);
-                CreateWorldSprite("Unión", squareSprite, root.transform.position + offset,
-                    new Vector3(.19f,.19f,1f), trim, 8, root.transform);
-            }
-            return root;
-        }
-
         private void CreateSolarWorld()
         {
             solarWorld = CreateArtwork("Matriz solar", "Art/space-farm-world-modules#solar-3d",
                 CellPosition(BaseCell) + new Vector3(-2.1f,-.8f,-.25f), 2.1f, 1.4f, 6, worldRoot.transform).gameObject;
+            SetUpgradeArtwork(solarWorld, 'b', 0, 1, 2.1f, 1.4f);
             solarBaseScale = solarWorld.transform.localScale;
+        }
+
+        private Sprite GetUpgradeSprite(char atlas, int row, int level)
+        {
+            string key = $"{atlas}:{row}:{Mathf.Clamp(level, 1, 5)}";
+            if (upgradeArtCache.TryGetValue(key, out Sprite cached)) return cached;
+            Texture2D texture = Resources.Load<Texture2D>($"Art/space-farm-upgrade-atlas-{atlas}");
+            if (texture == null) return null;
+
+            int atlasIndex = atlas - 'a';
+            if (atlasIndex < 0 || atlasIndex >= UpgradeColumnBounds.Length || row < 0 || row >= 3) return null;
+            int column = Mathf.Clamp(level, 1, 5) - 1;
+            int[] columns = UpgradeColumnBounds[atlasIndex][row];
+            int[] rows = UpgradeRowBounds[atlasIndex];
+            const int padding = 3;
+            int left = Mathf.Max(0, columns[column * 2] - padding);
+            int right = Mathf.Min(texture.width, columns[column * 2 + 1] + padding);
+            int top = Mathf.Max(0, rows[row * 2] - padding);
+            int bottom = Mathf.Min(texture.height, rows[row * 2 + 1] + padding);
+            Rect rect = new Rect(left, texture.height - bottom, right - left, bottom - top);
+            Sprite sprite = Sprite.Create(texture, rect, new Vector2(.5f, .5f), 100f, 0, SpriteMeshType.FullRect);
+            sprite.name = $"space-farm-tier-{atlas}-{row + 1}-{level}";
+            upgradeArtCache[key] = sprite;
+            runtimeAssets.Add(sprite);
+            return sprite;
+        }
+
+        private bool SetUpgradeArtwork(GameObject building, char atlas, int row, int level, float width, float height)
+        {
+            if (building == null) return false;
+            Sprite sprite = GetUpgradeSprite(atlas, row, level);
+            SpriteRenderer renderer = building.GetComponent<SpriteRenderer>();
+            if (sprite == null || renderer == null) return false;
+            renderer.sprite = sprite;
+            building.transform.localScale = UpgradeSpriteScale(sprite, width, height);
+            return true;
+        }
+
+        private static Vector3 UpgradeSpriteScale(Sprite sprite, float width, float height)
+        {
+            // Preserve the previous artwork's on-map size after trimming transparent gutters.
+            float referenceWidth = (sprite.texture.width / 5f - 10f) / 100f;
+            float referenceHeight = (sprite.texture.height / 3f - 10f) / 100f;
+            return new Vector3(width / referenceWidth,
+                height / referenceHeight, 1f);
         }
 
         private static Color DiscoveryColor(int kind)
@@ -336,7 +396,7 @@ namespace SpaceFarm
                     SetReport("No coloqués el muro debajo del rover.");
                 else
                 {
-                    bool built = state.BuildBarrierSegment(cell, barrierVertical, revealed[cell.x, cell.y], out string message);
+                    bool built = state.BuildBarrierSegment(cell, false, revealed[cell.x, cell.y], out string message);
                     SetReport(message);
                     if (built)
                     {
@@ -367,6 +427,9 @@ namespace SpaceFarm
             for (int i = 0; i < oxygenWorlds.Count; i++)
                 if (Vector2.Distance(world, oxygenWorlds[i].transform.position) < .8f)
                     return SelectWorldBuilding("oxygen2", i);
+            for (int i = 0; i < warehouseWorlds.Count; i++)
+                if (Vector2.Distance(world, warehouseWorlds[i].transform.position) < 1f)
+                    return SelectWorldBuilding("warehouse", i);
             if (Vector2.Distance(world, CellPosition(BaseCell + new Vector2Int(2,0))) < .78f)
                 return SelectWorldBuilding("oxygen1");
             if (Vector2.Distance(world, solarWorld.transform.position + new Vector3(.33f,0,0)) < .9f)
@@ -381,12 +444,6 @@ namespace SpaceFarm
         {
             if (keyboard != null)
             {
-                if (barrierMode && keyboard.rKey.wasPressedThisFrame)
-                {
-                    barrierVertical = !barrierVertical;
-                    if (barrierPreview != null)
-                        barrierPreview.transform.rotation = Quaternion.Euler(0f, 0f, barrierVertical ? 90f : 0f);
-                }
                 Vector2 direction = Vector2.zero;
                 if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed) direction.x--;
                 if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) direction.x++;
@@ -405,7 +462,7 @@ namespace SpaceFarm
                     ClampCamera();
                 }
             }
-            if (barrierMode && mouse != null)
+            if (barrierMode && mouse != null && map != null && state != null && barrierPreview != null)
             {
                 bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
                 Vector3 world = ScreenToWorld(mouse.position.ReadValue());
@@ -416,16 +473,11 @@ namespace SpaceFarm
                     state.BarrierBlocker(hoveredBarrierCell, revealed[hoveredBarrierCell.x, hoveredBarrierCell.y]);
                 bool valid = reason.Length == 0;
                 if (buildModeText != null)
-                    buildModeText.text = $"Muro {(barrierVertical ? "vertical" : "horizontal")} · 1 Fe (tenés {state.Iron})\n" +
-                        (valid ? "Posición libre · clic para colocar" : reason);
-                barrierPreview.SetActive(!overUi && inside);
-                if (!overUi && inside)
-                {
-                    barrierPreview.transform.position = CellPosition(hoveredBarrierCell) + new Vector3(0f, 0f, -.24f);
-                    foreach (SpriteRenderer sprite in barrierPreview.GetComponentsInChildren<SpriteRenderer>())
-                        sprite.color = valid ? new Color(.48f,1f,.88f,.58f) : new Color(1f,.31f,.27f,.6f);
-                }
+                    buildModeText.text = $"Muro · 1 Fe (tenés {state.Iron})\n" +
+                        (valid ? "Se une solo a muros vecinos · clic para colocar" : reason);
+                UpdateWallPreview(hoveredBarrierCell, !overUi && inside, valid);
             }
+            else HideWallPreview();
             AnimateAstronauts();
         }
 
@@ -437,7 +489,7 @@ namespace SpaceFarm
         private bool IsAstronautPositionBlocked(Vector3 position, AstronautView moving)
         {
             Vector2Int cell = WorldToCell(position);
-            if (!map.Inside(cell)) return true;
+            if (!map.Inside(cell) || state.HasBarrierAt(cell) || IsAstronautInsideStructure(position)) return true;
             if (rover != null && Vector2.Distance(position, rover.transform.position) < .72f) return true;
             for (int i = 0; i < astronauts.Count; i++)
             {
@@ -463,6 +515,7 @@ namespace SpaceFarm
                 int index = greenhouseWorlds.Count;
                 GameObject built = CreateBuilding($"Invernadero {index + 1}", "Art/space-farm-world-modules#greenhouse-3d",
                     state.GreenhouseCells[index], worldRoot.transform);
+                SetUpgradeArtwork(built, 'a', 0, state.ColonyLevel, 1.75f, 1.17f);
                 greenhouseWorlds.Add(built);
                 if (greenhouse == null) greenhouse = built;
                 AnimatePop(built.transform, built.transform.localScale);
@@ -472,28 +525,71 @@ namespace SpaceFarm
                 int index = oxygenWorlds.Count;
                 GameObject built = CreateBuilding($"Planta de oxígeno {index + 2}", "Art/space-farm-world-modules#oxygen-3d",
                     state.OxygenCells[index], worldRoot.transform);
+                SetUpgradeArtwork(built, 'b', 1, state.ColonyLevel, 1.75f, 1.17f);
                 oxygenWorlds.Add(built);
                 if (oxygenPlantTwo == null) oxygenPlantTwo = built;
                 AnimatePop(built.transform, built.transform.localScale);
             }
+            while (startingBaseLanded && warehouseWorlds.Count < state.WarehouseCells.Count)
+            {
+                int index = warehouseWorlds.Count;
+                GameObject built = CreateArtwork(index == 0 ? "Almacén central" : $"Almacén de recursos {index + 1}",
+                    "Art/space-farm-warehouse", CellPosition(state.WarehouseCells[index]) + new Vector3(0f, 0f, -.18f),
+                    2.05f, 1.42f, 6, worldRoot.transform).gameObject;
+                SetUpgradeArtwork(built, 'c', 1, state.ColonyLevel, 2.05f, 1.42f);
+                warehouseWorlds.Add(built);
+                AnimatePop(built.transform, built.transform.localScale);
+            }
+            SetUpgradeArtwork(oxygenPlantWorld, 'b', 1, state.ColonyLevel, 1.7f, 1.14f);
             if (state.ColonyLevel != observedHabitatLevel)
             {
                 observedHabitatLevel = state.ColonyLevel;
                 Vector3 size = dormBaseScale * (1f + .08f * (state.ColonyLevel - 1));
-                if (state.ColonyLevel == 1) dormWorld.transform.localScale = size;
-                else AnimatePop(dormWorld.transform, size);
+                SetUpgradeArtwork(habitatWorld, 'b', 2, state.ColonyLevel, 3.1f, 2.07f);
+                SetUpgradeArtwork(dormWorld, 'c', 0, state.ColonyLevel, 1.65f, 1.1f);
+                dormWorld.transform.localScale = size;
+                if (state.ColonyLevel > 1) AnimatePop(dormWorld.transform, size);
+                for (int i = 0; i < greenhouseWorlds.Count; i++)
+                    SetUpgradeArtwork(greenhouseWorlds[i], 'a', 0, state.ColonyLevel, 1.75f, 1.17f);
+                for (int i = 0; i < oxygenWorlds.Count; i++)
+                    SetUpgradeArtwork(oxygenWorlds[i], 'b', 1, state.ColonyLevel, 1.75f, 1.17f);
+                for (int i = 0; i < warehouseWorlds.Count; i++)
+                    SetUpgradeArtwork(warehouseWorlds[i], 'c', 1, state.ColonyLevel, 2.05f, 1.42f);
+                SetUpgradeArtwork(solarWorld, 'b', 0, state.SolarLevel, 2.1f, 1.4f);
+                solarWorld.transform.localScale = solarBaseScale * (1f + .12f * (state.SolarLevel - 1));
             }
             if (state.SolarLevel != observedSolarLevel)
             {
                 observedSolarLevel = state.SolarLevel;
                 Vector3 size = solarBaseScale * (1f + .12f * (state.SolarLevel - 1));
-                if (state.SolarLevel == 1) solarWorld.transform.localScale = size;
-                else AnimatePop(solarWorld.transform, size);
+                SetUpgradeArtwork(solarWorld, 'b', 0, state.SolarLevel, 2.1f, 1.4f);
+                solarWorld.transform.localScale = size;
+                if (state.SolarLevel > 1) AnimatePop(solarWorld.transform, size);
             }
             previousGreenhouse = state.Greenhouse;
             previousRoverLevel = state.RoverLevel;
             previousOxygenPlants = state.OxygenPlants;
+            RefreshDamageVisuals();
             RefreshSystems();
+        }
+
+        private void RefreshDamageVisuals()
+        {
+            TintDamage(solarWorld, state.IsDamaged(DamagedStructureKind.Solar));
+            TintDamage(dormWorld, state.IsDamaged(DamagedStructureKind.Dormitory));
+            TintDamage(rover, state.IsDamaged(DamagedStructureKind.Rover));
+            for (int i = 0; i < greenhouseWorlds.Count; i++)
+                TintDamage(greenhouseWorlds[i], state.IsDamaged(DamagedStructureKind.Greenhouse, i));
+            for (int i = 0; i < depositViews.Length; i++)
+                if (depositViews[i].Building != null)
+                    TintDamage(depositViews[i].Building, state.IsDamaged(DamagedStructureKind.Mine, i));
+        }
+
+        private static void TintDamage(GameObject target, bool damaged)
+        {
+            if (target == null) return;
+            Color tint = damaged ? new Color(1f, .42f, .31f, 1f) : Color.white;
+            foreach (SpriteRenderer sprite in target.GetComponentsInChildren<SpriteRenderer>()) sprite.color = tint;
         }
 
         private void RefreshDeposit(DepositView view)
@@ -506,18 +602,28 @@ namespace SpaceFarm
                 view.Building = CreateBuilding(iron ? $"Mina {deposit.Name}" : $"Extractor {deposit.Name}",
                     iron ? "Art/space-farm-iron-mine-animation#iron-mine-base-3d" : "Art/space-farm-world-modules#water-3d",
                     view.Info.Cell, view.Marker.transform.parent);
+                int visualLevel = iron ? Mathf.Max(deposit.MineLevel, state.ColonyLevel) : state.ColonyLevel;
+                SetUpgradeArtwork(view.Building, 'a', iron ? 1 : 2, visualLevel, 1.75f, 1.17f);
                 if (iron) AddMineDrill(view.Building);
                 view.BuildingScale = view.Building.transform.localScale;
                 AnimatePop(view.Building.transform, view.BuildingScale);
                 view.ShownLevel = deposit.MineLevel;
+                view.ShownVisualLevel = visualLevel;
             }
             view.Marker.enabled = visible && !deposit.HasBuilding;
             view.Marker.color = deposit.Surveyed ? Color.white : new Color(1f, 1f, 1f, .8f);
-            if (view.Building != null && iron)
+            if (view.Building != null)
             {
-                Vector3 scale = view.BuildingScale * (deposit.MineLevel >= 2 ? 1.16f : 1f);
-                if (deposit.MineLevel != view.ShownLevel) AnimatePop(view.Building.transform, scale);
-                view.ShownLevel = deposit.MineLevel;
+                int visualLevel = iron ? Mathf.Max(deposit.MineLevel, state.ColonyLevel) : state.ColonyLevel;
+                bool mineImproved = iron && deposit.MineLevel != view.ShownLevel;
+                if (visualLevel != view.ShownVisualLevel || mineImproved)
+                {
+                    SetUpgradeArtwork(view.Building, 'a', iron ? 1 : 2, visualLevel, 1.75f, 1.17f);
+                    Vector3 scale = view.BuildingScale * (iron && deposit.MineLevel >= 2 ? 1.16f : 1f);
+                    AnimatePop(view.Building.transform, scale);
+                }
+                view.ShownVisualLevel = visualLevel;
+                if (iron) view.ShownLevel = deposit.MineLevel;
             }
 
             string text;
@@ -537,14 +643,7 @@ namespace SpaceFarm
         private void RefreshSystems()
         {
             if (state == null || worldRoot == null) return;
-            foreach (SpaceFarmState.BarrierState barrier in state.Barriers)
-            {
-                if (!barrierSegments.TryGetValue(barrier.Cell, out GameObject visual) || visual == null)
-                {
-                    visual = CreateBarrierVisual(barrier.Cell, barrier.Vertical, false, worldRoot.transform);
-                    barrierSegments[barrier.Cell] = visual;
-                }
-            }
+            RefreshWallNetwork();
             for (int i = 0; i < discoveryMarkers.Length; i++)
                 if (discoveryMarkers[i] != null)
                     discoveryMarkers[i].enabled = revealed[map.Points[i].Cell.x, map.Points[i].Cell.y] && !state.HasDiscovery(i);
@@ -553,9 +652,76 @@ namespace SpaceFarm
             MarkMinimapDirty();
         }
 
+        private void RefreshUpgradeProgressVisuals()
+        {
+            if (state.Upgrades.Count == 0 && upgradeProgressVisuals.Count == 0) return;
+            activeUpgradeProgressKeys.Clear();
+            foreach (SpaceFarmState.UpgradeTask task in state.Upgrades)
+            {
+                GameObject target = UpgradeTarget(task);
+                if (target == null) continue;
+                string key = $"{task.Kind}:{task.Target}";
+                activeUpgradeProgressKeys.Add(key);
+                if (!upgradeProgressVisuals.TryGetValue(key, out UpgradeProgressVisual visual) || visual.Root == null)
+                {
+                    visual = CreateUpgradeProgressVisual(key);
+                    if (visual == null) continue;
+                    upgradeProgressVisuals[key] = visual;
+                }
+
+                SpriteRenderer targetRenderer = target.GetComponent<SpriteRenderer>();
+                if (targetRenderer == null) continue;
+                Bounds bounds = targetRenderer.bounds;
+                Vector3 position = new Vector3(bounds.center.x, bounds.max.y + .16f, -.42f);
+                visual.Track.transform.position = position;
+                float progress = task.Duration <= 0f ? 1f : 1f - Mathf.Clamp01(task.Remaining / task.Duration);
+                float fullWidth = .82f;
+                float fillWidth = Mathf.Max(.025f, fullWidth * progress);
+                visual.Fill.transform.position = position + new Vector3(-fullWidth * .5f + fillWidth * .5f, 0f, -.01f);
+                visual.Fill.transform.localScale = new Vector3(fillWidth, .055f, 1f);
+            }
+
+            List<string> removed = null;
+            foreach (KeyValuePair<string, UpgradeProgressVisual> entry in upgradeProgressVisuals)
+            {
+                if (activeUpgradeProgressKeys.Contains(entry.Key)) continue;
+                if (entry.Value.Root != null) Destroy(entry.Value.Root);
+                if (removed == null) removed = new List<string>();
+                removed.Add(entry.Key);
+            }
+            if (removed != null)
+                for (int i = 0; i < removed.Count; i++) upgradeProgressVisuals.Remove(removed[i]);
+        }
+
+        private GameObject UpgradeTarget(SpaceFarmState.UpgradeTask task)
+        {
+            if (task.Kind == "solar") return solarWorld;
+            if (task.Kind == "rover") return rover;
+            if (task.Kind == "mine" && depositViews != null && task.Target >= 0 && task.Target < depositViews.Length)
+                return depositViews[task.Target].Building;
+            return null;
+        }
+
+        private UpgradeProgressVisual CreateUpgradeProgressVisual(string key)
+        {
+            if (worldRoot == null || squareSprite == null) return null;
+            GameObject root = new GameObject($"Progreso de mejora {key}");
+            root.transform.SetParent(worldRoot.transform, false);
+            SpriteRenderer track = CreateWorldSprite("Fondo de progreso", squareSprite, Vector3.zero,
+                new Vector3(.88f, .105f, 1f), new Color(.055f, .09f, .12f, .9f), 29, root.transform);
+            SpriteRenderer fill = CreateWorldSprite("Carga de mejora", squareSprite, Vector3.zero,
+                new Vector3(.025f, .055f, 1f), new Color(.96f, .62f, .29f, 1f), 30, root.transform);
+            return new UpgradeProgressVisual { Root = root, Track = track, Fill = fill };
+        }
+
         private void StartMineCollection(int depositId)
         {
             if (paused) return;
+            if (state.IsDamaged(DamagedStructureKind.Rover))
+            {
+                SetReport($"El rover está averiado. Reparalo por {state.RepairIronCost} Fe y {state.RepairEnergyCost} energía.");
+                return;
+            }
             SpaceFarmState.DepositState deposit = state.Deposit(depositId);
             if (deposit == null || deposit.MineLevel == 0) { SetReport("Elegí una mina para recoger su hierro."); return; }
             if (!state.CanRoverReach(map.Deposits[depositId].Cell)) { SetReport("La mina queda fuera del alcance de esta colonia. Subí de nivel."); return; }
@@ -592,10 +758,10 @@ namespace SpaceFarm
             SetReport(loaded);
             RefreshWorld();
             RefreshHud();
-            if (!FindReachableCellNear(BaseCell, out Vector2Int dockCell))
+            if (!FindNearestWarehouseDockCell(out Vector2Int dockCell))
             {
                 collectionActive = false;
-                SetReport("El rover quedó cargado porque no hay un camino libre hacia la base. Abrí un paso entre los muros.");
+                SetReport("El rover quedó cargado porque no hay un camino libre hasta un almacén. Abrí un paso entre los muros.");
                 RefreshHud();
                 yield break;
             }
@@ -612,10 +778,49 @@ namespace SpaceFarm
                 yield break;
             }
             // Cargo moves in two atomic steps (mine to rover, rover to habitat), so a pause in between cannot lose or duplicate iron.
-            state.UnloadRover(out string unloaded);
+            bool stored = state.UnloadRover(out string unloaded);
             collectionActive = false;
             SetReport(unloaded);
-            PlayWorldPing(CellPosition(dockCell), SpaceFarmPalette.Iron);
+            if (stored) PlayWorldPing(CellPosition(dockCell), SpaceFarmPalette.Iron);
+            RefreshWorld();
+            RefreshHud();
+        }
+
+        private void OrderCargoDelivery()
+        {
+            if (paused || state.RoverCargo <= 0) return;
+            if (state.IsDamaged(DamagedStructureKind.Rover))
+            {
+                SetReport("El rover está averiado. Reparalo antes de enviarlo al almacén.");
+                return;
+            }
+            if (travel != null || collectionActive) { SetReport("Esperá a que el rover termine su recorrido."); return; }
+            if (state.Iron >= state.WarehouseCapacity) { SetReport("El almacén está lleno. Construí otro antes de descargar."); return; }
+            if (!FindNearestWarehouseDockCell(out Vector2Int dockCell))
+            {
+                SetReport("No hay una ruta libre hasta el almacén. Despejá un paso entre los muros.");
+                return;
+            }
+            collectionActive = true;
+            StartCoroutine(CargoDeliveryRoutine(dockCell));
+            RefreshHud();
+        }
+
+        private IEnumerator CargoDeliveryRoutine(Vector2Int dockCell)
+        {
+            roverDestination = dockCell;
+            routeMarker.transform.position = CellPosition(dockCell);
+            routeMarker.enabled = true;
+            SetReport("Rover en camino al almacén con los materiales recuperados.");
+            travel = StartCoroutine(TravelTo());
+            yield return travel;
+            bool arrived = roverCell == dockCell;
+            string report = string.Empty;
+            bool stored = arrived && state.UnloadRover(out report);
+            collectionActive = false;
+            if (arrived) SetReport(report);
+            else SetReport("El rover no alcanzó el almacén. Revisá si hay un muro bloqueando el paso.");
+            if (stored) PlayWorldPing(CellPosition(dockCell), SpaceFarmPalette.Iron);
             RefreshWorld();
             RefreshHud();
         }
@@ -684,22 +889,12 @@ namespace SpaceFarm
                 if (member.Resting || member.Job != CrewJob.None)
                 {
                     Vector3 destination = member.Resting
-                        ? dormWorld.transform.position + new Vector3((i % 3 - 1) * .18f, -.18f, 0f)
+                        ? AstronautRestPosition(i)
                         : CrewWorkPosition(member);
-                    Vector3 before = view.Root.position;
-                    Vector3 delta = destination - before;
-                    if (delta.magnitude > .12f)
-                    {
-                        view.Body.enabled = true;
-                        view.Root.position = Vector3.MoveTowards(before, destination, view.Speed * Time.deltaTime * 1.6f);
-                        view.WalkCycle = Mathf.Repeat(view.WalkCycle + Vector3.Distance(before, view.Root.position) / .48f, 1f);
-                        SetAstronautFacing(view, delta, Mathf.FloorToInt(view.WalkCycle * 4f));
-                    }
-                    else
-                    {
-                        view.Body.enabled = !member.Resting;
-                        SetAstronautIdle(view);
-                    }
+                    bool arrived = MoveAstronautAlongClearPath(view, destination, view.Speed * 1.6f,
+                        approachDestination: member.Job != CrewJob.None);
+                    view.Body.enabled = !(member.Resting && arrived);
+                    if (arrived) SetAstronautIdle(view);
                     continue;
                 }
                 view.Body.enabled = true;
@@ -711,26 +906,8 @@ namespace SpaceFarm
                 }
                 Vector3 target = CellPosition(BaseCell) +
                     (Vector3)ProjectGroundOffset(view.TargetOffset);
-                Vector3 direction = target - view.Root.position;
                 float speed = view.Speed * (state.LastSol.Storm || state.LastSol.RaidFoodLoss > 0 ? .55f : 1f);
-                Vector3 previousPosition = view.Root.position;
-                Vector3 nextPosition = Vector3.MoveTowards(view.Root.position, target, speed * Time.deltaTime);
-                if (IsAstronautPositionBlocked(nextPosition, view))
-                {
-                    view.Wait = .25f;
-                    ChooseAstronautTarget(view, view.TargetOffset);
-                    SetAstronautIdle(view);
-                    continue;
-                }
-                view.Root.position = nextPosition;
-                float traveled = Vector3.Distance(previousPosition, view.Root.position);
-                if (traveled > .0001f)
-                {
-                    // Four grounded poses per stride; the animation slows whenever the colonist slows.
-                    view.WalkCycle = Mathf.Repeat(view.WalkCycle + traveled / .48f, 1f);
-                    SetAstronautFacing(view, direction, Mathf.FloorToInt(view.WalkCycle * 4f));
-                }
-                if (Vector3.Distance(view.Root.position, target) < .025f)
+                if (MoveAstronautAlongClearPath(view, target, speed))
                 {
                     view.Wait = view.Random.Range(.4f, 1.75f);
                     view.Speed = view.Random.Range(.42f, .72f);
@@ -738,6 +915,198 @@ namespace SpaceFarm
                     ChooseAstronautTarget(view, view.TargetOffset);
                 }
             }
+        }
+
+        private Vector3 AstronautRestPosition(int index)
+        {
+            Vector2Int[] slots =
+            {
+                new Vector2Int(-2, 2), new Vector2Int(0, 2), new Vector2Int(2, 2),
+                new Vector2Int(-2, 0), new Vector2Int(2, 0), new Vector2Int(-2, -2),
+                new Vector2Int(0, -2), new Vector2Int(2, -2), new Vector2Int(-3, 1), new Vector2Int(3, 1)
+            };
+            Vector2Int slot = slots[index % slots.Length];
+            return dormWorld.transform.position + new Vector3(slot.x * TileSize,
+                slot.y * TileSize * SpaceFarmMap.TerrainPerspectiveYScale, 0f);
+        }
+
+        private bool MoveAstronautAlongClearPath(AstronautView view, Vector3 destination, float speed,
+            bool approachDestination = false)
+        {
+            Vector2Int requestedGoal = WorldToCell(destination);
+            Vector2Int goal = requestedGoal;
+            if (!map.Inside(goal)) return false;
+            if (IsAstronautCellBlocked(goal, view))
+            {
+                if (!FindNearestAstronautCell(destination, view, out goal))
+                {
+                    view.PathDirty = true;
+                    view.RetryPathAt = Time.time + .35f;
+                    SetAstronautIdle(view);
+                    return false;
+                }
+            }
+
+            if (view.PathDirty || view.GoalCell != goal ||
+                (view.PathIndex < view.Path.Count && IsAstronautCellBlocked(view.Path[view.PathIndex], view)))
+            {
+                if (Time.time < view.RetryPathAt) return false;
+                view.GoalCell = goal;
+                view.PathDirty = false;
+                view.PathIndex = 0;
+                if (!FindAstronautPath(WorldToCell(view.Root.position), goal, view, out view.Path))
+                {
+                    view.PathDirty = true;
+                    view.RetryPathAt = Time.time + .35f;
+                    return false;
+                }
+            }
+
+            Vector3 target = view.PathIndex < view.Path.Count
+                ? CellPosition(view.Path[view.PathIndex])
+                : goal == requestedGoal ? destination : approachDestination
+                    ? WorkApproachPosition(destination, goal, view) : CellPosition(goal);
+            Vector3 direction = target - view.Root.position;
+            Vector3 previous = view.Root.position;
+            Vector3 next = Vector3.MoveTowards(previous, target, speed * Time.deltaTime);
+            if (IsAstronautPositionBlocked(next, view))
+            {
+                view.PathDirty = true;
+                view.RetryPathAt = Time.time + .18f;
+                SetAstronautIdle(view);
+                return false;
+            }
+            view.Root.position = next;
+            float traveled = Vector3.Distance(previous, next);
+            if (traveled > .0001f)
+            {
+                view.WalkCycle = Mathf.Repeat(view.WalkCycle + traveled / .48f, 1f);
+                SetAstronautFacing(view, direction, Mathf.FloorToInt(view.WalkCycle * 4f));
+            }
+            if (Vector3.Distance(next, target) > .025f) return false;
+            if (view.PathIndex < view.Path.Count)
+            {
+                view.PathIndex++;
+                return false;
+            }
+            return goal == requestedGoal && Vector3.Distance(next, destination) <= .12f ||
+                   goal != requestedGoal && (!approachDestination || Vector3.Distance(next, target) <= .04f);
+        }
+
+        private Vector3 WorkApproachPosition(Vector3 destination, Vector2Int safeCell, AstronautView moving)
+        {
+            Vector3 center = CellPosition(safeCell);
+            Vector3 towardBuilding = destination - center;
+            towardBuilding.z = 0f;
+            if (towardBuilding.sqrMagnitude < .0001f) return center;
+            towardBuilding.Normalize();
+
+            // Stop close to the sprite edge while keeping the astronaut's feet in a clear cell.
+            float clearDistance = 0f;
+            float blockedDistance = .32f;
+            for (int attempt = 0; attempt < 7; attempt++)
+            {
+                float distance = (clearDistance + blockedDistance) * .5f;
+                Vector3 candidate = center + towardBuilding * distance;
+                if (IsAstronautPositionBlocked(candidate, moving)) blockedDistance = distance;
+                else clearDistance = distance;
+            }
+            return center + towardBuilding * clearDistance;
+        }
+
+        private bool FindNearestAstronautCell(Vector3 destination, AstronautView moving, out Vector2Int result)
+        {
+            result = default;
+            Vector2Int center = WorldToCell(destination);
+            float best = float.MaxValue;
+            bool found = false;
+            for (int radius = 1; radius <= 4; radius++)
+            for (int y = -radius; y <= radius; y++)
+            for (int x = -radius; x <= radius; x++)
+            {
+                if (Mathf.Abs(x) != radius && Mathf.Abs(y) != radius) continue;
+                Vector2Int cell = center + new Vector2Int(x, y);
+                if (IsAstronautCellBlocked(cell, moving)) continue;
+                float distance = (CellPosition(cell) - destination).sqrMagnitude;
+                if (distance >= best) continue;
+                best = distance;
+                result = cell;
+                found = true;
+            }
+            return found;
+        }
+
+        private bool IsAstronautCellBlocked(Vector2Int cell, AstronautView moving)
+        {
+            return !map.Inside(cell) || IsAstronautPositionBlocked(CellPosition(cell), moving);
+        }
+
+        private bool IsAstronautInsideStructure(Vector3 position)
+        {
+            if (InsideBuilding(habitatWorld, position) || InsideBuilding(oxygenPlantWorld, position) ||
+                InsideBuilding(solarWorld, position) || InsideBuilding(dormWorld, position)) return true;
+            for (int i = 0; i < greenhouseWorlds.Count; i++)
+                if (InsideBuilding(greenhouseWorlds[i], position)) return true;
+            for (int i = 0; i < oxygenWorlds.Count; i++)
+                if (InsideBuilding(oxygenWorlds[i], position)) return true;
+            for (int i = 0; i < warehouseWorlds.Count; i++)
+                if (InsideBuilding(warehouseWorlds[i], position)) return true;
+            if (depositViews != null)
+                for (int i = 0; i < depositViews.Length; i++)
+                    if (InsideBuilding(depositViews[i].Building, position)) return true;
+            return false;
+        }
+
+        private static bool InsideBuilding(GameObject building, Vector3 position)
+        {
+            if (building == null) return false;
+            SpriteRenderer sprite = building.GetComponent<SpriteRenderer>();
+            if (sprite == null || !sprite.enabled) return false;
+            Bounds bounds = sprite.bounds;
+            // The actor's ground anchor has a small clearance so its body does not overlap the art.
+            return position.x >= bounds.min.x - .12f && position.x <= bounds.max.x + .12f &&
+                   position.y >= bounds.min.y - .08f && position.y <= bounds.max.y + .08f;
+        }
+
+        private bool FindAstronautPath(Vector2Int start, Vector2Int goal, AstronautView moving, out List<Vector2Int> path)
+        {
+            path = new List<Vector2Int>();
+            if (!map.Inside(start) || !map.Inside(goal) || IsAstronautCellBlocked(goal, moving)) return false;
+            if (start == goal) return true;
+            bool[,] visited = new bool[Width, Height];
+            Vector2Int[,] previous = new Vector2Int[Width, Height];
+            Queue<Vector2Int> open = new Queue<Vector2Int>();
+            Vector2Int[] directions =
+            {
+                new Vector2Int(1, 0), new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(0, -1),
+                new Vector2Int(1, 1), new Vector2Int(1, -1), new Vector2Int(-1, 1), new Vector2Int(-1, -1)
+            };
+            open.Enqueue(start);
+            visited[start.x, start.y] = true;
+            while (open.Count > 0 && !visited[goal.x, goal.y])
+            {
+                Vector2Int current = open.Dequeue();
+                foreach (Vector2Int direction in directions)
+                {
+                    Vector2Int next = current + direction;
+                    if (!map.Inside(next) || visited[next.x, next.y] || IsAstronautCellBlocked(next, moving)) continue;
+                    if (direction.x != 0 && direction.y != 0 &&
+                        (IsAstronautCellBlocked(current + new Vector2Int(direction.x, 0), moving) ||
+                         IsAstronautCellBlocked(current + new Vector2Int(0, direction.y), moving))) continue;
+                    visited[next.x, next.y] = true;
+                    previous[next.x, next.y] = current;
+                    open.Enqueue(next);
+                }
+            }
+            if (!visited[goal.x, goal.y]) return false;
+            Vector2Int cursor = goal;
+            while (cursor != start)
+            {
+                path.Add(cursor);
+                cursor = previous[cursor.x, cursor.y];
+            }
+            path.Reverse();
+            return true;
         }
 
         private Vector3 CrewWorkPosition(SpaceFarmState.CrewMember member)

@@ -36,6 +36,7 @@ namespace SpaceFarm
                 case StructureKind.Extractor: return "Extractor de agua";
                 case StructureKind.Greenhouse: return "Invernadero";
                 case StructureKind.OxygenPlant: return "Planta de O2";
+                case StructureKind.Warehouse: return "Almacén de recursos";
                 default: return "Estructura";
             }
         }
@@ -47,6 +48,7 @@ namespace SpaceFarm
                 case StructureKind.Mine: return "Art/space-farm-iron-mine-animation#iron-mine-base-3d";
                 case StructureKind.Extractor: return "Art/space-farm-world-modules#water-3d";
                 case StructureKind.Greenhouse: return "Art/space-farm-world-modules#greenhouse-3d";
+                case StructureKind.Warehouse: return "Art/space-farm-warehouse";
                 default: return "Art/space-farm-world-modules#oxygen-3d";
             }
         }

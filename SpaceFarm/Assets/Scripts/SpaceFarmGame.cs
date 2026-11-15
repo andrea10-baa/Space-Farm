@@ -213,6 +213,7 @@ namespace SpaceFarm
             UpdateFogReveal();
             AnimateRover();
             AnimateWorldArt();
+            RefreshUpgradeProgressVisuals();
             UpdateSystems(mouse, keyboard);
             if (mouse != null)
             {
@@ -399,6 +400,11 @@ namespace SpaceFarm
         private void SendRoverTo(Vector2Int target)
         {
             if (paused) return;
+            if (state.IsDamaged(DamagedStructureKind.Rover))
+            {
+                SetReport($"El rover está averiado. Reparalo por {state.RepairIronCost} Fe y {state.RepairEnergyCost} energía antes de moverlo.");
+                return;
+            }
             if (!map.Inside(target)) { SetReport("Ese sector queda fuera del mapa."); return; }
             if (!state.CanRoverReach(target))
             {
@@ -610,6 +616,21 @@ namespace SpaceFarm
             }
             result = default;
             return false;
+        }
+
+        private bool FindNearestWarehouseDockCell(out Vector2Int result)
+        {
+            int bestLength = int.MaxValue;
+            Vector2Int best = default;
+            for (int i = 0; i < state.WarehouseCells.Count; i++)
+            {
+                if (!FindReachableCellNear(state.WarehouseCells[i], out Vector2Int dock)) continue;
+                if (!FindRoverPath(roverCell, dock, out List<Vector2Int> path, false) || path.Count >= bestLength) continue;
+                best = dock;
+                bestLength = path.Count;
+            }
+            result = best;
+            return bestLength != int.MaxValue;
         }
 
         private void CreateScanTrail()
@@ -956,8 +977,14 @@ namespace SpaceFarm
 
         private string NextObjective()
         {
+            if (state == null || map == null) return "Preparando la carta orbital…";
+            if (state.DamagedStructure != DamagedStructureKind.None)
+                return $"Repará {state.DamagedStructureName(state.DamagedStructure, state.DamagedTarget)} ({state.RepairIronCost} Fe y {state.RepairEnergyCost} energía).";
+            if (state.RoverCargo > 0 && state.Iron >= state.WarehouseCapacity)
+                return "El almacén está lleno. Construí otro y enviá el rover a descargar.";
             MapDeposit iron = map.Nearest(DepositKind.Iron);
             MapDeposit ice = map.Nearest(DepositKind.Ice);
+            if (iron == null || ice == null) return "Explorá la región para localizar hierro y hielo.";
             if (!state.AnySurveyed(DepositKind.Iron))
                 return $"La carta orbital indica hierro al {SpaceFarmMap.Compass(BaseCell, iron.Cell)}, a {iron.Distance} sectores. Enviá el rover y estudialo.";
             if (state.MineCount == 0) return $"Seleccioná el yacimiento estudiado y construí la mina ({state.MineCost} de hierro).";

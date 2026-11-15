@@ -75,10 +75,10 @@ namespace SpaceFarm.Editor
             state.AdvanceSol();
             Require(state.Deposit(0).MineStored == 8 && state.Deposit(0).LastResult.Nominal == 8,
                 "un trabajador activo acelera la mina");
-            state.Tick(48f);
+            state.Tick(95f);
             Require(state.Crew[0].Resting && state.ActiveWorkers(CrewJob.Mine, 0) == 0,
                 "el astronauta agotado se retira a dormir");
-            state.Tick(17f);
+            state.Tick(33f);
             Require(!state.Crew[0].Resting && state.Crew[0].Energy >= 95f,
                 "el descanso recupera energía automáticamente");
             Require(state.AssignWorker(CrewJob.Mine, 0, out _) && state.FreeWorkers == 2,

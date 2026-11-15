@@ -170,22 +170,36 @@ namespace SpaceFarm
             AddAction("Planta de O2", () => $"9 Fe · {state.OxygenPlants}/5", 0, null,
                 () => state.PlacementAvailability(StructureKind.OxygenPlant), StructureKind.OxygenPlant,
                 "Art/space-farm-world-modules#oxygen-3d", "Produce oxígeno para más colonos");
+            AddAction("Almacén de recursos", () => $"12 Fe · capacidad {state.WarehouseCapacity} Fe", 0, null,
+                () => state.PlacementAvailability(StructureKind.Warehouse), StructureKind.Warehouse,
+                "Art/space-farm-warehouse", "Amplía el espacio para hierro y minerales");
             AddAction("Construir muros", () => "1 Fe por muro", 0, null,
                 () => state.PlacementAvailability(StructureKind.Barrier), StructureKind.Barrier,
                 "Art/space-farm-world-modules#habitat-3d", "Colocá muros en cualquier sector libre").BarrierMode = true;
-            AddAction("Mejorar mina", () => $"6 Fe · {state.UpgradeRemaining("mine", MineTarget())} s", 1, () => state.UpgradeMine(MineTarget(), out _),
-                () => state.MineCount == 0 ? "Construí primero una mina" : MineTarget() < 0 ? "No hay minas para mejorar (nivel máximo)" : state.HasUpgrade("mine", MineTarget()) ? "La mina ya se está mejorando" : MissingIron(6),
+            AddAction("Mejorar mina", () => $"{state.MineUpgradeCost(MineTarget())} Fe · {state.UpgradeSecondsToDisplay("mine", MineTarget())} s", 1, () => state.UpgradeMine(MineTarget(), out _),
+                () => state.MineCount == 0 ? "Construí primero una mina" : MineTarget() < 0 ? "No hay minas para mejorar (nivel máximo)" : state.HasUpgrade("mine", MineTarget()) ? "La mina ya se está mejorando" : MissingIron(state.MineUpgradeCost(MineTarget())),
                 StructureKind.None, "Art/space-farm-iron-mine-animation#iron-mine-base-3d", "Sube una mina al nivel 2");
-            AddAction("Mejorar rover", () => $"5 Fe · {state.UpgradeRemaining("rover", 0)} s", 1, () => state.UpgradeRover(out _),
-                () => state.RoverLevel >= 2 ? "Nivel máximo" : state.HasUpgrade("rover", 0) ? "El rover ya se está mejorando" : MissingIron(5),
+            AddAction("Mejorar rover", () => $"{state.RoverUpgradeCost} Fe · {state.UpgradeSecondsToDisplay("rover", 0)} s", 1, () => state.UpgradeRover(out _),
+                () => state.RoverLevel >= 2 ? "Nivel máximo" : state.HasUpgrade("rover", 0) ? "El rover ya se está mejorando" : MissingIron(state.RoverUpgradeCost),
                 StructureKind.None, "Art/space-farm-rover-directions#rover-facing-south", "Amplía visión y capacidad de carga");
-            AddAction("Mejorar paneles", () => $"{state.SolarUpgradeCost} Fe · {state.UpgradeRemaining("solar", 0)} s", 1,
+            AddAction("Mejorar paneles", () => $"{state.SolarUpgradeCost} Fe · {state.UpgradeSecondsToDisplay("solar", 0)} s", 1,
                 () => state.UpgradeSolar(out _),
                 () => state.SolarLevel >= SpaceFarmState.MaxLevel ? "Nivel máximo" : state.HasUpgrade("solar", 0) ? "Los paneles ya se están mejorando" : MissingIron(state.SolarUpgradeCost),
                 StructureKind.None, "Art/space-farm-world-modules#solar-3d", "Más energía y capacidad de batería");
+            AddAction("Reparar instalación", () => $"{state.RepairIronCost} Fe · {state.RepairEnergyCost} energía", 1,
+                () => { Act((out string message) => state.RepairDamagedStructure(out message)); return true; },
+                () => state.DamagedStructure == DamagedStructureKind.None ? "No hay instalaciones averiadas" :
+                    state.Iron < state.RepairIronCost ? MissingIron(state.RepairIronCost) :
+                    state.Energy < state.RepairEnergyCost ? $"Falta {state.RepairEnergyCost - state.Energy} energía" : string.Empty,
+                StructureKind.None, "Art/space-farm-warehouse", "Repara la instalación dañada por una tormenta");
             AddAction("Pedir a la Tierra", () => "4 hierro", 2, () => state.OrderFromEarth(out _),
                 () => state.ShipmentArrivalSol != 0 ? "Ya hay un pedido en camino" : MissingIron(4),
                 StructureKind.None, "Art/space-farm-world-modules#habitat-3d", "Recibe agua y alimentos");
+            AddAction("Enviar rover al almacén", () => $"Carga {state.RoverCargo}/{state.RoverCapacity} Fe", 2,
+                () => { OrderCargoDelivery(); return true; },
+                () => state.RoverCargo <= 0 ? "El rover no lleva carga" : state.IsDamaged(DamagedStructureKind.Rover) ? "Repará el rover primero" :
+                    state.Iron >= state.WarehouseCapacity ? "Almacén lleno: construí otro" : string.Empty,
+                StructureKind.None, "Art/space-farm-warehouse", "Descarga materiales y actualiza el almacén");
 
             GameObject flashObject = new GameObject("Event Flash", typeof(RectTransform), typeof(Image));
             flashObject.transform.SetParent(canvasObject.transform, false);
@@ -681,7 +695,7 @@ namespace SpaceFarm
             if (resourceLabels.Count == 0 || state == null) return;
             int[] now = { state.Iron, state.Energy, state.Oxygen, state.Water, state.Food, state.Population, state.Health };
             string[] names = { "Hierro", "Energía", "Oxígeno", "Agua", "Comida", "Colonos", "Salud" };
-            int[] capacities = { 60, state.EnergyCapacity, 60, 60, 60, state.HabitatCapacity, 3 };
+            int[] capacities = { state.WarehouseCapacity, state.EnergyCapacity, 60, 60, 60, state.HabitatCapacity, 3 };
             for (int i = 0; i < now.Length; i++)
             {
                 bool critical = (i == 2 || i == 3 || i == 4) && now[i] <= state.Population * 2;
@@ -812,6 +826,8 @@ namespace SpaceFarm
                 $"agua +{sol.Water.Actual}, comida +{sol.Greenhouse.Actual}, minas +{sol.Mine.Actual} Fe almacenado. " +
                 $"Tripulación -{sol.CrewConsumed} recursos vitales.";
             if (sol.Storm) text += " Tormenta de polvo.";
+            if (sol.DamagedStructure != DamagedStructureKind.None)
+                text += $" La tormenta averió {state.DamagedStructureName(sol.DamagedStructure, sol.DamagedTarget)}. Reparación: {state.RepairIronCost} Fe y {state.RepairEnergyCost} energía.";
             if (sol.ShipmentDelivered) text += " Llegó la nave de suministros: +5 agua y +5 comida.";
             if (sol.RaidFoodLoss > 0)
                 text += $" Incursión: -{sol.RaidFoodLoss} comida. Los muros cercanos al hábitat reducen la pérdida.";
@@ -831,7 +847,7 @@ namespace SpaceFarm
             SetFollow(false);
             FocusWorld(CellPosition(BaseCell));
             RefreshSystems();
-            SetReport("Elegí cualquier sector libre del mapa para colocar un muro por 1 Fe. R cambia la orientación; Escape termina.");
+            SetReport("Elegí sectores libres para colocar muros por 1 Fe cada uno. Los tramos vecinos se unen solos; Escape termina.");
         }
 
         private void EndBarrierMode()
@@ -894,7 +910,7 @@ namespace SpaceFarm
         {
             if (state == null) return;
             if (buildModeText != null && barrierMode)
-                buildModeText.text = $"MURO · 1 Fe\nMuros {state.BarrierCount} · Hierro {state.Iron} · R gira";
+                buildModeText.text = $"MURO · 1 Fe\nMuros {state.BarrierCount} · Hierro {state.Iron} · Unión automática";
             if (defenseText != null)
                 defenseText.text = $"NV {state.ColonyLevel}/5 · XP {state.Xp}/{(state.XpToNext == 0 ? state.Xp : state.XpToNext)}\nMUROS {state.BarrierCount}";
             if (infoPanel == null || string.IsNullOrEmpty(selectedBuilding)) return;
@@ -910,6 +926,8 @@ namespace SpaceFarm
             int expectedEnergy = 2;
             switch (selectedBuilding)
             {
+                case "warehouse": title = "Almacén de recursos";
+                    extra = $"Hierro almacenado: {state.Iron}/{state.WarehouseCapacity} Fe\nAlmacenes: {state.WarehouseCount} · Rover con {state.RoverCargo}/{state.RoverCapacity} Fe. El rover descarga aquí automáticamente."; break;
                 case "oxygen1": title = "Planta de oxígeno 1"; result = state.LastSol.OxygenOne; break;
                 case "oxygen2": title = $"Planta de oxígeno {selectedBuildingIndex + 2}"; result = state.LastSol.OxygenUnits.Count > selectedBuildingIndex + 1 ? state.LastSol.OxygenUnits[selectedBuildingIndex + 1] : state.LastSol.OxygenTwo; break;
                 case "greenhouse": title = $"Invernadero {selectedBuildingIndex + 1}"; result = state.LastSol.GreenhouseUnits.Count > selectedBuildingIndex ? state.LastSol.GreenhouseUnits[selectedBuildingIndex] : state.LastSol.Greenhouse; expectedEnergy = 2;
@@ -931,6 +949,8 @@ namespace SpaceFarm
                     $"\nAstronauta {assigned.Id}: {(assigned.Resting ? "descansando" : "trabajando")} · energía {assigned.Energy:0} % · bono +{SpaceFarmState.WorkerBonus(job)}/sol.";
             }
             infoTitle.text = title;
+            if (state.DamagedStructure != DamagedStructureKind.None)
+                extra += $"\nAVERÍA: {state.DamagedStructureName(state.DamagedStructure, state.DamagedTarget)} · reparar cuesta {state.RepairIronCost} Fe y {state.RepairEnergyCost} energía.";
             infoBody.text = result == null ? extra : ResultText(result, "Operativa", nominal, expectedEnergy, extra);
             infoPrimary.gameObject.SetActive(false);
             infoSecondary.gameObject.SetActive(false);
@@ -956,8 +976,9 @@ namespace SpaceFarm
             if (deposit.MineLevel > 0)
             {
                 infoTitle.text = $"Mina {deposit.Name} · nivel {deposit.MineLevel}";
-                string status = deposit.MineStored == deposit.MineCapacity ? "Almacén lleno" : "Operativa";
-                string reason = deposit.LastResult.Reason;
+                bool damaged = state.IsDamaged(DamagedStructureKind.Mine, deposit.Id);
+                string status = damaged ? "Averiada" : deposit.MineStored == deposit.MineCapacity ? "Almacén lleno" : "Operativa";
+                string reason = damaged ? $"Averiada: reparar por {state.RepairIronCost} Fe y {state.RepairEnergyCost} energía." : deposit.LastResult.Reason;
                 int mineNominal = deposit.MineNominal + state.ActiveWorkers(CrewJob.Mine, deposit.Id) * SpaceFarmState.WorkerBonus(CrewJob.Mine);
                 infoBody.text = $"Estado: {status}\nNominal: {mineNominal}/sol  ·  Real último: {deposit.LastResult.Actual}\n" +
                     $"Energía: {deposit.MineEnergy}/sol (usó {deposit.LastResult.EnergyUsed})\n" +
@@ -970,7 +991,7 @@ namespace SpaceFarm
                 infoPrimary.interactable = deposit.MineStored > 0 && !busy;
                 infoSecondary.gameObject.SetActive(deposit.MineLevel < 2);
                 infoSecondary.interactable = !state.GameOver;
-                infoSecondary.GetComponentInChildren<TextMeshProUGUI>().text = "MEJORAR · 6";
+                infoSecondary.GetComponentInChildren<TextMeshProUGUI>().text = $"MEJORAR · {state.MineUpgradeCost(deposit.Id)} · {state.UpgradeSecondsToDisplay("mine", deposit.Id)} s";
             }
             else if (deposit.Extractor)
             {
