@@ -21,6 +21,7 @@ namespace SpaceFarm
             if (pauseOverlay == null || paused == value || arrivalSequenceActive) return;
             if (value)
             {
+                HideWorldSelection();
                 CancelPlacement(false);
                 if (barrierMode) EndBarrierMode();
                 CloseConstructionMenu();

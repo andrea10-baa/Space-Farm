@@ -101,6 +101,13 @@ namespace SpaceFarm
         public void OrderRover(Vector2Int cell) { if (!arrivalSequenceActive && map.Inside(cell)) SendRoverTo(cell); }
         public void OrderCollection(int depositId) { if (!arrivalSequenceActive) StartMineCollection(depositId); }
         public void SelectDepositForTools(int depositId) => SelectDeposit(depositId);
+        public void SelectWorldObjectForTools(string key, int index = 0) => SelectWorldBuilding(key, index);
+        public bool ClickWorldForTools(Vector3 position) => TryHandleWorldClick(position);
+        public void CloseWorldCardForTools() => HideWorldSelection();
+        public bool IsWorldCardOpenForTools => infoPanel != null && infoPanel.activeSelf;
+        public bool WorldCardSecondaryVisibleForTools => infoSecondary != null && infoSecondary.gameObject.activeSelf;
+        public bool WorldCardSecondaryEnabledForTools => infoSecondary != null && infoSecondary.interactable;
+        public string WorldCardTitleForTools => infoTitle != null ? infoTitle.text : string.Empty;
         public void FocusCell(Vector2Int cell) => FocusWorld(CellPosition(cell));
         public void RestartSameMap() => Restart(true);
         public void RestartNewMap() => Restart(false);
@@ -192,6 +199,7 @@ namespace SpaceFarm
             {
                 if (paused) SetPaused(false);
                 else if (crewMenuOpen) CloseCrewMenu();
+                else if (infoPanel != null && infoPanel.activeSelf) HideWorldSelection();
                 else if (activeStructure != StructureKind.None) CancelPlacement();
                 else if (barrierMode) EndBarrierMode();
                 else if (constructionMenuOpen) CloseConstructionMenu();
@@ -234,6 +242,7 @@ namespace SpaceFarm
         private void HandleWorldPointer(Mouse mouse)
         {
             if (constructionMenuOpen || crewMenuOpen || interactionMode == InteractionMode.DraggingStructure) return;
+            if (infoPanel != null && infoPanel.activeSelf) return;
             bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
             Vector2 pointer = mouse.position.ReadValue();
             if (mouse.leftButton.wasPressedThisFrame)
@@ -733,6 +742,11 @@ namespace SpaceFarm
 
         private void HandleCameraInput(Mouse mouse)
         {
+            if (infoPanel != null && infoPanel.activeSelf)
+            {
+                if (!mouse.middleButton.isPressed && !mouse.rightButton.isPressed) isPanning = false;
+                return;
+            }
             bool screenChanged = Screen.width != lastScreenWidth || Screen.height != lastScreenHeight
                 || Mathf.Abs(gameCamera.aspect - lastCameraAspect) > .01f;
             if (screenChanged)

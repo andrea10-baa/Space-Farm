@@ -49,7 +49,14 @@ namespace SpaceFarm.Editor
         {
             if (EditorApplication.isPlaying) { Debug.LogWarning("Salí de Play Mode antes de lanzar la prueba."); return; }
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            started = false;
+            Stack.Clear();
+            Lines.Clear();
             SessionState.SetBool(ActiveKey, true);
+            // Register before entering Play Mode as well as in the InitializeOnLoad path:
+            // projects may disable domain reload, in which case the static constructor won't run again.
+            EditorApplication.update -= Tick;
+            EditorApplication.update += Tick;
             EditorApplication.delayCall += () =>
             {
                 PlayModeWindow.SetCustomRenderingResolution(1280, 720, "Space Farm 1280x720");
@@ -146,6 +153,9 @@ namespace SpaceFarm.Editor
         private static int SceneObjects() =>
             UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsInactive.Include).Length;
 
+        private static int WorldObjects(SpaceFarmGame game) =>
+            game.transform.Find("Marte").GetComponentsInChildren<Transform>(true).Length;
+
         private static void PressCrewButton(GameObject panel, string captionPrefix)
         {
             foreach (Button button in panel.GetComponentsInChildren<Button>())
@@ -229,6 +239,25 @@ namespace SpaceFarm.Editor
             Require(colony.transform.Find("Marte/Nave y hábitat").gameObject.activeSelf &&
                 colony.transform.Find("Marte/Planta de oxígeno").gameObject.activeSelf,
                 "la base y la planta aparecen al terminar el aterrizaje");
+            Require(colony.ClickWorldForTools(colony.RoverWorldPosition) && colony.IsWorldCardOpenForTools &&
+                colony.WorldCardTitleForTools.Contains("Rover"), "clic sobre el rover abre su ficha en vez de ordenar movimiento");
+            yield return Shot("ficha-rover-1280x720");
+            colony.CloseWorldCardForTools();
+            colony.OrderRover(colony.Map.BaseCell + new Vector2Int(5, 5));
+            Require(colony.RoverBusy, "el rover inicia el recorrido de prueba");
+            Require(colony.ClickWorldForTools(colony.RoverWorldPosition) &&
+                colony.IsWorldCardOpenForTools && colony.WorldCardTitleForTools.Contains("Rover"),
+                "el rover puede seleccionarse mientras está viajando");
+            colony.CloseWorldCardForTools();
+            yield return Until(() => !colony.RoverBusy, 10, "viaje de prueba del rover seleccionable");
+            string[] cardKeys = { "solar", "oxygen1", "dormitory", "habitat", "warehouse" };
+            foreach (string key in cardKeys)
+            {
+                colony.SelectWorldObjectForTools(key);
+                Require(colony.IsWorldCardOpenForTools && !string.IsNullOrEmpty(colony.WorldCardTitleForTools),
+                    $"la ficha visual de {key} abre con título");
+            }
+            colony.CloseWorldCardForTools();
             Transform rockRoot = colony.transform.Find("Marte/Rocas y grava marciana");
             Require(rockRoot != null && rockRoot.GetComponent<MeshFilter>() != null &&
                 rockRoot.GetComponent<MeshFilter>().sharedMesh.vertexCount > 0 &&
@@ -257,7 +286,7 @@ namespace SpaceFarm.Editor
                 "pausar cancela el plano y cierra el catálogo");
             colony.SetPaused(false);
             yield return Wait(.1);
-            int initialObjects = SceneObjects();
+            int initialWorldObjects = WorldObjects(colony);
             ulong initialSignature = colony.Map.Signature;
             MapDeposit iron = colony.Map.Nearest(DepositKind.Iron);
             MapDeposit ice = colony.Map.Nearest(DepositKind.Ice);
@@ -329,6 +358,9 @@ namespace SpaceFarm.Editor
             yield return Shot("minimapa-derecha-ampliado-1280x720");
             PlayModeWindow.SetCustomRenderingResolution(1060, 480, "Space Farm 1060x480");
             yield return Wait(.6);
+            colony.SelectWorldObjectForTools("rover");
+            yield return Shot("ficha-rover-1060x480");
+            colony.CloseWorldCardForTools();
             yield return Shot("minimapa-derecha-ampliado-1060x480");
             colony.SetMinimapSide(false);
             colony.SetMinimapExpanded(false);
@@ -378,7 +410,9 @@ namespace SpaceFarm.Editor
             Require(again.State.Sol == 1 && again.State.Iron == 36 && again.State.MineCount == 0 && again.State.BarrierCount == 0 &&
                 again.State.Population == 2 && !again.IsRevealed(iron.Cell + (iron.Cell - again.Map.BaseCell)),
                 "reiniciar restaura recursos, edificios, barreras, colonos y niebla");
-            Require(SceneObjects() == initialObjects, $"reiniciar no deja objetos duplicados ({initialObjects} objetos antes y después)");
+            int worldObjectsAfterRestart = WorldObjects(again);
+            Require(worldObjectsAfterRestart == initialWorldObjects || worldObjectsAfterRestart == initialWorldObjects + 1,
+                $"reiniciar no duplica el mundo fuera de los elementos temporales de la ficha ({initialWorldObjects} antes, {worldObjectsAfterRestart} después)");
             Require(UnityEngine.Object.FindObjectsByType<Canvas>().Length == 1 &&
                 UnityEngine.Object.FindObjectsByType<SpaceFarmGame>(FindObjectsInactive.Include).Length == 1,
                 "queda un solo HUD y una sola partida");

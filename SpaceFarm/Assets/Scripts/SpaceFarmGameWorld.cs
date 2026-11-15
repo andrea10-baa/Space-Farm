@@ -409,6 +409,13 @@ namespace SpaceFarm
                 return true;
             }
             if (depositViews == null) return false;
+            // The rover is a selectable object, even during a trip. Handle it before the
+            // generic terrain click below can become a new movement command.
+            if (rover != null && Vector2.Distance(world, rover.transform.position) < .82f)
+                return SelectWorldBuilding("rover");
+            for (int i = 0; i < state.Barriers.Count; i++)
+                if (Vector2.Distance(world, CellPosition(state.Barriers[i].Cell)) < .42f)
+                    return SelectWorldBuilding("wall", i);
             foreach (DepositView view in depositViews)
             {
                 if (!revealed[view.Info.Cell.x, view.Info.Cell.y]) continue;
@@ -442,6 +449,11 @@ namespace SpaceFarm
 
         private void UpdateSystems(Mouse mouse, Keyboard keyboard)
         {
+            if (infoPanel != null && infoPanel.activeSelf)
+            {
+                AnimateAstronauts();
+                return;
+            }
             if (keyboard != null)
             {
                 Vector2 direction = Vector2.zero;
