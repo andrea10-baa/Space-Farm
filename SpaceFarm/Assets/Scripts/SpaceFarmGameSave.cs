@@ -35,11 +35,25 @@ namespace SpaceFarm
             return data;
         }
 
-        private void RestoreRevealMask(bool[] mask)
+        private bool RestoreRevealMask(bool[] mask)
         {
-            if (mask == null || mask.Length != Width * Height) return;
+            if (mask == null || mask.Length != Width * Height) return false;
+            bool anyRevealed = false;
             for (int y = 0; y < Height; y++)
-            for (int x = 0; x < Width; x++) revealed[x, y] = mask[y * Width + x];
+            for (int x = 0; x < Width; x++)
+            {
+                bool visible = mask[y * Width + x];
+                revealed[x, y] = visible;
+                revealAmount[x, y] = visible ? 1f : 0f;
+                anyRevealed |= visible;
+            }
+            if (!anyRevealed) return false;
+            fadingCells.Clear();
+            MarkDirty(Vector2Int.zero);
+            MarkDirty(new Vector2Int(Width - 1, Height - 1));
+            UpdateFogTexture();
+            MarkMinimapDirty();
+            return true;
         }
 
         private bool[] CaptureRevealMask()

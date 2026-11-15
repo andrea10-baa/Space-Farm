@@ -161,8 +161,7 @@ namespace SpaceFarm
             CreateMinimap();
             CreatePauseMenu();
             // Restore the revealed chart exactly; a fresh landing receives its initial orbital survey.
-            if (loadedSave != null) RestoreRevealMask(loadedSave.Revealed);
-            else Reveal(BaseCell, 5);
+            if (loadedSave == null || !RestoreRevealMask(loadedSave.Revealed)) Reveal(BaseCell, 5);
             roverBaseScale = rover.transform.localScale;
             RefreshWorld();
             PrepareForInitialLanding();

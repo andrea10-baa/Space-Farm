@@ -240,6 +240,8 @@ namespace SpaceFarm.Editor
                 colony.transform.Find("Marte/Planta de oxígeno").gameObject.activeSelf,
                 "la base y la planta aparecen al terminar el aterrizaje");
             string saveNameSuffix = Guid.NewGuid().ToString("N").Substring(0, 8);
+            Vector2Int savedVisibleCell = colony.Map.BaseCell;
+            Require(colony.IsRevealed(savedVisibleCell), "la base está revelada al guardar");
             int savedSolOne = colony.State.Sol;
             string saveOne = colony.SaveSlotForTools("Prueba A " + saveNameSuffix);
             colony.PressAdvanceSol();
@@ -253,6 +255,9 @@ namespace SpaceFarm.Editor
             colony = Game();
             Require(colony.State.Sol == savedSolOne && colony.Seed == 1,
                 "continuar restaura semilla y progreso del primer slot");
+            Require(colony.IsRevealed(savedVisibleCell) && colony.FogAlphaAtCellForTools(savedVisibleCell) == 0 &&
+                !colony.ArrivalSequenceActive,
+                "cargar restaura la textura visible de la niebla sin repetir el aterrizaje");
             colony.LoadSlotForTools(saveTwo);
             yield return Until(() => Game() != null && !Game().TitleScreenOpen && Game().State.Sol == savedSolTwo,
                 30, "carga del segundo slot guardado");

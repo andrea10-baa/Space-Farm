@@ -22,6 +22,14 @@ namespace SpaceFarm
         private int dirtyMaxY;
         private float fogRefreshTimer;
 
+        public byte FogAlphaAtCellForTools(Vector2Int cell)
+        {
+            if (fogTexture == null || !map.Inside(cell)) return byte.MaxValue;
+            int px = cell.x * FogPixelsPerCell + FogPixelsPerCell / 2;
+            int py = cell.y * FogPixelsPerCell + FogPixelsPerCell / 2;
+            return fogPixels[py * fogTexture.width + px].a;
+        }
+
         private void CreateFog()
         {
             fogTexture = new Texture2D(Width * FogPixelsPerCell, Height * FogPixelsPerCell, TextureFormat.RGBA32, false);
