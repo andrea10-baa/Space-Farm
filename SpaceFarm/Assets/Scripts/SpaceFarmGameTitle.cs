@@ -12,6 +12,8 @@ namespace SpaceFarm
     {
         private GameObject titleScreenRoot;
         private bool titleScreenOpen;
+        public bool TitleScreenOpen => titleScreenOpen;
+        public void BeginFromTitleForTools() => BeginFromTitle();
         private readonly Dictionary<GameObject, bool> titleVisibilityBeforeMenu = new Dictionary<GameObject, bool>();
 
         private void CreateTitleScreen()

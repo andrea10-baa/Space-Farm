@@ -12,7 +12,7 @@ Prototipo de un juego de estrategia y supervivencia educativa en Marte. El conce
 
 ## Un Marte distinto en cada partida
 
-Cada partida genera una región de **80×50 sectores** a partir de una **semilla** entera. La misma semilla repite exactamente el mismo terreno, cráteres, yacimientos y puntos de interés; otra semilla los cambia. La semilla se ve en el título del minimapa y en el menú de pausa.
+Cada partida genera una región de **128×80 sectores** a partir de una **semilla** entera. La misma semilla repite exactamente el mismo terreno, cráteres, yacimientos y puntos de interés; otra semilla los cambia. La semilla se ve en el título del minimapa y en el menú de pausa.
 
 - **Relieve:** llanuras, campos de dunas, zonas rocosas, un cráter grande, varios medianos y pequeños, crestas y un cauce seco. Todo el relieve es visual: el rover puede cruzar cualquier sector, así que ninguna semilla deja un recurso inaccesible.
 - **Base:** aterriza cerca del centro, en el terreno más despejado de esa zona. A 5 sectores a la redonda no hay cráteres, yacimientos ni puntos de interés, de modo que las 12 posiciones de barrera siempre quedan libres.
@@ -26,10 +26,12 @@ Cada partida genera una región de **80×50 sectores** a partir de una **semilla
 
 ## Controles
 
-- **Cámara:** arrastrar con cualquier botón del mouse, WASD o flechas. Rueda: zoom. Un arrastre nunca se convierte en orden. **Volver a la base** e **Ir al rover** reubican la vista; **Seguir** acompaña al rover hasta que movés la cámara.
+- **Cámara:** arrastrar el mapa con el mouse, WASD o flechas. Rueda: zoom. Un arrastre nunca se convierte en orden. **Volver a la base** e **Ir al rover** reubican la vista; **Seguir** acompaña al rover hasta que movés la cámara.
 - **Explorar:** clic en el terreno envía el rover. Clic en una señal (`SEÑAL Fe-2`) lo manda a estudiarla.
-- **Fichas:** clic en un yacimiento estudiado o una instalación abre su ficha. Desde ahí se construye la mina o el extractor, se mejora o repara y se ordena **Recoger** en esa mina concreta: el rover carga, vuelve al hábitat y descarga.
-- **Barreras:** **Construir barrera** ilumina 12 posiciones alrededor del núcleo; cada clic válido cuesta 1 Fe. **Terminar** o Escape salen del modo.
+- **Construcción:** el botón **Construir** abre un catálogo con miniaturas, función, costo y requisitos. Elegí un plano y movelo por el mapa: cian indica posición válida y rojo explica el bloqueo. Un clic sobre un sector válido confirma; Escape, clic derecho o **Cancelar** abandonan el plano sin gastar hierro. También podés arrastrar una tarjeta del catálogo y soltarla sobre el mapa. Invernadero y segunda planta de O2 necesitan una celda revelada y libre; mina y extractor deben ir exactamente sobre el yacimiento estudiado que elijas. El área del hábitat y las barreras queda reservada.
+- **Fichas:** clic en un yacimiento estudiado o una instalación abre su ficha. Desde ahí podés iniciar la colocación de una mina o extractor, mejorar o reparar y ordenar **Recoger** en una mina concreta: el rover carga, vuelve al hábitat y descarga.
+- **Barreras:** la opción del catálogo ilumina 12 posiciones alrededor del núcleo; cada clic válido cuesta 1 Fe. **Cancelar** o Escape salen del modo.
+- **Otras acciones:** las pestañas **Mejorar** y **Colonia** del mismo menú conservan la mejora del rover, las minas, los colonos y los pedidos a la Tierra. La barra inferior muestra solo el mensaje reciente y el acceso al menú.
 - **Minimapa:** muestra terreno explorado, niebla, base, rover, yacimientos y puntos ya descubiertos y el recuadro de la cámara. Clic en zona explorada: centra la cámara sin mover al rover. `+`/`-` cambia el tamaño y `<`/`>` lo pasa de esquina; la preferencia se guarda.
 - **Pausa:** Escape o el botón **Pausa**. Detiene rover, astronautas y simulación. Ofrece reanudar, reiniciar este mapa (misma semilla), empezar un mapa nuevo (otra semilla), ver controles y elegir el lado del minimapa.
 - La tormenta ocurre en los soles 3 y 4 y la incursión en el sol 5. La primera victoria requiere llegar al sol 7 con al menos una mina, invernadero, tres colonos y 8 barreras.
@@ -40,8 +42,9 @@ La simulación es deliberadamente simplificada. La planta de oxígeno es una ext
 
 - `SpaceFarmMap.cs`: generador determinista (semilla → terreno, cráteres, base, yacimientos, puntos) y sus reglas de validación. No usa `UnityEngine.Random`.
 - `SpaceFarmTerrainPainter.cs`: pinta el mapa en una sola textura con relieve y da los colores del minimapa.
-- `SpaceFarmState.cs`: reglas de recursos, yacimientos, edificios y eventos.
+- `SpaceFarmState.cs`: reglas de recursos, yacimientos, posiciones elegidas para edificios, validación de ubicación y eventos.
 - `SpaceFarmGame.cs`: ciclo de la partida, cámara, entrada y viajes del rover.
+- `SpaceFarmGameConstruction.cs` y `SpaceFarmBuildCardDrag.cs`: plano visual, modos de interacción, confirmación y arrastre desde el catálogo.
 - `SpaceFarmGameWorld.cs`: terreno, yacimientos e instalaciones, barreras, paneles y astronautas.
 - `SpaceFarmGameFog.cs`: niebla de guerra, que solo recalcula la zona que cambia.
 - `SpaceFarmGameHud.cs`: recursos, acciones, navegación y fichas contextuales.

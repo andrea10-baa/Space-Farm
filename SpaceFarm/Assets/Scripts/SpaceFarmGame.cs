@@ -26,7 +26,7 @@ namespace SpaceFarm
         private const float DefaultCameraSize = 5.2f;
         private const float DragThreshold = 9f;
         private const float HeaderHeight = 112f;
-        private const float FooterHeight = 164f;
+        private const float FooterHeight = 44f;
 
         /// <summary>Seed the next session must use. Null means "pick a new one".</summary>
         private static int? pendingSeed;
@@ -187,7 +187,9 @@ namespace SpaceFarm
             if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
             {
                 if (paused) SetPaused(false);
+                else if (activeStructure != StructureKind.None) CancelPlacement();
                 else if (barrierMode) EndBarrierMode();
+                else if (constructionMenuOpen) CloseConstructionMenu();
                 else SetPaused(true);
             }
             // Paused: nothing below runs, so no order, build or sol can happen behind the menu.
@@ -198,8 +200,15 @@ namespace SpaceFarm
             UpdateSystems(mouse, keyboard);
             if (mouse != null)
             {
+                if (activeStructure != StructureKind.None && mouse.rightButton.wasPressedThisFrame)
+                {
+                    CancelPlacement();
+                    suppressRightPan = true;
+                }
+                if (mouse.rightButton.wasReleasedThisFrame) suppressRightPan = false;
                 HandleCameraInput(mouse);
                 HandleWorldPointer(mouse);
+                UpdatePlacementPreview(mouse);
             }
             UpdateFollow();
             UpdateMinimap();
@@ -207,6 +216,7 @@ namespace SpaceFarm
 
         private void HandleWorldPointer(Mouse mouse)
         {
+            if (constructionMenuOpen || interactionMode == InteractionMode.DraggingStructure) return;
             bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
             Vector2 pointer = mouse.position.ReadValue();
             if (mouse.leftButton.wasPressedThisFrame)
@@ -221,6 +231,7 @@ namespace SpaceFarm
                 if (!leftDragging && (pointer - leftPressScreen).sqrMagnitude > DragThreshold * DragThreshold)
                 {
                     leftDragging = true;
+                    interactionMode = InteractionMode.PanningCamera;
                     followRover = false;
                     RefreshFollowButton();
                 }
@@ -235,8 +246,15 @@ namespace SpaceFarm
             bool click = leftPressValid && !leftDragging;
             leftPressValid = false;
             leftDragging = false;
+            if (interactionMode == InteractionMode.PanningCamera && !isPanning)
+                interactionMode = activeStructure != StructureKind.None ? InteractionMode.PlacingStructure : InteractionMode.Explore;
             if (!click || overUi || state.GameOver) return;
             Vector3 world = ScreenToWorld(pointer);
+            if (activeStructure != StructureKind.None)
+            {
+                ConfirmPlacement(WorldToCell(world));
+                return;
+            }
             if (TryHandleWorldClick(world)) return;
             Vector2Int target = WorldToCell(world);
             if (map.Inside(target)) SendRoverTo(target);
@@ -547,16 +565,23 @@ namespace SpaceFarm
             }
             bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
             Vector2 pointer = mouse.position.ReadValue();
-            bool panPressed = mouse.middleButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame;
-            bool panHeld = mouse.middleButton.isPressed || mouse.rightButton.isPressed;
+            bool panPressed = mouse.middleButton.wasPressedThisFrame ||
+                (!suppressRightPan && mouse.rightButton.wasPressedThisFrame);
+            bool panHeld = mouse.middleButton.isPressed || (!suppressRightPan && mouse.rightButton.isPressed);
             if (panPressed && !overUi)
             {
                 isPanning = true;
+                interactionMode = InteractionMode.PanningCamera;
                 followRover = false;
                 RefreshFollowButton();
                 panWorldPosition = ScreenToWorld(pointer);
             }
-            if (!panHeld) isPanning = false;
+            if (!panHeld)
+            {
+                isPanning = false;
+                if (interactionMode == InteractionMode.PanningCamera && !leftDragging)
+                    interactionMode = activeStructure != StructureKind.None ? InteractionMode.PlacingStructure : InteractionMode.Explore;
+            }
             if (isPanning)
             {
                 gameCamera.transform.position += panWorldPosition - ScreenToWorld(pointer);

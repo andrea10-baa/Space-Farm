@@ -13,6 +13,7 @@ namespace SpaceFarm.Editor
         public static void Run()
         {
             CheckColonyRules();
+            CheckPlacementRules();
             CheckSeveralMines();
             CheckGeneration();
             Debug.Log("SPACE_FARM_CHECKS_OK: mina, almacén, rover, barreras, incursión, reportes, varias minas y generación de mapas.");
@@ -71,7 +72,7 @@ namespace SpaceFarm.Editor
             Require(mission.AddColonist(out _), "Colono para la misión");
             mission.AdvanceSol();
             Require(mission.LoadMineToRover(0, out _) && mission.UnloadRover(out _), "Primera cosecha de hierro");
-            Require(mission.BuildGreenhouse(out _), "Invernadero para la misión");
+            Require(mission.PlaceStructure(StructureKind.Greenhouse, new Vector2Int(10, 10), true, out _), "Invernadero para la misión");
             mission.AdvanceSol();
             Require(mission.LoadMineToRover(0, out _) && mission.UnloadRover(out _), "Segunda cosecha de hierro");
             mission.AdvanceSol();
@@ -82,6 +83,80 @@ namespace SpaceFarm.Editor
             SpaceFarmState loss = new SpaceFarmState();
             while (!loss.GameOver && loss.Sol < 14) loss.AdvanceSol();
             Require(loss.GameOver && !loss.MissionComplete, "El agotamiento de recursos termina la misión");
+        }
+
+        private static void CheckPlacementRules()
+        {
+            SpaceFarmMap map = SpaceFarmMap.Generate(42);
+            SpaceFarmState colony = new SpaceFarmState(map);
+            Vector2Int first = FindFreeCell(colony, StructureKind.Greenhouse, map, Vector2Int.zero);
+            Vector2Int second = FindFreeCell(colony, StructureKind.Greenhouse, map, first);
+            int initial = colony.Iron;
+            Require(colony.PlacementBlocker(StructureKind.Greenhouse, first, false).Contains("oculto"),
+                "La niebla impide colocar");
+            Require(!colony.PlaceStructure(StructureKind.Greenhouse, first, false, out _) && colony.Iron == initial,
+                "Una posición oculta no cobra");
+            Require(colony.PlacementBlocker(StructureKind.Greenhouse, map.BaseCell, true).Contains("reservada"),
+                "El hábitat y las barreras reservan su área");
+            Require(!colony.PlaceStructure(StructureKind.Greenhouse, map.BaseCell, true, out _) && colony.Iron == initial,
+                "Intentar construir sobre el hábitat no cobra");
+            Require(colony.PlacementBlocker(StructureKind.Greenhouse, new Vector2Int(-1, 0), true).Contains("Fuera"),
+                "No se permite construir fuera del mapa");
+            Require(colony.PlaceStructure(StructureKind.Greenhouse, first, true, out _) &&
+                colony.GreenhouseCell == first && colony.Iron == initial - 6, "El invernadero guarda la celda elegida y cobra una vez");
+            SpaceFarmState alternative = new SpaceFarmState(map);
+            Require(alternative.PlaceStructure(StructureKind.Greenhouse, second, true, out _) &&
+                alternative.GreenhouseCell == second && alternative.GreenhouseCell != colony.GreenhouseCell &&
+                alternative.Iron == initial - 6, "La misma semilla permite elegir otra posición sin alterar el mapa");
+            int after = colony.Iron;
+            Require(!colony.PlaceStructure(StructureKind.Greenhouse, second, true, out _) && colony.Iron == after,
+                "La única unidad de invernadero impide doble cobro");
+            Require(colony.PlacementBlocker(StructureKind.OxygenPlant, first, true).Contains("cerca"),
+                "Dos edificios no pueden superponerse visualmente");
+            Vector2Int oxygenCell = FindFreeCell(colony, StructureKind.OxygenPlant, map, first);
+            Require(colony.PlaceStructure(StructureKind.OxygenPlant, oxygenCell, true, out _) &&
+                colony.OxygenPlantTwoCell == oxygenCell && colony.OxygenPlants == 2 && colony.Iron == after - 9,
+                "La segunda planta ocupa la celda elegida y cobra una vez");
+            MapDeposit sampleIron = map.Nearest(DepositKind.Iron);
+            colony.SurveyDeposit(sampleIron.Id);
+            Require(colony.PlacementAvailability(StructureKind.Mine).Contains("Faltan 3 Fe"),
+                "El catálogo calcula el hierro faltante a partir del costo vigente");
+
+            SpaceFarmState deposits = new SpaceFarmState(map);
+            MapDeposit ironOne = null, ironTwo = null, iceOne = null, iceTwo = null;
+            foreach (MapDeposit deposit in map.Deposits)
+            {
+                if (deposit.Kind == DepositKind.Iron) { if (ironOne == null) ironOne = deposit; else if (ironTwo == null) ironTwo = deposit; }
+                else { if (iceOne == null) iceOne = deposit; else if (iceTwo == null) iceTwo = deposit; }
+            }
+            Require(ironOne != null && ironTwo != null && iceOne != null && iceTwo != null, "El mapa tiene depósitos para elegir");
+            deposits.SurveyDeposit(ironOne.Id);
+            deposits.SurveyDeposit(ironTwo.Id);
+            int beforeMine = deposits.Iron;
+            Require(deposits.PlacementBlocker(StructureKind.Mine, iceOne.Cell, true).Contains("hierro"),
+                "Una mina no se coloca sobre hielo");
+            Require(!deposits.PlaceStructure(StructureKind.Mine, ironOne.Cell, false, out _) && deposits.Iron == beforeMine,
+                "Una mina oculta no cobra");
+            Require(deposits.PlaceStructure(StructureKind.Mine, ironTwo.Cell, true, out _) &&
+                deposits.Deposit(ironTwo.Id).MineLevel == 1 && deposits.Deposit(ironOne.Id).MineLevel == 0 &&
+                deposits.Iron == beforeMine - 8, "La mina se construye en el depósito elegido, sin selección automática");
+            deposits.SurveyDeposit(iceOne.Id);
+            deposits.SurveyDeposit(iceTwo.Id);
+            int beforeExtractor = deposits.Iron;
+            Require(deposits.PlaceStructure(StructureKind.Extractor, iceTwo.Cell, true, out _) &&
+                deposits.Deposit(iceTwo.Id).Extractor && !deposits.Deposit(iceOne.Id).Extractor &&
+                deposits.Iron == beforeExtractor - 6, "El extractor se construye en el hielo elegido");
+        }
+
+        private static Vector2Int FindFreeCell(SpaceFarmState state, StructureKind kind, SpaceFarmMap map, Vector2Int except)
+        {
+            for (int y = 0; y < SpaceFarmMap.Height; y++)
+            for (int x = 0; x < SpaceFarmMap.Width; x++)
+            {
+                Vector2Int cell = new Vector2Int(x, y);
+                if (cell != except && state.PlacementBlocker(kind, cell, true).Length == 0) return cell;
+            }
+            throw new InvalidOperationException("No se encontró una celda libre en la semilla " + map.Seed);
         }
 
         /// <summary>Several deposits: each mine keeps its own level, damage and storage, and the operator rule limits how many run.</summary>

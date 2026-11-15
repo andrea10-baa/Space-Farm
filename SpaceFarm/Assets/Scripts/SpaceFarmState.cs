@@ -4,6 +4,8 @@ using UnityEngine;
 
 namespace SpaceFarm
 {
+    public enum StructureKind { None, Mine, Extractor, Greenhouse, OxygenPlant, Barrier }
+
     /// <summary>Small deterministic simulation for the colony loop. Knows deposits by id, not by map position.</summary>
     [Serializable]
     public sealed class SpaceFarmState
@@ -15,6 +17,7 @@ namespace SpaceFarm
         private readonly bool[] discoveries;
         private readonly int[] discoveryKinds;
         private readonly List<DepositState> deposits = new List<DepositState>();
+        private readonly SpaceFarmMap map;
 
         public sealed class SystemResult
         {
@@ -73,6 +76,8 @@ namespace SpaceFarm
         public int OxygenPlants { get; private set; } = 1;
         public int RoverLevel { get; private set; } = 1;
         public bool Greenhouse { get; private set; }
+        public Vector2Int? GreenhouseCell { get; private set; }
+        public Vector2Int? OxygenPlantTwoCell { get; private set; }
         public int BarrierCount { get; private set; }
         public int RoverCargo { get; private set; }
         public int RoverCapacity => RoverLevel == 2 ? 8 : 4;
@@ -101,7 +106,7 @@ namespace SpaceFarm
         /// <summary>Minimal layout for rule checks: one iron deposit (id 0), one ice deposit (id 1) and three discoveries.</summary>
         public SpaceFarmState() : this(DefaultDeposits(), new[] { 0, 1, 2 }) { }
 
-        public SpaceFarmState(SpaceFarmMap map) : this(map.Deposits, PointKinds(map)) { }
+        public SpaceFarmState(SpaceFarmMap map) : this(map.Deposits, PointKinds(map)) { this.map = map; }
 
         public SpaceFarmState(IReadOnlyList<MapDeposit> layout, IReadOnlyList<int> pointKinds)
         {
@@ -136,6 +141,95 @@ namespace SpaceFarm
             int count = 0;
             for (int i = 0; i < deposits.Count; i++) if (match(deposits[i])) count++;
             return count;
+        }
+
+        public int StructureCost(StructureKind kind)
+        {
+            switch (kind)
+            {
+                case StructureKind.Mine: return MineCost;
+                case StructureKind.Extractor: return ExtractorCost;
+                case StructureKind.Greenhouse: return 6;
+                case StructureKind.OxygenPlant: return 9;
+                case StructureKind.Barrier: return 1;
+                default: return 0;
+            }
+        }
+
+        /// <summary>Catalog availability, independent of the pointer position.</summary>
+        public string PlacementAvailability(StructureKind kind)
+        {
+            if (kind == StructureKind.Greenhouse && Greenhouse) return "El invernadero ya está construido";
+            if (kind == StructureKind.OxygenPlant && OxygenPlants >= 2) return "La segunda planta ya está construida";
+            if (kind == StructureKind.Barrier && BarrierCount >= BarrierSlotCount) return "Perímetro completo";
+            if (kind == StructureKind.Mine)
+            {
+                if (MineCount >= MaxMineCount) return "Límite de 3 minas";
+                if (MineCount >= MaxMines) return $"Falta un operador: {Population} colonos sostienen {MaxMines} mina(s)";
+                if (!HasFreeSurveyed(DepositKind.Iron)) return "Estudiá un yacimiento de hierro libre";
+            }
+            if (kind == StructureKind.Extractor)
+            {
+                if (ExtractorCount >= MaxExtractors) return "Límite de 2 extractores";
+                if (!HasFreeSurveyed(DepositKind.Ice)) return "Estudiá un depósito de hielo libre";
+            }
+            int missing = StructureCost(kind) - Iron;
+            return missing > 0 ? $"Faltan {missing} Fe" : string.Empty;
+        }
+
+        private bool HasFreeSurveyed(DepositKind kind)
+        {
+            for (int i = 0; i < deposits.Count; i++)
+                if (deposits[i].Kind == kind && deposits[i].Surveyed && !deposits[i].HasBuilding) return true;
+            return false;
+        }
+
+        /// <summary>The preview and the final transaction use this exact rule, including current resources.</summary>
+        public string PlacementBlocker(StructureKind kind, Vector2Int cell, bool revealed)
+        {
+            if (kind == StructureKind.None || kind == StructureKind.Barrier) return "Elegí una estructura";
+            if (map != null && !map.Inside(cell)) return "Fuera del mapa";
+            if (!revealed) return "Sector oculto: exploralo con el rover";
+            string availability = PlacementAvailability(kind);
+            if (availability.Length > 0) return availability;
+            if (kind == StructureKind.Mine || kind == StructureKind.Extractor)
+            {
+                MapDeposit deposit = map?.DepositAt(cell);
+                if (deposit == null) return kind == StructureKind.Mine ? "Necesita hierro estudiado" : "Necesita hielo estudiado";
+                return kind == StructureKind.Mine ? MineBlocker(deposit.Id) : ExtractorBlocker(deposit.Id);
+            }
+            if (map == null) return string.Empty; // Small rule-only fixtures have no terrain.
+            Vector2Int baseCell = map.BaseCell;
+            if (Mathf.Abs(cell.x - baseCell.x) <= 4 && Mathf.Abs(cell.y - baseCell.y) <= 4)
+                return "Área reservada del hábitat y sus barreras";
+            foreach (MapDeposit deposit in map.Deposits)
+                if (Near(cell, deposit.Cell, 2)) return "Demasiado cerca de un yacimiento";
+            foreach (MapPoint point in map.Points)
+                if (Near(cell, point.Cell, 1)) return "Punto de interés ocupado";
+            if (GreenhouseCell.HasValue && Near(cell, GreenhouseCell.Value, 2)) return "Demasiado cerca del invernadero";
+            if (OxygenPlantTwoCell.HasValue && Near(cell, OxygenPlantTwoCell.Value, 2)) return "Demasiado cerca de la planta de O2";
+            return string.Empty;
+        }
+
+        private static bool Near(Vector2Int a, Vector2Int b, int radius) =>
+            Mathf.Abs(a.x - b.x) <= radius && Mathf.Abs(a.y - b.y) <= radius;
+
+        public bool PlaceStructure(StructureKind kind, Vector2Int cell, bool revealed, out string message)
+        {
+            string blocker = PlacementBlocker(kind, cell, revealed);
+            if (blocker.Length > 0) return Fail(blocker + ".", out message);
+            if (kind == StructureKind.Mine) return BuildMine(map.DepositAt(cell).Id, out message);
+            if (kind == StructureKind.Extractor) return BuildWaterExtractor(map.DepositAt(cell).Id, out message);
+            Iron -= StructureCost(kind);
+            if (kind == StructureKind.Greenhouse)
+            {
+                Greenhouse = true;
+                GreenhouseCell = cell;
+                return Success("Invernadero listo: transforma agua y energía en 4 de comida por sol.", out message);
+            }
+            OxygenPlants++;
+            OxygenPlantTwoCell = cell;
+            return Success("Nueva planta de oxígeno lista. Cada planta genera 4 de O2 y consume 3 de energía por sol.", out message);
         }
 
         public string SurveyDeposit(int id)
@@ -230,24 +324,6 @@ namespace SpaceFarm
             deposit.Extractor = true;
             deposit.LastResult = new SystemResult();
             return Success($"Extractor listo en {deposit.Name}: obtiene 5 de agua por sol a cambio de 2 de energía.", out message);
-        }
-
-        public bool BuildGreenhouse(out string message)
-        {
-            if (Greenhouse) return Fail("El invernadero ya está construido.", out message);
-            if (Iron < 6) return Fail("El invernadero necesita 6 de hierro.", out message);
-            Iron -= 6;
-            Greenhouse = true;
-            return Success("Invernadero listo: transforma agua y energía en 4 de comida por sol.", out message);
-        }
-
-        public bool BuildOxygenPlant(out string message)
-        {
-            if (OxygenPlants >= 2) return Fail("La demo admite como máximo dos plantas de oxígeno.", out message);
-            if (Iron < 9) return Fail("Otra planta de oxígeno necesita 9 de hierro.", out message);
-            Iron -= 9;
-            OxygenPlants++;
-            return Success("Nueva planta de oxígeno lista. Cada planta genera 4 de O2 y consume 3 de energía por sol.", out message);
         }
 
         public bool BuildBarrierSegment(int index, out string message)

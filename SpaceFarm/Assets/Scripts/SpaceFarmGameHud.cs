@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace SpaceFarm
 {
-    /// <summary>HUD: header with resources, command deck, navigation buttons and the contextual card of the selected installation.</summary>
+    /// <summary>HUD: resources, a compact report bar, a collapsible catalog and contextual installation cards.</summary>
     public sealed partial class SpaceFarmGame
     {
         private readonly List<TextMeshProUGUI> resourceLabels = new List<TextMeshProUGUI>();
@@ -27,8 +27,13 @@ namespace SpaceFarm
         private Button infoPrimary;
         private Button infoSecondary;
         private Button followButton;
+        private Button baseNavButton;
+        private Button roverNavButton;
         private string selectedBuilding;
         private int selectedDeposit = -1;
+        private GameObject constructionMenuRoot;
+        private bool constructionMenuOpen;
+        private Button constructionMenuToggle;
 
         private sealed class ActionCard
         {
@@ -41,6 +46,10 @@ namespace SpaceFarm
             public Func<bool> Action;
             public Func<string> LockReason;
             public bool BarrierMode;
+            public StructureKind Placement;
+            public Button Button;
+            public Image Icon;
+            public string Description;
         }
 
         private void CreateHud()
@@ -99,60 +108,81 @@ namespace SpaceFarm
                 SpaceFarmPalette.Text, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1),
                 new Vector2(-344, -17), new Vector2(86, 48));
 
-            GameObject footer = Panel("Command Deck", canvasObject.transform, SpaceFarmPalette.Panel,
+            GameObject footer = Panel("Barra de mensajes", canvasObject.transform, SpaceFarmPalette.Panel,
                 new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 0), Vector2.zero, new Vector2(0, FooterHeight));
             footer.GetComponent<Image>().raycastTarget = true;
             reportText = Label("", footer.transform, 14, FontStyles.Normal, SpaceFarmPalette.Text,
                 new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1),
-                Vector2.zero, new Vector2(-36, 28));
-            reportText.rectTransform.anchoredPosition = new Vector2(18, -4);
+                new Vector2(18, -5), new Vector2(-185, 34));
             reportText.enableAutoSizing = true;
             reportText.fontSizeMin = 10;
             reportText.fontSizeMax = 14;
-            CreateCategoryTabs(footer.transform);
-            actionDetailText = Label("Elegí una acción. Las tarjetas indican costo y requisito.", footer.transform,
-                12, FontStyles.Normal, SpaceFarmPalette.MutedText,
+            constructionMenuToggle = AddButton("CONSTRUIR", footer.transform, ToggleConstructionMenu,
+                14, SpaceFarmPalette.Iron, SpaceFarmPalette.Background,
+                new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(1, .5f),
+                new Vector2(-10, 0), new Vector2(152, 34));
+
+            constructionMenuRoot = Panel("Menú de construcción", canvasObject.transform, SpaceFarmPalette.Panel,
+                new Vector2(0, 0), new Vector2(0, 1), new Vector2(0, .5f), Vector2.zero, Vector2.zero);
+            constructionMenuRoot.GetComponent<Image>().raycastTarget = true;
+            ApplyConstructionMenuLayout();
+            Label("PLANOS Y ACCIONES", constructionMenuRoot.transform, 17, FontStyles.Bold, SpaceFarmPalette.Text,
                 new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1),
-                new Vector2(354, -40), new Vector2(-372, 28));
-            GameObject cards = new GameObject("Action Cards", typeof(RectTransform), typeof(HorizontalLayoutGroup));
-            cards.transform.SetParent(footer.transform, false);
+                new Vector2(13, -7), new Vector2(-64, 28));
+            AddButton("X", constructionMenuRoot.transform, CloseConstructionMenu, 15,
+                SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
+                new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1),
+                new Vector2(-8, -6), new Vector2(32, 29));
+            CreateCategoryTabs(constructionMenuRoot.transform);
+            actionDetailText = Label("Elegí un plano o arrastralo al mapa.", constructionMenuRoot.transform,
+                11, FontStyles.Normal, SpaceFarmPalette.MutedText,
+                new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1),
+                new Vector2(13, -76), new Vector2(-26, 18));
+            GameObject cards = new GameObject("Action Cards", typeof(RectTransform), typeof(VerticalLayoutGroup));
+            cards.transform.SetParent(constructionMenuRoot.transform, false);
             actionCardsRoot = cards.GetComponent<RectTransform>();
             actionCardsRoot.anchorMin = new Vector2(0, 0);
-            actionCardsRoot.anchorMax = new Vector2(1, 0);
-            actionCardsRoot.pivot = new Vector2(.5f, 0);
-            actionCardsRoot.anchoredPosition = new Vector2(0, 12);
-            actionCardsRoot.sizeDelta = new Vector2(-32, 66);
-            HorizontalLayoutGroup cardLayout = cards.GetComponent<HorizontalLayoutGroup>();
-            cardLayout.padding = new RectOffset(16, 16, 0, 0);
-            cardLayout.spacing = 8;
-            cardLayout.childAlignment = TextAnchor.MiddleCenter;
+            actionCardsRoot.anchorMax = new Vector2(1, 1);
+            actionCardsRoot.offsetMin = new Vector2(10, 8);
+            actionCardsRoot.offsetMax = new Vector2(-10, -100);
+            VerticalLayoutGroup cardLayout = cards.GetComponent<VerticalLayoutGroup>();
+            cardLayout.spacing = 4;
+            cardLayout.childAlignment = TextAnchor.UpperCenter;
             cardLayout.childControlWidth = true;
-            cardLayout.childControlHeight = true;
+            cardLayout.childControlHeight = false;
             cardLayout.childForceExpandWidth = true;
-            cardLayout.childForceExpandHeight = true;
+            cardLayout.childForceExpandHeight = false;
 
-            AddAction("Mina de hierro", () => $"{state.MineCost} hierro · minas {state.MineCount}/{state.MaxMines}", 0,
-                () => state.BuildMine(BuildTarget(DepositKind.Iron), out _),
-                () => BuildBlocker(DepositKind.Iron));
-            AddAction("Extractor de agua", () => $"{state.ExtractorCost} hierro · {state.ExtractorCount}/{SpaceFarmState.MaxExtractors}", 0,
-                () => state.BuildWaterExtractor(BuildTarget(DepositKind.Ice), out _),
-                () => BuildBlocker(DepositKind.Ice));
-            AddAction("Invernadero", () => "6 hierro", 0, () => state.BuildGreenhouse(out _),
-                () => state.Greenhouse ? "El invernadero ya está construido" : MissingIron(6));
-            AddAction("Planta de O2", () => "9 hierro", 0, () => state.BuildOxygenPlant(out _),
-                () => state.OxygenPlants >= 2 ? "La demo admite 2 plantas de oxígeno" : MissingIron(9));
-            AddAction("Construir barrera", () => "1 Fe/segmento", 0, () => false,
-                () => state.BarrierCount == SpaceFarmState.BarrierSlotCount ? "Perímetro completo" : MissingIron(1)).BarrierMode = true;
-            AddAction("Mejorar mina", () => "6 hierro", 1, () => state.UpgradeMine(MineTarget(false), out _),
-                () => state.MineCount == 0 ? "Construí primero una mina" : MineTarget(false) < 0 ? "No hay minas para mejorar (nivel máximo o averiadas)" : MissingIron(6));
+            AddAction("Mina de hierro", () => $"{state.MineCost} Fe · {state.MineCount}/{state.MaxMines}", 0,
+                null, () => state.PlacementAvailability(StructureKind.Mine), StructureKind.Mine,
+                "Art/space-farm-iron-mine-animation#iron-mine-base-3d", "Extrae hierro del yacimiento elegido");
+            AddAction("Extractor de agua", () => $"{state.ExtractorCost} Fe · {state.ExtractorCount}/{SpaceFarmState.MaxExtractors}", 0,
+                null, () => state.PlacementAvailability(StructureKind.Extractor), StructureKind.Extractor,
+                "Art/space-farm-world-modules#water-3d", "Convierte hielo en agua");
+            AddAction("Invernadero", () => "6 Fe · una unidad", 0, null,
+                () => state.PlacementAvailability(StructureKind.Greenhouse), StructureKind.Greenhouse,
+                "Art/space-farm-world-modules#greenhouse-3d", "Produce alimentos con agua y energía");
+            AddAction("Planta de O2", () => "9 Fe · segunda planta", 0, null,
+                () => state.PlacementAvailability(StructureKind.OxygenPlant), StructureKind.OxygenPlant,
+                "Art/space-farm-world-modules#oxygen-3d", "Produce oxígeno para más colonos");
+            AddAction("Construir barrera", () => "1 Fe por segmento", 0, null,
+                () => state.PlacementAvailability(StructureKind.Barrier), StructureKind.Barrier,
+                "Art/space-farm-world-modules#habitat-3d", "Protege las minas en la incursión").BarrierMode = true;
+            AddAction("Mejorar mina", () => "6 Fe", 1, () => state.UpgradeMine(MineTarget(false), out _),
+                () => state.MineCount == 0 ? "Construí primero una mina" : MineTarget(false) < 0 ? "No hay minas para mejorar (nivel máximo o averiadas)" : MissingIron(6),
+                StructureKind.None, "Art/space-farm-iron-mine-animation#iron-mine-base-3d", "Sube una mina al nivel 2");
             AddAction("Reparar mina", () => "3 hierro", 1, () => state.RepairMine(MineTarget(true), out _),
-                () => MineTarget(true) < 0 ? "Ninguna mina necesita reparación" : MissingIron(3));
+                () => MineTarget(true) < 0 ? "Ninguna mina necesita reparación" : MissingIron(3),
+                StructureKind.None, "Art/space-farm-iron-mine-animation#iron-mine-base-3d", "Repara una mina averiada");
             AddAction("Mejorar rover", () => "5 hierro", 1, () => state.UpgradeRover(out _),
-                () => state.RoverLevel >= 2 ? "Nivel máximo de la demo" : MissingIron(5));
+                () => state.RoverLevel >= 2 ? "Nivel máximo de la demo" : MissingIron(5),
+                StructureKind.None, "Art/space-farm-rover-directions#rover-facing-south", "Amplía alcance y capacidad");
             AddAction("Recibir colono", () => "reservas vitales", 2, () => state.AddColonist(out _),
-                () => state.Population >= 4 ? "El hábitat está completo" : state.OxygenPerSol < (state.Population + 1) * 1.25f ? "Aumentá O2 y conservá un 25 % de reserva" : state.Oxygen < 8 || state.Water < 8 || state.Food < 8 ? "Necesitás al menos 8 de O2, agua y comida" : string.Empty);
+                () => state.Population >= 4 ? "El hábitat está completo" : state.OxygenPerSol < (state.Population + 1) * 1.25f ? "Aumentá O2 y conservá un 25 % de reserva" : state.Oxygen < 8 || state.Water < 8 || state.Food < 8 ? "Necesitás al menos 8 de O2, agua y comida" : string.Empty,
+                StructureKind.None, "Art/space-farm-colonist-directions#colonist-facing-south", "Más manos para operar minas");
             AddAction("Pedir a la Tierra", () => "4 hierro", 2, () => state.OrderFromEarth(out _),
-                () => state.ShipmentArrivalSol != 0 ? "Ya hay un pedido en camino" : MissingIron(4));
+                () => state.ShipmentArrivalSol != 0 ? "Ya hay un pedido en camino" : MissingIron(4),
+                StructureKind.None, "Art/space-farm-world-modules#habitat-3d", "Recibe agua y alimentos");
 
             GameObject flashObject = new GameObject("Event Flash", typeof(RectTransform), typeof(Image));
             flashObject.transform.SetParent(canvasObject.transform, false);
@@ -166,28 +196,7 @@ namespace SpaceFarm
             screenFlash.raycastTarget = false;
             RefreshActionCards();
             SelectCategory(0);
-        }
-
-        /// <summary>Deposit a build card acts on: the selected one when it fits, otherwise the nearest studied free deposit.</summary>
-        private int BuildTarget(DepositKind kind)
-        {
-            SpaceFarmState.DepositState chosen = state.Deposit(selectedDeposit);
-            if (selectedBuilding == "deposit" && chosen != null && chosen.Kind == kind && chosen.Surveyed && !chosen.HasBuilding)
-                return chosen.Id;
-            foreach (SpaceFarmState.DepositState deposit in state.Deposits)
-                if (deposit.Kind == kind && deposit.Surveyed && !deposit.HasBuilding) return deposit.Id;
-            return -1;
-        }
-
-        private string BuildBlocker(DepositKind kind)
-        {
-            int target = BuildTarget(kind);
-            bool iron = kind == DepositKind.Iron;
-            if (target < 0)
-                return state.AnySurveyed(kind)
-                    ? (iron ? "Estudiá otro yacimiento de hierro" : "Estudiá otro depósito de hielo")
-                    : (iron ? "Estudiá un yacimiento de hierro" : "Estudiá un depósito de hielo");
-            return iron ? state.MineBlocker(target) : state.ExtractorBlocker(target);
+            constructionMenuRoot.SetActive(false);
         }
 
         /// <summary>Mine an upgrade or repair card acts on: the selected mine first, then the nearest that qualifies.</summary>
@@ -252,35 +261,51 @@ namespace SpaceFarm
                 Button button = AddButton(captions[i], parent, () => SelectCategory(category),
                     13, SpaceFarmPalette.Button, SpaceFarmPalette.Text,
                     new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1),
-                    new Vector2(18 + i * 108, -40), new Vector2(100, 30));
+                    new Vector2(12 + i * 117, -39), new Vector2(110, 29));
                 button.transition = Selectable.Transition.None;
                 categoryButtons.Add(button);
             }
         }
 
-        private ActionCard AddAction(string title, Func<string> cost, int category, Func<bool> action, Func<string> lockReason)
+        private ActionCard AddAction(string title, Func<string> cost, int category, Func<bool> action,
+            Func<string> lockReason, StructureKind placement = StructureKind.None, string iconPath = "", string description = "")
         {
             GameObject item = new GameObject(title, typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
             item.transform.SetParent(actionCardsRoot, false);
-            item.GetComponent<LayoutElement>().flexibleWidth = 1f;
-            item.GetComponent<LayoutElement>().minWidth = 112f;
+            item.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 56);
+            item.GetComponent<LayoutElement>().preferredHeight = 56f;
             Image image = item.GetComponent<Image>();
             image.color = SpaceFarmPalette.Button;
             Button button = item.GetComponent<Button>();
             button.targetGraphic = image;
             button.transition = Selectable.Transition.None;
 
+            GameObject thumbnail = new GameObject("Miniatura", typeof(RectTransform), typeof(Image));
+            thumbnail.transform.SetParent(item.transform, false);
+            RectTransform thumbRect = thumbnail.GetComponent<RectTransform>();
+            thumbRect.anchorMin = thumbRect.anchorMax = thumbRect.pivot = new Vector2(0, .5f);
+            thumbRect.anchoredPosition = new Vector2(5, 0);
+            thumbRect.sizeDelta = new Vector2(52, 48);
+            Image icon = thumbnail.GetComponent<Image>();
+            icon.sprite = LoadCatalogSprite(iconPath);
+            icon.preserveAspect = true;
+            icon.raycastTarget = false;
+
             TextMeshProUGUI titleText = Label(title, item.transform, 15, FontStyles.Bold,
-                SpaceFarmPalette.Text, new Vector2(0, 1), new Vector2(1, 1), new Vector2(.5f, 1),
-                new Vector2(0, -7), new Vector2(-12, 26));
-            titleText.alignment = TextAlignmentOptions.Center;
+                SpaceFarmPalette.Text, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1),
+                new Vector2(63, -2), new Vector2(-71, 19));
             titleText.enableAutoSizing = true;
-            titleText.fontSizeMin = 12;
+            titleText.fontSizeMin = 11;
             titleText.fontSizeMax = 15;
-            TextMeshProUGUI detailText = Label(cost(), item.transform, 11, FontStyles.Normal,
-                SpaceFarmPalette.MutedText, Vector2.zero, Vector2.one, new Vector2(.5f, .5f),
-                new Vector2(0, -13), new Vector2(-10, -26));
-            detailText.alignment = TextAlignmentOptions.Center;
+            TextMeshProUGUI descriptionText = Label(description, item.transform, 10, FontStyles.Normal,
+                SpaceFarmPalette.MutedText, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1),
+                new Vector2(63, -20), new Vector2(-71, 15));
+            descriptionText.enableAutoSizing = true;
+            descriptionText.fontSizeMin = 8;
+            descriptionText.fontSizeMax = 10;
+            TextMeshProUGUI detailText = Label(cost(), item.transform, 11, FontStyles.Bold,
+                SpaceFarmPalette.Ice, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 0),
+                new Vector2(63, 2), new Vector2(-71, 18));
             detailText.textWrappingMode = TextWrappingModes.Normal;
             detailText.enableAutoSizing = true;
             detailText.fontSizeMin = 8;
@@ -289,9 +314,16 @@ namespace SpaceFarm
             ActionCard card = new ActionCard
             {
                 Category = category, Root = item.transform, Background = image, Title = titleText,
-                Detail = detailText, Cost = cost, Action = action, LockReason = lockReason
+                Detail = detailText, Cost = cost, Action = action, LockReason = lockReason,
+                Placement = placement, Button = button, Icon = icon, Description = description
             };
             actionCards.Add(card);
+            if (placement != StructureKind.None && placement != StructureKind.Barrier)
+            {
+                SpaceFarmBuildCardDrag drag = item.AddComponent<SpaceFarmBuildCardDrag>();
+                drag.Begin = () => { if (card.Button.interactable) BeginStructurePlacement(card.Placement, true); };
+                drag.End = DropCardPlacement;
+            }
             button.onClick.AddListener(() =>
             {
                 if (paused) return;
@@ -309,7 +341,13 @@ namespace SpaceFarm
                 }
                 if (card.BarrierMode)
                 {
+                    CloseConstructionMenu();
                     BeginBarrierMode();
+                    return;
+                }
+                if (card.Placement != StructureKind.None)
+                {
+                    BeginStructurePlacement(card.Placement);
                     return;
                 }
                 bool success = card.Action();
@@ -319,6 +357,16 @@ namespace SpaceFarm
                 RefreshHud();
             });
             return card;
+        }
+
+        private static Sprite LoadCatalogSprite(string path)
+        {
+            int separator = path.IndexOf('#');
+            if (separator < 0) return Resources.Load<Sprite>(path);
+            string spriteName = path.Substring(separator + 1);
+            Sprite[] sprites = Resources.LoadAll<Sprite>(path.Substring(0, separator));
+            foreach (Sprite sprite in sprites) if (sprite != null && sprite.name == spriteName) return sprite;
+            return null;
         }
 
         private Button AddButton(string caption, Transform parent, Action callback, float fontSize,
@@ -365,8 +413,8 @@ namespace SpaceFarm
             selectedCategory = category;
             string[] hints =
             {
-                "Clic: enviar rover o abrir ficha · arrastrar: mover cámara · rueda: zoom · Esc: pausa.",
-                "Mejorá minas y rover; repará instalaciones dañadas. Actúan sobre la instalación seleccionada.",
+                "Clic: activar plano · arrastrar tarjeta: colocar.",
+                "Mejorá o repará la instalación seleccionada.",
                 "Cada colono extra permite operar una mina más, pero consume O2, agua y comida."
             };
             actionDetailText.text = hints[Mathf.Clamp(category, 0, hints.Length - 1)];
@@ -389,15 +437,71 @@ namespace SpaceFarm
                 if (!visible) continue;
                 string reason = card.LockReason();
                 bool available = string.IsNullOrEmpty(reason);
+                card.Button.interactable = available;
                 card.Background.color = available ? SpaceFarmPalette.Button : SpaceFarmPalette.PanelRaised;
                 card.Title.color = available ? SpaceFarmPalette.Text : SpaceFarmPalette.MutedText;
                 card.Detail.color = available ? SpaceFarmPalette.Ice : SpaceFarmPalette.MutedText;
+                card.Icon.color = available ? Color.white : new Color(.62f, .65f, .66f, .55f);
                 card.Detail.text = available ? card.Cost() : card.Cost() + " · " + reason;
             }
             LayoutRebuilder.ForceRebuildLayoutImmediate(actionCardsRoot);
         }
 
-        private string MissingIron(int amount) => state.Iron < amount ? $"Faltan {amount - state.Iron} de hierro" : string.Empty;
+        private string MissingIron(int amount) => state.Iron < amount ? $"Faltan {amount - state.Iron} Fe" : string.Empty;
+
+        private void ToggleConstructionMenu()
+        {
+            if (constructionMenuOpen) CloseConstructionMenu();
+            else OpenConstructionMenu();
+        }
+
+        private void OpenConstructionMenu()
+        {
+            if (paused || titleScreenOpen) return;
+            if (barrierMode) EndBarrierMode();
+            if (activeStructure != StructureKind.None) CancelPlacement(false);
+            if (infoPanel != null) infoPanel.SetActive(false);
+            leftPressValid = false;
+            constructionMenuOpen = true;
+            SetNavigationButtonsVisible(false);
+            ApplyConstructionMenuLayout();
+            constructionMenuRoot.SetActive(true);
+            constructionMenuRoot.transform.SetAsLastSibling();
+            RefreshActionCards();
+            constructionMenuToggle.GetComponentInChildren<TextMeshProUGUI>().text = "CERRAR MENÚ";
+        }
+
+        private void CloseConstructionMenu()
+        {
+            constructionMenuOpen = false;
+            if (constructionMenuRoot != null) constructionMenuRoot.SetActive(false);
+            SetNavigationButtonsVisible(true);
+            if (constructionMenuToggle != null)
+                constructionMenuToggle.GetComponentInChildren<TextMeshProUGUI>().text = "CONSTRUIR";
+            if (infoPanel != null && selectedBuilding != null && activeStructure == StructureKind.None)
+            {
+                infoPanel.SetActive(true);
+                RefreshSystemsHud();
+            }
+        }
+
+        private void ApplyConstructionMenuLayout()
+        {
+            if (constructionMenuRoot == null) return;
+            RectTransform rect = constructionMenuRoot.GetComponent<RectTransform>();
+            bool dockLeft = minimapRight;
+            rect.anchorMin = new Vector2(dockLeft ? 0 : 1, 0);
+            rect.anchorMax = new Vector2(dockLeft ? 0 : 1, 1);
+            rect.offsetMin = new Vector2(dockLeft ? 12 : -382, FooterHeight + 10);
+            rect.offsetMax = new Vector2(dockLeft ? 382 : -12, -(HeaderHeight + 10));
+        }
+
+        private void SetNavigationButtonsVisible(bool visible)
+        {
+            if (baseNavButton != null) baseNavButton.gameObject.SetActive(visible);
+            if (roverNavButton != null) roverNavButton.gameObject.SetActive(visible);
+            if (followButton != null) followButton.gameObject.SetActive(visible);
+        }
 
         private void RefreshHud()
         {
@@ -606,11 +710,11 @@ namespace SpaceFarm
         private void InitializeSystems()
         {
             Transform canvas = hudCanvas.transform;
-            AddButton("VOLVER A LA BASE", canvas, () => { SetFollow(false); FocusWorld(CellPosition(BaseCell)); }, 12,
+            baseNavButton = AddButton("VOLVER A LA BASE", canvas, () => { SetFollow(false); FocusWorld(CellPosition(BaseCell)); }, 12,
                 SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
                 new Vector2(0,1),new Vector2(0,1),new Vector2(0,1),
                 new Vector2(15,-106),new Vector2(170,31));
-            AddButton("IR AL ROVER", canvas, () => FocusWorld(rover.transform.position), 12,
+            roverNavButton = AddButton("IR AL ROVER", canvas, () => FocusWorld(rover.transform.position), 12,
                 SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
                 new Vector2(0,1),new Vector2(0,1),new Vector2(0,1),
                 new Vector2(15,-143),new Vector2(98,31));
@@ -625,7 +729,8 @@ namespace SpaceFarm
             buildModePanel.GetComponent<Image>().raycastTarget = true;
             buildModeText = Label("", buildModePanel.transform, 15, FontStyles.Bold, SpaceFarmPalette.Iron,
                 new Vector2(0,0),new Vector2(0,1),new Vector2(0,.5f),new Vector2(10,0),new Vector2(350,-8));
-            AddButton("TERMINAR", buildModePanel.transform, EndBarrierMode, 12,
+            AddButton("CANCELAR", buildModePanel.transform,
+                () => { if (barrierMode) EndBarrierMode(); else CancelPlacement(); }, 12,
                 SpaceFarmPalette.Iron, SpaceFarmPalette.Background,
                 new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(1,.5f),
                 new Vector2(-9,0),new Vector2(106,35));
@@ -697,7 +802,10 @@ namespace SpaceFarm
 
         private void BeginBarrierMode()
         {
+            CancelPlacement(false);
+            CloseConstructionMenu();
             barrierMode = true;
+            interactionMode = InteractionMode.PlacingBarrier;
             HideWorldSelection();
             buildModePanel.SetActive(true);
             SetFollow(false);
@@ -709,6 +817,7 @@ namespace SpaceFarm
         private void EndBarrierMode()
         {
             barrierMode = false;
+            interactionMode = InteractionMode.Explore;
             if (barrierPreview != null) barrierPreview.SetActive(false);
             if (barrierPreviewVertical != null) barrierPreviewVertical.SetActive(false);
             if (buildModePanel != null) buildModePanel.SetActive(false);
@@ -750,8 +859,7 @@ namespace SpaceFarm
             int id = deposit.Id;
             if (deposit.MineLevel > 0) StartMineCollection(id);
             else if (deposit.Extractor) return;
-            else if (deposit.Kind == DepositKind.Iron) Act((out string message) => state.BuildMine(id, out message));
-            else Act((out string message) => state.BuildWaterExtractor(id, out message));
+            else BeginStructurePlacement(deposit.Kind == DepositKind.Iron ? StructureKind.Mine : StructureKind.Extractor);
         }
 
         private void ContextSecondaryAction()
@@ -766,7 +874,7 @@ namespace SpaceFarm
         private void RefreshSystemsHud()
         {
             if (state == null) return;
-            if (buildModeText != null)
+            if (buildModeText != null && barrierMode)
                 buildModeText.text = $"BARRERA  ·  1 Fe por segmento\nPerímetro {state.BarrierCount}/12  ·  Hierro {state.Iron}";
             if (defenseText != null)
                 defenseText.text = $"PERÍMETRO {state.BarrierCount}/12\nMINAS {state.MineCount}/{state.MaxMines}";
@@ -839,23 +947,25 @@ namespace SpaceFarm
             else if (iron)
             {
                 infoTitle.text = $"Yacimiento {deposit.Name}";
-                string blocker = state.MineBlocker(deposit.Id);
+                string blocker = state.PlacementBlocker(StructureKind.Mine, map.Deposits[deposit.Id].Cell,
+                    IsRevealed(map.Deposits[deposit.Id].Cell));
                 infoBody.text = $"Hierro confirmado. {place}\nMina: {state.MineCost} Fe · produce 3 Fe/sol · usa 2 de energía.\n" +
                     $"Minas activas {state.MineCount}/{state.MaxMines}: cada mina necesita un operador (una por colono a partir del segundo) y cada mina nueva cuesta 4 Fe más.\n" +
                     (blocker.Length > 0 ? blocker + "." : "Lista para construir.");
                 infoPrimary.gameObject.SetActive(true);
-                primaryLabel.text = $"CONSTRUIR MINA · {state.MineCost}";
+                primaryLabel.text = $"COLOCAR MINA · {state.MineCost}";
                 infoPrimary.interactable = blocker.Length == 0 && !state.GameOver;
             }
             else
             {
                 infoTitle.text = $"Depósito {deposit.Name}";
-                string blocker = state.ExtractorBlocker(deposit.Id);
+                string blocker = state.PlacementBlocker(StructureKind.Extractor, map.Deposits[deposit.Id].Cell,
+                    IsRevealed(map.Deposits[deposit.Id].Cell));
                 infoBody.text = $"Hielo confirmado. {place}\nExtractor: {state.ExtractorCost} Fe · produce 5 de agua/sol · usa 2 de energía.\n" +
                     $"Extractores {state.ExtractorCount}/{SpaceFarmState.MaxExtractors}: el segundo cuesta 4 Fe más y el agua nunca supera 30.\n" +
                     (blocker.Length > 0 ? blocker + "." : "Listo para construir.");
                 infoPrimary.gameObject.SetActive(true);
-                primaryLabel.text = $"CONSTRUIR EXTRACTOR · {state.ExtractorCost}";
+                primaryLabel.text = $"COLOCAR EXTRACTOR · {state.ExtractorCost}";
                 infoPrimary.interactable = blocker.Length == 0 && !state.GameOver;
             }
         }

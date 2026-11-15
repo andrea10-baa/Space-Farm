@@ -19,6 +19,12 @@ namespace SpaceFarm
         public void SetPaused(bool value)
         {
             if (pauseOverlay == null || paused == value) return;
+            if (value)
+            {
+                CancelPlacement(false);
+                if (barrierMode) EndBarrierMode();
+                CloseConstructionMenu();
+            }
             paused = value;
             Time.timeScale = value ? 0f : 1f;
             pauseOverlay.SetActive(value);
@@ -70,11 +76,11 @@ namespace SpaceFarm
             Transform controls = pauseControlsPage.transform;
             PauseTitle(controls, "CONTROLES");
             TextMeshProUGUI help = Label(
-                "<b>Cámara</b>  Arrastrá con cualquier botón del mouse, o usá WASD / flechas.\n" +
+                "<b>Cámara</b>  Arrastrá el mapa o usá WASD / flechas.\n" +
                 "<b>Zoom</b>  Rueda del mouse. VOLVER A LA BASE e IR AL ROVER reubican la vista; SEGUIR acompaña al rover.\n" +
                 "<b>Explorar</b>  Clic en el terreno: el rover viaja ahí y revela sectores. Clic en una señal: va a estudiarla.\n" +
-                "<b>Construir</b>  Clic en un yacimiento estudiado o una instalación: abre su ficha con las acciones.\n" +
-                "<b>Barreras</b>  CONSTRUIR BARRERA y luego clic en una de las 12 posiciones iluminadas (1 Fe). Esc o TERMINAR salen.\n" +
+                "<b>Construir</b>  Abrí CONSTRUIR. Elegí un plano y hacé clic en un sector válido, o arrastrá una tarjeta al mapa. Esc o clic derecho cancelan.\n" +
+                "<b>Barreras</b>  Elegí barrera en el menú y luego clic en una de las 12 posiciones iluminadas (1 Fe). Esc o CANCELAR salen.\n" +
                 "<b>Minimapa</b>  Clic en zona explorada: centra la cámara sin mover al rover. + / - cambia el tamaño; < > lo pasa de lado.\n" +
                 "<b>Pausa</b>  Esc o el botón PAUSA.",
                 controls, 13, FontStyles.Normal, SpaceFarmPalette.Text,

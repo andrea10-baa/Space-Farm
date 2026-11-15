@@ -99,8 +99,7 @@ namespace SpaceFarm
                 CellPosition(roverCell) + new Vector3(-.65f, -.5f * SpaceFarmMap.TerrainPerspectiveYScale, -.5f),
                 1.55f, 1.55f, 8, worldRoot.transform);
             rover = roverRenderer.gameObject;
-            greenhouse = CreateBuilding("Invernadero", "Art/space-farm-world-modules#greenhouse-3d", BaseCell + new Vector2Int(-2, 1), worldRoot.transform);
-            oxygenPlantTwo = CreateBuilding("Planta de oxígeno 2", "Art/space-farm-world-modules#oxygen-3d", BaseCell + new Vector2Int(2, 2), worldRoot.transform);
+            // Optional buildings are created only after a player confirms their chosen cell.
             CreateBarrierWorld();
             CreateSolarWorld();
             CreatePointsOfInterest();
@@ -114,8 +113,6 @@ namespace SpaceFarm
                 new Vector3(.8f, .8f, 1f), SpaceFarmPalette.Ice, 11, worldRoot.transform);
             signalPing.enabled = false;
             CreateScanTrail();
-            greenhouse.SetActive(false);
-            oxygenPlantTwo.SetActive(false);
         }
 
         /// <summary>The whole 128×80 region is one painted ground texture.</summary>
@@ -347,9 +344,9 @@ namespace SpaceFarm
                 return true;
             }
             Vector3 basePosition = CellPosition(BaseCell);
-            if (state.Greenhouse && Vector2.Distance(world, greenhouse.transform.position) < .85f)
+            if (state.Greenhouse && greenhouse != null && Vector2.Distance(world, greenhouse.transform.position) < .85f)
                 return SelectWorldBuilding("greenhouse");
-            if (state.OxygenPlants > 1 && Vector2.Distance(world, oxygenPlantTwo.transform.position) < .8f)
+            if (state.OxygenPlants > 1 && oxygenPlantTwo != null && Vector2.Distance(world, oxygenPlantTwo.transform.position) < .8f)
                 return SelectWorldBuilding("oxygen2");
             if (Vector2.Distance(world, CellPosition(BaseCell + new Vector2Int(2,0))) < .78f)
                 return SelectWorldBuilding("oxygen1");
@@ -387,6 +384,13 @@ namespace SpaceFarm
                 bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
                 Vector3 world = ScreenToWorld(mouse.position.ReadValue());
                 hoveredBarrierSlot = overUi ? -1 : FindBarrierSlot(world);
+                Vector2Int cell = WorldToCell(world);
+                bool validCell = map.Inside(cell) && revealed[cell.x, cell.y];
+                string reason = overUi ? "Apuntá al mapa" : hoveredBarrierSlot < 0 ? "Elegí una marca del perímetro" :
+                    !validCell ? "Sector oculto" : state.HasBarrierSegment(hoveredBarrierSlot) ? "Segmento ya construido" :
+                    state.Iron < 1 ? "Falta 1 Fe" : "VÁLIDO · clic para instalar";
+                if (buildModeText != null)
+                    buildModeText.text = $"Barrera · 1 Fe (tenés {state.Iron})\n{reason}";
                 bool vertical = hoveredBarrierSlot >= 8;
                 barrierPreview.SetActive(!overUi && !vertical);
                 barrierPreviewVertical.SetActive(!overUi && vertical);
@@ -396,7 +400,7 @@ namespace SpaceFarm
                     GameObject preview = vertical ? barrierPreviewVertical : barrierPreview;
                     preview.transform.position = slot >= 0 ?
                         barrierSegments[slot].transform.position : new Vector3(world.x,world.y,-.25f);
-                    bool valid = slot >= 0 && !state.HasBarrierSegment(slot) && state.Iron > 0;
+                    bool valid = slot >= 0 && validCell && !state.HasBarrierSegment(slot) && state.Iron > 0;
                     foreach (SpriteRenderer sprite in preview.GetComponentsInChildren<SpriteRenderer>())
                         sprite.color = valid ? new Color(.48f,1f,.88f,.58f) : new Color(1f,.31f,.27f,.6f);
                 }
@@ -415,11 +419,18 @@ namespace SpaceFarm
                 roverBaseScale *= 1.12f;
                 PlayWorldPing(rover.transform.position, SpaceFarmPalette.Ice);
             }
-            if (state.Greenhouse && !previousGreenhouse) AnimatePop(greenhouse.transform, greenhouse.transform.localScale);
-            if (state.OxygenPlants > previousOxygenPlants && previousOxygenPlants > 0)
+            if (state.GreenhouseCell.HasValue && greenhouse == null)
+            {
+                greenhouse = CreateBuilding("Invernadero", "Art/space-farm-world-modules#greenhouse-3d",
+                    state.GreenhouseCell.Value, worldRoot.transform);
+                AnimatePop(greenhouse.transform, greenhouse.transform.localScale);
+            }
+            if (state.OxygenPlantTwoCell.HasValue && oxygenPlantTwo == null)
+            {
+                oxygenPlantTwo = CreateBuilding("Planta de oxígeno 2", "Art/space-farm-world-modules#oxygen-3d",
+                    state.OxygenPlantTwoCell.Value, worldRoot.transform);
                 AnimatePop(oxygenPlantTwo.transform, oxygenPlantTwo.transform.localScale);
-            greenhouse.SetActive(state.Greenhouse);
-            oxygenPlantTwo.SetActive(state.OxygenPlants > 1);
+            }
             previousGreenhouse = state.Greenhouse;
             previousRoverLevel = state.RoverLevel;
             previousOxygenPlants = state.OxygenPlants;

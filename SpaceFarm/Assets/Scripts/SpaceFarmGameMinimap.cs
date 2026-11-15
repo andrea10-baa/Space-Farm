@@ -21,6 +21,8 @@ namespace SpaceFarm
         private RectTransform minimapView;
         private RectTransform minimapRover;
         private RectTransform minimapFrame;
+        private RectTransform minimapGreenhouse;
+        private RectTransform minimapOxygenTwo;
         private RectTransform[] minimapPoints;
         private Texture2D minimapTexture;
         private Color32[] minimapPixels;
@@ -96,6 +98,8 @@ namespace SpaceFarm
                 minimapPoints[i] = MinimapMarker("Punto de interés", ringSprite, map.Points[i].Cell, SpaceFarmPalette.Text, 8f, 0f);
             MinimapMarker("Base borde", squareSprite, BaseCell, SpaceFarmPalette.Background, 11f, 0f).gameObject.SetActive(true);
             MinimapMarker("Base", squareSprite, BaseCell, SpaceFarmPalette.Text, 8f, 0f).gameObject.SetActive(true);
+            minimapGreenhouse = MinimapMarker("Invernadero", circleSprite, BaseCell, SpaceFarmPalette.Greenhouse, 8f, 0f);
+            minimapOxygenTwo = MinimapMarker("Planta de O2 adicional", circleSprite, BaseCell, SpaceFarmPalette.Oxygen, 8f, 0f);
 
             GameObject frame = new GameObject("Cámara", typeof(RectTransform));
             frame.transform.SetParent(minimapView, false);
@@ -161,6 +165,7 @@ namespace SpaceFarm
                 card.anchorMin = card.anchorMax = card.pivot = top;
                 card.anchoredPosition = new Vector2(minimapRight ? 200 : -15, -108);
             }
+            ApplyConstructionMenuLayout();
             if (pauseMinimapLabel != null)
                 pauseMinimapLabel.text = minimapRight ? "MINIMAPA: DERECHA" : "MINIMAPA: IZQUIERDA";
             minimapLastCamera = new Vector3(float.MaxValue, 0f, 0f);
@@ -230,6 +235,10 @@ namespace SpaceFarm
             }
             for (int i = 0; i < minimapPoints.Length; i++)
                 minimapPoints[i].gameObject.SetActive(revealed[map.Points[i].Cell.x, map.Points[i].Cell.y] && !state.HasDiscovery(i));
+            minimapGreenhouse.gameObject.SetActive(state.GreenhouseCell.HasValue);
+            if (state.GreenhouseCell.HasValue) minimapGreenhouse.anchorMin = minimapGreenhouse.anchorMax = CellToMinimap(state.GreenhouseCell.Value);
+            minimapOxygenTwo.gameObject.SetActive(state.OxygenPlantTwoCell.HasValue);
+            if (state.OxygenPlantTwoCell.HasValue) minimapOxygenTwo.anchorMin = minimapOxygenTwo.anchorMax = CellToMinimap(state.OxygenPlantTwoCell.Value);
         }
 
         private void NavigateFromMinimap(Vector2 screen, Camera eventCamera)

@@ -108,7 +108,7 @@ namespace SpaceFarm.Editor
 
         private static SpaceFarmGame Game()
         {
-            SpaceFarmGame[] games = UnityEngine.Object.FindObjectsByType<SpaceFarmGame>(FindObjectsSortMode.None);
+            SpaceFarmGame[] games = UnityEngine.Object.FindObjectsByType<SpaceFarmGame>();
             return games.Length == 1 && games[0].enabled && games[0].State != null ? games[0] : null;
         }
 
@@ -142,7 +142,7 @@ namespace SpaceFarm.Editor
         }
 
         private static int SceneObjects() =>
-            UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length;
+            UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsInactive.Include).Length;
 
         private static int IronTotal(SpaceFarmGame game)
         {
@@ -203,6 +203,27 @@ namespace SpaceFarm.Editor
             yield return Until(() => Game() != null && Game().Seed == 1 && Game().State.Sol == 1, 30, "reinicio a la semilla 1");
             yield return Wait(.8);
             SpaceFarmGame colony = Game();
+            colony.BeginFromTitleForTools();
+            Vector2Int roverAtStart = colony.RoverCell;
+            int ironAtStart = colony.State.Iron;
+            colony.OpenConstructionForTools();
+            Require(colony.IsConstructionMenuOpen && !colony.RoverBusy,
+                "abrir el catálogo no ordena mover al rover");
+            colony.CloseConstructionForTools();
+            yield return Wait(.1);
+            Require(!colony.IsConstructionMenuOpen && colony.RoverCell == roverAtStart,
+                "cerrar el catálogo deja al rover en su sector");
+            colony.BeginPlacementForTools(StructureKind.Greenhouse);
+            Require(colony.IsPlacingStructure && colony.State.Iron == ironAtStart,
+                "elegir un plano no cobra recursos");
+            colony.ConfirmPlacementForTools(colony.Map.BaseCell);
+            Require(colony.IsPlacingStructure && colony.State.Iron == ironAtStart,
+                "intentar construir sobre la base no cobra recursos");
+            colony.SetPaused(true);
+            Require(!colony.IsPlacingStructure && !colony.IsConstructionMenuOpen,
+                "pausar cancela el plano y cierra el catálogo");
+            colony.SetPaused(false);
+            yield return Wait(.1);
             int initialObjects = SceneObjects();
             ulong initialSignature = colony.Map.Signature;
             MapDeposit iron = colony.Map.Nearest(DepositKind.Iron);
@@ -212,11 +233,14 @@ namespace SpaceFarm.Editor
             yield return Until(() => !colony.RoverBusy, 30, "viaje al hierro");
             Require(colony.State.Deposit(iron.Id).Surveyed && colony.RoverCell == iron.Cell, "el rover descubre y estudia el yacimiento cercano");
             colony.PressDepositPrimary(iron.Id);
+            Require(colony.IsPlacingStructure && colony.State.MineCount == 0, "elegir una mina solo activa el plano");
+            colony.ConfirmPlacementForTools(iron.Cell);
             Require(colony.State.Deposit(iron.Id).MineLevel == 1 && colony.State.MineCount == 1, "se construye una mina en ese yacimiento desde su ficha");
             colony.OrderRover(ice.Cell);
             yield return Until(() => !colony.RoverBusy, 40, "viaje al hielo");
             Require(colony.State.Deposit(ice.Id).Surveyed, "el rover estudia el depósito de hielo cercano");
             colony.PressDepositPrimary(ice.Id);
+            colony.ConfirmPlacementForTools(ice.Cell);
             Require(colony.State.Deposit(ice.Id).Extractor, "se construye un extractor en ese depósito");
             colony.PressAdvanceSol();
             Require(colony.State.Sol == 2 && colony.State.Deposit(iron.Id).MineStored == 3, "la mina produce 3 Fe en su almacén al avanzar el sol");
@@ -309,13 +333,14 @@ namespace SpaceFarm.Editor
             yield return Until(() => Game() != null && Game() != colony, 30, "reinicio con la misma semilla");
             yield return Wait(.8);
             SpaceFarmGame again = Game();
+            again.BeginFromTitleForTools();
             Require(again.Seed == 1 && again.Map.Signature == initialSignature, "reiniciar este mapa conserva la semilla y el mapa");
             Require(again.State.Sol == 1 && again.State.Iron == 18 && again.State.MineCount == 0 && again.State.BarrierCount == 0 &&
                 again.State.Population == 2 && !again.IsRevealed(iron.Cell + (iron.Cell - again.Map.BaseCell)),
                 "reiniciar restaura recursos, edificios, barreras, colonos y niebla");
             Require(SceneObjects() == initialObjects, $"reiniciar no deja objetos duplicados ({initialObjects} objetos antes y después)");
-            Require(UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None).Length == 1 &&
-                UnityEngine.Object.FindObjectsByType<SpaceFarmGame>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length == 1,
+            Require(UnityEngine.Object.FindObjectsByType<Canvas>().Length == 1 &&
+                UnityEngine.Object.FindObjectsByType<SpaceFarmGame>(FindObjectsInactive.Include).Length == 1,
                 "queda un solo HUD y una sola partida");
             Require(Time.timeScale == 1f && !again.IsPaused, "la partida reiniciada arranca sin pausa");
 
@@ -323,9 +348,10 @@ namespace SpaceFarm.Editor
             yield return Until(() => Game() != null && Game() != again, 30, "mapa nuevo");
             yield return Wait(.8);
             SpaceFarmGame fresh = Game();
+            fresh.BeginFromTitleForTools();
             Require(fresh.Seed != 1 && fresh.Map.Signature != initialSignature, $"empezar un mapa nuevo usa otra semilla ({fresh.Seed})");
             Require(fresh.State.Sol == 1 && fresh.State.MineCount == 0 &&
-                UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None).Length == 1 &&
+                UnityEngine.Object.FindObjectsByType<Canvas>().Length == 1 &&
                 fresh.transform.Find("Marte/Yacimientos").childCount == fresh.Map.Deposits.Count * 3,
                 "el mapa nuevo empieza limpio, sin objetos del anterior");
         }
