@@ -24,6 +24,7 @@ namespace SpaceFarm
                 CancelPlacement(false);
                 if (barrierMode) EndBarrierMode();
                 CloseConstructionMenu();
+                CloseCrewMenu();
             }
             paused = value;
             Time.timeScale = value ? 0f : 1f;
@@ -80,6 +81,7 @@ namespace SpaceFarm
                 "<b>Zoom</b>  Rueda del mouse. VOLVER A LA BASE e IR AL ROVER reubican la vista; SEGUIR acompaña al rover.\n" +
                 "<b>Explorar</b>  Clic en el terreno: el rover viaja ahí y revela sectores. Clic en una señal: va a estudiarla.\n" +
                 "<b>Construir</b>  Abrí CONSTRUIR. Elegí un plano y hacé clic en un sector válido, o arrastrá una tarjeta al mapa. Esc o clic derecho cancelan.\n" +
+                "<b>Astronautas</b>  Abrí ASTRONAUTAS, elegí una persona y luego una instalación. Trabajar aumenta su producción; descansan solos al cansarse.\n" +
                 "<b>Muros</b>  Elegí muros en el menú y colocá cada uno en un sector libre (1 Fe). R cambia la orientación; Esc cancela.\n" +
                 "<b>Minimapa</b>  Clic en zona explorada: centra la cámara sin mover al rover. + / - cambia el tamaño; < > lo pasa de lado.\n" +
                 "<b>Pausa</b>  Esc o el botón PAUSA.",

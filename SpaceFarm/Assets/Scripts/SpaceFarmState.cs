@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SpaceFarm
 {
     public enum StructureKind { None, Mine, Extractor, Greenhouse, OxygenPlant, Barrier }
-    public enum CrewJob { None, Mine, Extractor, Greenhouse, Oxygen }
+    public enum CrewJob { None, Mine, Extractor, Greenhouse, Oxygen, Solar }
 
     /// <summary>Small deterministic simulation for the colony loop. Knows deposits by id, not by map position.</summary>
     [Serializable]
@@ -48,8 +48,8 @@ namespace SpaceFarm
             public int MineStored { get; internal set; }
             public bool Extractor { get; internal set; }
             public SystemResult LastResult { get; internal set; } = new SystemResult();
-            public int MineCapacity => MineLevel == 2 ? 15 : MineLevel == 1 ? 6 : 0;
-            public int MineNominal => MineLevel == 2 ? 5 : MineLevel == 1 ? 3 : 0;
+            public int MineCapacity => MineLevel == 2 ? 36 : MineLevel == 1 ? 18 : 0;
+            public int MineNominal => MineLevel == 2 ? 8 : MineLevel == 1 ? 5 : 0;
             public int MineEnergy => MineLevel == 2 ? 3 : MineLevel == 1 ? 2 : 0;
             public bool HasBuilding => MineLevel > 0 || Extractor;
         }
@@ -95,11 +95,11 @@ namespace SpaceFarm
 
         public SolResults LastSol { get; private set; } = new SolResults();
         public int Sol { get; private set; } = 1;
-        public int Iron { get; private set; } = 18;
-        public int Energy { get; private set; } = 12;
-        public int Oxygen { get; private set; } = 12;
-        public int Water { get; private set; } = 14;
-        public int Food { get; private set; } = 14;
+        public int Iron { get; private set; } = 36;
+        public int Energy { get; private set; } = 20;
+        public int Oxygen { get; private set; } = 20;
+        public int Water { get; private set; } = 20;
+        public int Food { get; private set; } = 20;
         public int Population { get; private set; } = 2;
         public int ColonyLevel { get; private set; } = 1;
         public int Xp { get; private set; }
@@ -108,7 +108,7 @@ namespace SpaceFarm
         public int RoverRange => RoverRanges[ColonyLevel];
         public int SolarLevel { get; private set; } = 1;
         public int EnergyCapacity => 30 + (SolarLevel - 1) * 10;
-        public int SolarPerSol => 9 + (SolarLevel - 1) * 12;
+        public int SolarPerSol => 14 + (SolarLevel - 1) * 12;
         public int Health { get; private set; } = 3;
         public int OxygenPlants { get; private set; } = 1;
         public int RoverLevel { get; private set; } = 1;
@@ -117,12 +117,13 @@ namespace SpaceFarm
         public Vector2Int? OxygenPlantTwoCell { get; private set; }
         public int BarrierCount => barriers.Count;
         public int RoverCargo { get; private set; }
-        public int RoverCapacity => RoverLevel == 2 ? 8 : 4;
+        public int RoverCapacity => RoverLevel == 2 ? 24 : 12;
         public int ShipmentArrivalSol { get; private set; }
         public bool GameOver => Health <= 0;
         public bool MissionComplete => Sol >= 7 && MineCount > 0 && Greenhouse && ColonyLevel >= 3 && !GameOver;
         public int ScanRadius => 1 + ColonyLevel + (RoverLevel > 1 ? 1 : 0);
-        public int OxygenPerSol => OxygenPlants * 4;
+        public int OxygenPerSol => OxygenPlants * 7;
+        public static int WorkerBonus(CrewJob job) => job == CrewJob.Solar ? 5 : job == CrewJob.None ? 0 : 3;
         public string LastReport { get; private set; } = "La nave aterrizó. Enviá el rover a explorar los sectores ocultos.";
 
         public IReadOnlyList<DepositState> Deposits => deposits;
@@ -326,13 +327,13 @@ namespace SpaceFarm
                 greenhouseCells.Add(cell);
                 if (!GreenhouseCell.HasValue) GreenhouseCell = cell;
                 GainXp(6);
-                return Success("Invernadero listo: transforma agua y energía en 4 de comida por sol.", out message);
+                return Success("Invernadero listo: transforma agua y energía en 7 de comida por sol.", out message);
             }
             OxygenPlants++;
             oxygenCells.Add(cell);
             if (!OxygenPlantTwoCell.HasValue) OxygenPlantTwoCell = cell;
             GainXp(6);
-            return Success("Nueva planta de oxígeno lista. Cada planta genera 4 de O2 y consume 3 de energía por sol.", out message);
+            return Success("Nueva planta de oxígeno lista. Cada planta genera 7 de O2 y consume 2 de energía por sol.", out message);
         }
 
         public string SurveyDeposit(int id)
@@ -375,7 +376,7 @@ namespace SpaceFarm
             deposit.MineLevel = 1;
             deposit.LastResult = new SystemResult();
             GainXp(8);
-            return Success($"Mina nivel 1 construida en {deposit.Name}. Produce hasta 3 Fe por sol, usa 2 de energía y almacena 6. Enviá el rover para recoger.", out message);
+            return Success($"Mina nivel 1 construida en {deposit.Name}. Produce hasta 5 Fe por sol, usa 2 de energía y almacena 18. Enviá el rover para recoger.", out message);
         }
 
         public bool UpgradeMine(int id, out string message)
@@ -460,26 +461,47 @@ namespace SpaceFarm
 
         public bool AssignWorker(CrewJob job, int target, out string message)
         {
-            if (job == CrewJob.None) return Fail("Elegí una tarea.", out message);
+            if (!ValidWorkplace(job, target, out message)) return false;
+            foreach (CrewMember member in crew)
+                if (member.Job == job && member.Target == target)
+                    return AssignCrew(member.Id, CrewJob.None, -1, out message);
+            foreach (CrewMember member in crew)
+                if (member.Job == CrewJob.None)
+                    return AssignCrew(member.Id, job, target, out message);
+            return Fail("No hay astronautas libres. Desasigná uno desde su instalación.", out message);
+        }
+
+        public bool AssignCrew(int memberId, CrewJob job, int target, out string message)
+        {
+            CrewMember chosen = null;
+            foreach (CrewMember member in crew)
+                if (member.Id == memberId) { chosen = member; break; }
+            if (chosen == null) return Fail("Astronauta inexistente.", out message);
+            if (job == CrewJob.None)
+            {
+                chosen.Job = CrewJob.None;
+                chosen.Target = -1;
+                return Success($"Astronauta {chosen.Id} vuelve al hábitat.", out message);
+            }
+            if (!ValidWorkplace(job, target, out message)) return false;
+            CrewMember occupant = WorkerOn(job, target);
+            if (occupant != null && occupant != chosen)
+                return Fail($"La instalación ya tiene al astronauta {occupant.Id}.", out message);
+            chosen.Job = job;
+            chosen.Target = target;
+            return Success($"Astronauta {chosen.Id} asignado a {JobName(job)}. Bono: +{WorkerBonus(job)} por sol mientras esté despierto.", out message);
+        }
+
+        private bool ValidWorkplace(CrewJob job, int target, out string message)
+        {
+            if (job == CrewJob.None) return Fail("Elegí una instalación.", out message);
             if (job == CrewJob.Mine && (Deposit(target) == null || Deposit(target).MineLevel == 0)) return Fail("Elegí una mina construida.", out message);
             if (job == CrewJob.Extractor && (Deposit(target) == null || !Deposit(target).Extractor)) return Fail("Elegí un extractor construido.", out message);
             if (job == CrewJob.Greenhouse && (target < 0 || target >= greenhouseCells.Count)) return Fail("Construí un invernadero.", out message);
             if (job == CrewJob.Oxygen && (target < 0 || target >= OxygenPlants)) return Fail("Construí una planta de O2.", out message);
-            foreach (CrewMember member in crew)
-                if (member.Job == job && member.Target == target)
-                {
-                    member.Job = CrewJob.None;
-                    member.Target = -1;
-                    return Success($"Astronauta {member.Id} dejó esa tarea y vuelve al hábitat.", out message);
-                }
-            foreach (CrewMember member in crew)
-                if (member.Job == CrewJob.None)
-                {
-                    member.Job = job;
-                    member.Target = target;
-                    return Success($"Astronauta {member.Id} asignado a {JobName(job)}. Descansará automáticamente si se cansa.", out message);
-                }
-            return Fail("No hay astronautas libres. Desasigná uno desde su instalación.", out message);
+            if (job == CrewJob.Solar && target != 0) return Fail("Paneles solares no disponibles.", out message);
+            message = string.Empty;
+            return true;
         }
 
         private static string JobName(CrewJob job)
@@ -490,6 +512,7 @@ namespace SpaceFarm
                 case CrewJob.Extractor: return "el extractor";
                 case CrewJob.Greenhouse: return "el invernadero";
                 case CrewJob.Oxygen: return "la planta de oxígeno";
+                case CrewJob.Solar: return "los paneles solares";
                 default: return "una instalación";
             }
         }
@@ -547,7 +570,7 @@ namespace SpaceFarm
             deposit.Extractor = true;
             deposit.LastResult = new SystemResult();
             GainXp(8);
-            return Success($"Extractor listo en {deposit.Name}: obtiene 5 de agua por sol a cambio de 2 de energía.", out message);
+            return Success($"Extractor listo en {deposit.Name}: obtiene 8 de agua por sol a cambio de 2 de energía.", out message);
         }
 
         public bool BuildBarrierSegment(Vector2Int cell, bool vertical, bool revealed, out string message)
@@ -616,9 +639,10 @@ namespace SpaceFarm
             Sol++;
             GainXp(4);
             bool storm = Sol == 3 || Sol == 4;
-            int solar = storm ? Mathf.Max(2, SolarPerSol / 4) : SolarPerSol;
+            int solarNominal = SolarPerSol + ActiveWorkers(CrewJob.Solar, 0) * WorkerBonus(CrewJob.Solar);
+            int solar = storm ? Mathf.Max(3, solarNominal / 3) : solarNominal;
             LastSol = new SolResults { Storm = storm };
-            LastSol.Solar.Nominal = SolarPerSol;
+            LastSol.Solar.Nominal = solarNominal;
             LastSol.Solar.Actual = Mathf.Min(solar, EnergyCapacity - Energy);
             LastSol.Solar.Reason = storm ? "Tormenta de polvo: llega menos luz." :
                 LastSol.Solar.Actual < solar ? "Batería llena." : "Operativa.";
@@ -630,13 +654,13 @@ namespace SpaceFarm
             int oxygenMade = 0;
             for (int i = 0; i < OxygenPlants; i++)
             {
-                SystemResult plant = new SystemResult { Nominal = 4 + ActiveWorkers(CrewJob.Oxygen, i) };
+                SystemResult plant = new SystemResult { Nominal = 7 + ActiveWorkers(CrewJob.Oxygen, i) * WorkerBonus(CrewJob.Oxygen) };
                 LastSol.OxygenUnits.Add(plant);
                 if (Oxygen + oxygenMade >= 60) plant.Reason = "Depósito de O2 lleno.";
-                else if (!SpendEnergy(3)) plant.Reason = "Falta energía.";
+                else if (!SpendEnergy(2)) plant.Reason = "Falta energía.";
                 else
                 {
-                    plant.EnergyUsed = 3;
+                    plant.EnergyUsed = 2;
                     plant.Actual = Mathf.Min(plant.Nominal, 60 - Oxygen - oxygenMade);
                     oxygenMade += plant.Actual;
                     plant.Reason = plant.Actual < plant.Nominal ? "Depósito de O2 lleno." : "Operativa.";
@@ -649,7 +673,7 @@ namespace SpaceFarm
             foreach (DepositState deposit in deposits)
             {
                 if (!deposit.Extractor) continue;
-                SystemResult result = deposit.LastResult = new SystemResult { Nominal = 5 + ActiveWorkers(CrewJob.Extractor, deposit.Id) };
+                SystemResult result = deposit.LastResult = new SystemResult { Nominal = 8 + ActiveWorkers(CrewJob.Extractor, deposit.Id) * WorkerBonus(CrewJob.Extractor) };
                 if (Water >= 60) result.Reason = "Depósito de agua lleno.";
                 else if (!SpendEnergy(2)) result.Reason = "Falta energía.";
                 else
@@ -665,7 +689,7 @@ namespace SpaceFarm
 
             for (int i = 0; i < greenhouseCells.Count; i++)
             {
-                SystemResult result = new SystemResult { Nominal = 4 + ActiveWorkers(CrewJob.Greenhouse, i) };
+                SystemResult result = new SystemResult { Nominal = 7 + ActiveWorkers(CrewJob.Greenhouse, i) * WorkerBonus(CrewJob.Greenhouse) };
                 LastSol.GreenhouseUnits.Add(result);
                 if (Food >= 60) result.Reason = "Almacén de comida lleno.";
                 else if (Water == 0) result.Reason = "Falta agua.";
@@ -686,7 +710,7 @@ namespace SpaceFarm
             foreach (DepositState deposit in deposits)
             {
                 if (deposit.MineLevel == 0) continue;
-                SystemResult result = deposit.LastResult = new SystemResult { Nominal = deposit.MineNominal + ActiveWorkers(CrewJob.Mine, deposit.Id) };
+                SystemResult result = deposit.LastResult = new SystemResult { Nominal = deposit.MineNominal + ActiveWorkers(CrewJob.Mine, deposit.Id) * WorkerBonus(CrewJob.Mine) };
                 if (deposit.MineStored >= deposit.MineCapacity) result.Reason = "Almacén lleno: enviá el rover.";
                 else if (!SpendEnergy(deposit.MineEnergy)) result.Reason = "Falta energía.";
                 else

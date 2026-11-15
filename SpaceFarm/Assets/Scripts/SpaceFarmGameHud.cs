@@ -114,7 +114,7 @@ namespace SpaceFarm
             footer.GetComponent<Image>().raycastTarget = true;
             reportText = Label("", footer.transform, 14, FontStyles.Normal, SpaceFarmPalette.Text,
                 new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1),
-                new Vector2(18, -5), new Vector2(-185, 34));
+                new Vector2(18, -5), new Vector2(-365, 34));
             reportText.enableAutoSizing = true;
             reportText.fontSizeMin = 10;
             reportText.fontSizeMax = 14;
@@ -122,6 +122,10 @@ namespace SpaceFarm
                 14, SpaceFarmPalette.Iron, SpaceFarmPalette.Background,
                 new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(1, .5f),
                 new Vector2(-10, 0), new Vector2(152, 34));
+            crewMenuToggle = AddButton("ASTRONAUTAS", footer.transform, ToggleCrewMenu,
+                14, SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
+                new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(1, .5f),
+                new Vector2(-170, 0), new Vector2(165, 34));
 
             constructionMenuRoot = Panel("Menú de construcción", canvasObject.transform, SpaceFarmPalette.Panel,
                 new Vector2(0, 0), new Vector2(0, 1), new Vector2(0, .5f), Vector2.zero, Vector2.zero);
@@ -179,9 +183,6 @@ namespace SpaceFarm
                 () => state.UpgradeSolar(out _),
                 () => state.SolarLevel >= SpaceFarmState.MaxLevel ? "Nivel máximo" : state.HasUpgrade("solar", 0) ? "Los paneles ya se están mejorando" : MissingIron(state.SolarUpgradeCost),
                 StructureKind.None, "Art/space-farm-world-modules#solar-3d", "Más energía y capacidad de batería");
-            AddAction("Asignar astronauta", WorkerCardCost, 2,
-                () => AssignSelectedWorker(), () => SelectedWorkerJob(out _) == CrewJob.None ? "Seleccioná una mina, extractor, invernadero o planta de O2" : string.Empty,
-                StructureKind.None, "Art/space-farm-colonist-directions#colonist-facing-south", "Asignar o retirar; descansa solo al agotarse");
             AddAction("Pedir a la Tierra", () => "4 hierro", 2, () => state.OrderFromEarth(out _),
                 () => state.ShipmentArrivalSol != 0 ? "Ya hay un pedido en camino" : MissingIron(4),
                 StructureKind.None, "Art/space-farm-world-modules#habitat-3d", "Recibe agua y alimentos");
@@ -416,7 +417,7 @@ namespace SpaceFarm
             {
                 "Clic: activar plano · arrastrar tarjeta: colocar.",
                 "Mejorá la instalación seleccionada.",
-                "Seleccioná una instalación, asigná un astronauta y vigilá su descanso y suministros."
+                "Pedí suministros a la Tierra. La tripulación se administra en ASTRONAUTAS."
             };
             actionDetailText.text = hints[Mathf.Clamp(category, 0, hints.Length - 1)];
             for (int i = 0; i < categoryButtons.Count; i++)
@@ -466,19 +467,6 @@ namespace SpaceFarm
             return CrewJob.None;
         }
 
-        private bool AssignSelectedWorker()
-        {
-            CrewJob job = SelectedWorkerJob(out int target);
-            return state.AssignWorker(job, target, out _);
-        }
-
-        private string WorkerCardCost()
-        {
-            CrewJob job = SelectedWorkerJob(out int target);
-            SpaceFarmState.CrewMember member = state.WorkerOn(job, target);
-            return member != null ? $"Retirar astronauta {member.Id}" : $"{state.FreeWorkers} libres · elegir instalación";
-        }
-
         private void ToggleConstructionMenu()
         {
             if (constructionMenuOpen) CloseConstructionMenu();
@@ -488,6 +476,7 @@ namespace SpaceFarm
         private void OpenConstructionMenu()
         {
             if (paused || titleScreenOpen) return;
+            if (crewMenuOpen) CloseCrewMenu();
             if (barrierMode) EndBarrierMode();
             if (activeStructure != StructureKind.None) CancelPlacement(false);
             if (infoPanel != null) infoPanel.SetActive(false);
@@ -550,6 +539,7 @@ namespace SpaceFarm
             RefreshActionCards();
             RefreshResourceHud();
             RefreshSystemsHud();
+            if (crewMenuOpen) RefreshCrewMenu();
         }
 
         private void CreateResourceHud(Transform header)
@@ -915,15 +905,15 @@ namespace SpaceFarm
             SpaceFarmState.SystemResult result = null;
             string title;
             string extra = "";
-            int nominal = 4;
-            int expectedEnergy = 3;
+            int nominal = 7;
+            int expectedEnergy = 2;
             switch (selectedBuilding)
             {
                 case "oxygen1": title = "Planta de oxígeno 1"; result = state.LastSol.OxygenOne; break;
                 case "oxygen2": title = $"Planta de oxígeno {selectedBuildingIndex + 2}"; result = state.LastSol.OxygenUnits.Count > selectedBuildingIndex + 1 ? state.LastSol.OxygenUnits[selectedBuildingIndex + 1] : state.LastSol.OxygenTwo; break;
                 case "greenhouse": title = $"Invernadero {selectedBuildingIndex + 1}"; result = state.LastSol.GreenhouseUnits.Count > selectedBuildingIndex ? state.LastSol.GreenhouseUnits[selectedBuildingIndex] : state.LastSol.Greenhouse; expectedEnergy = 2;
                     extra = $"Insumo: {result.OtherUsed} agua en el último sol."; break;
-                case "solar": title = $"Generación solar · nivel {state.SolarLevel}"; result = state.LastSol.Solar; nominal = state.SolarPerSol; expectedEnergy = 0;
+                case "solar": title = $"Generación solar · nivel {state.SolarLevel}"; result = state.LastSol.Solar; nominal = state.SolarPerSol + state.ActiveWorkers(CrewJob.Solar, 0) * SpaceFarmState.WorkerBonus(CrewJob.Solar); expectedEnergy = 0;
                     extra = $"Batería {state.Energy}/{state.EnergyCapacity}  ·  Tormenta: {(state.LastSol.Storm ? "sí" : "no")}"; break;
                 case "dormitory": title = "Dormitorio de astronautas";
                     extra = $"Camas {state.Population}/{state.HabitatCapacity} · Astronautas libres {state.FreeWorkers}\nLos asignados descansan aquí automáticamente al agotarse."; break;
@@ -931,11 +921,13 @@ namespace SpaceFarm
                     extra = $"Colonia nivel {state.ColonyLevel}/5 · XP {state.Xp}/{state.XpToNext}\nAstronautas {state.Population}/{state.HabitatCapacity} · Libres {state.FreeWorkers}\nDormitorio: descanso automático al cansarse. Salud {state.Health}/3\nCarga del rover: {state.RoverCargo}/{state.RoverCapacity} Fe"; break;
             }
             CrewJob job = SelectedWorkerJob(out int workerTarget);
+            if (job == CrewJob.Oxygen || job == CrewJob.Greenhouse)
+                nominal += state.ActiveWorkers(job, workerTarget) * SpaceFarmState.WorkerBonus(job);
             if (job != CrewJob.None)
             {
                 SpaceFarmState.CrewMember assigned = state.WorkerOn(job, workerTarget);
-                extra += assigned == null ? "\nSin astronauta asignado. Usá Colonia → Asignar astronauta." :
-                    $"\nAstronauta {assigned.Id}: {(assigned.Resting ? "descansando" : "trabajando")} · energía {assigned.Energy:0} %.";
+                extra += assigned == null ? "\nSin astronauta. Abrí ASTRONAUTAS para asignar uno." :
+                    $"\nAstronauta {assigned.Id}: {(assigned.Resting ? "descansando" : "trabajando")} · energía {assigned.Energy:0} % · bono +{SpaceFarmState.WorkerBonus(job)}/sol.";
             }
             infoTitle.text = title;
             infoBody.text = result == null ? extra : ResultText(result, "Operativa", nominal, expectedEnergy, extra);
@@ -965,12 +957,13 @@ namespace SpaceFarm
                 infoTitle.text = $"Mina {deposit.Name} · nivel {deposit.MineLevel}";
                 string status = deposit.MineStored == deposit.MineCapacity ? "Almacén lleno" : "Operativa";
                 string reason = deposit.LastResult.Reason;
-                infoBody.text = $"Estado: {status}\nNominal: {deposit.MineNominal}/sol  ·  Real último: {deposit.LastResult.Actual}\n" +
+                int mineNominal = deposit.MineNominal + state.ActiveWorkers(CrewJob.Mine, deposit.Id) * SpaceFarmState.WorkerBonus(CrewJob.Mine);
+                infoBody.text = $"Estado: {status}\nNominal: {mineNominal}/sol  ·  Real último: {deposit.LastResult.Actual}\n" +
                     $"Energía: {deposit.MineEnergy}/sol (usó {deposit.LastResult.EnergyUsed})\n" +
                     $"Almacén {deposit.MineStored}/{deposit.MineCapacity} Fe  ·  Rover {state.RoverCargo}/{state.RoverCapacity} Fe\n{place}\n{reason}";
                 SpaceFarmState.CrewMember assigned = state.WorkerOn(CrewJob.Mine, deposit.Id);
-                infoBody.text += assigned == null ? "\nSin trabajador. Asigná desde Colonia." :
-                    $"\nAstronauta {assigned.Id}: {(assigned.Resting ? "descansando" : "trabajando")} · energía {assigned.Energy:0} %.";
+                infoBody.text += assigned == null ? "\nSin trabajador. Abrí ASTRONAUTAS." :
+                    $"\nAstronauta {assigned.Id}: {(assigned.Resting ? "descansando" : "trabajando")} · energía {assigned.Energy:0} % · bono +{SpaceFarmState.WorkerBonus(CrewJob.Mine)}/sol.";
                 infoPrimary.gameObject.SetActive(true);
                 primaryLabel.text = "RECOGER";
                 infoPrimary.interactable = deposit.MineStored > 0 && !busy;
@@ -981,7 +974,8 @@ namespace SpaceFarm
             else if (deposit.Extractor)
             {
                 infoTitle.text = $"Extractor {deposit.Name}";
-                infoBody.text = ResultText(deposit.LastResult, "Operativa", 5, 2, $"Agua {state.Water}/30\n{place}");
+                int waterNominal = 8 + state.ActiveWorkers(CrewJob.Extractor, deposit.Id) * SpaceFarmState.WorkerBonus(CrewJob.Extractor);
+                infoBody.text = ResultText(deposit.LastResult, "Operativa", waterNominal, 2, $"Agua {state.Water}/60\n{place}");
                 infoPrimary.gameObject.SetActive(false);
             }
             else if (iron)
@@ -989,7 +983,7 @@ namespace SpaceFarm
                 infoTitle.text = $"Yacimiento {deposit.Name}";
                 string blocker = state.PlacementBlocker(StructureKind.Mine, map.Deposits[deposit.Id].Cell,
                     IsRevealed(map.Deposits[deposit.Id].Cell));
-                infoBody.text = $"Hierro confirmado. {place}\nMina: {state.MineCost} Fe · produce 3 Fe/sol · usa 2 de energía.\n" +
+                infoBody.text = $"Hierro confirmado. {place}\nMina: {state.MineCost} Fe · produce 5 Fe/sol · usa 2 de energía.\n" +
                     $"Minas activas {state.MineCount}/{state.MaxMines}: cada mina necesita un operador (una por colono a partir del segundo) y cada mina nueva cuesta 4 Fe más.\n" +
                     (blocker.Length > 0 ? blocker + "." : "Lista para construir.");
                 infoPrimary.gameObject.SetActive(true);
@@ -1001,7 +995,7 @@ namespace SpaceFarm
                 infoTitle.text = $"Depósito {deposit.Name}";
                 string blocker = state.PlacementBlocker(StructureKind.Extractor, map.Deposits[deposit.Id].Cell,
                     IsRevealed(map.Deposits[deposit.Id].Cell));
-                infoBody.text = $"Hielo confirmado. {place}\nExtractor: {state.ExtractorCost} Fe · produce 5 de agua/sol · usa 2 de energía.\n" +
+                infoBody.text = $"Hielo confirmado. {place}\nExtractor: {state.ExtractorCost} Fe · produce 8 de agua/sol · usa 2 de energía.\n" +
                     $"Extractores {state.ExtractorCount}/{SpaceFarmState.MaxExtractors}: el segundo cuesta 4 Fe más y el agua nunca supera 30.\n" +
                     (blocker.Length > 0 ? blocker + "." : "Listo para construir.");
                 infoPrimary.gameObject.SetActive(true);

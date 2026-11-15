@@ -711,6 +711,8 @@ namespace SpaceFarm
             else if (member.Job == CrewJob.Oxygen)
                 cell = member.Target == 0 ? BaseCell + new Vector2Int(2, 0) :
                     member.Target - 1 < state.OxygenCells.Count ? state.OxygenCells[member.Target - 1] : BaseCell;
+            else if (member.Job == CrewJob.Solar)
+                cell = BaseCell + new Vector2Int(-2, -1);
             return CellPosition(cell) + new Vector3(.45f, -.28f, -.1f);
         }
 

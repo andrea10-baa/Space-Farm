@@ -136,6 +136,7 @@ namespace SpaceFarm
             CreateSprites();
             CreateWorld();
             CreateHud();
+            CreateCrewMenu();
             InitializeSystems();
             CreateMinimap();
             CreatePauseMenu();
@@ -190,6 +191,7 @@ namespace SpaceFarm
             if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
             {
                 if (paused) SetPaused(false);
+                else if (crewMenuOpen) CloseCrewMenu();
                 else if (activeStructure != StructureKind.None) CancelPlacement();
                 else if (barrierMode) EndBarrierMode();
                 else if (constructionMenuOpen) CloseConstructionMenu();
@@ -203,7 +205,7 @@ namespace SpaceFarm
                 RefreshWorld();
                 RefreshHud();
             }
-            if (state.Upgrades.Count > 0 || selectedBuilding != null)
+            if (state.Upgrades.Count > 0 || selectedBuilding != null || crewMenuOpen)
             {
                 upgradeHudClock += Time.deltaTime;
                 if (upgradeHudClock >= .5f) { upgradeHudClock = 0f; RefreshHud(); }
@@ -230,7 +232,7 @@ namespace SpaceFarm
 
         private void HandleWorldPointer(Mouse mouse)
         {
-            if (constructionMenuOpen || interactionMode == InteractionMode.DraggingStructure) return;
+            if (constructionMenuOpen || crewMenuOpen || interactionMode == InteractionMode.DraggingStructure) return;
             bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
             Vector2 pointer = mouse.position.ReadValue();
             if (mouse.leftButton.wasPressedThisFrame)

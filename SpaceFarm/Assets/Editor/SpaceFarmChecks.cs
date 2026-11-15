@@ -72,7 +72,7 @@ namespace SpaceFarm.Editor
             Require(state.BuildMine(0, out _), "la primera mina se puede construir");
             Require(state.AssignWorker(CrewJob.Mine, 0, out _) && state.FreeWorkers == 1, "asignación a mina");
             state.AdvanceSol();
-            Require(state.Deposit(0).MineStored == 4 && state.Deposit(0).LastResult.Nominal == 4,
+            Require(state.Deposit(0).MineStored == 8 && state.Deposit(0).LastResult.Nominal == 8,
                 "un trabajador activo acelera la mina");
             state.Tick(48f);
             Require(state.Crew[0].Resting && state.ActiveWorkers(CrewJob.Mine, 0) == 0,
@@ -91,14 +91,21 @@ namespace SpaceFarm.Editor
             state.Tick(1f);
             Require(state.Deposit(0).MineLevel == 2 && state.UpgradeRemaining("mine", 0) == 0,
                 "mejora terminada a los treinta segundos");
-            Require(state.UpgradeRover(out _) && state.RoverCapacity == 4, "rover en mejora conserva su capacidad");
+            Require(state.UpgradeRover(out _) && state.RoverCapacity == 12, "rover en mejora conserva su capacidad");
             state.Tick(30f);
-            Require(state.RoverCapacity == 8, "rover mejorado carga más hierro");
+            Require(state.RoverCapacity == 24, "rover mejorado carga más hierro");
             SpaceFarmState solar = new SpaceFarmState();
             Require(solar.UpgradeSolar(out _) && solar.SolarLevel == 1, "paneles en mejora");
             solar.Tick(30f);
-            Require(solar.SolarLevel == 2 && solar.SolarPerSol == 21 && solar.EnergyCapacity == 40,
+            Require(solar.SolarLevel == 2 && solar.SolarPerSol == 26 && solar.EnergyCapacity == 40,
                 "paneles mejorados aumentan generación y batería");
+            Require(solar.AssignCrew(2, CrewJob.Solar, 0, out _) && solar.ActiveWorkers(CrewJob.Solar, 0) == 1,
+                "se puede elegir a una persona concreta para los paneles");
+            Require(!solar.AssignCrew(1, CrewJob.Solar, 0, out _), "una instalación no admite dos astronautas");
+            solar.AdvanceSol();
+            Require(solar.LastSol.Solar.Nominal == 31, "el astronauta aumenta la producción solar en 5 por sol");
+            Require(solar.AssignCrew(2, CrewJob.None, -1, out _) && solar.FreeWorkers == 2,
+                "la persona elegida puede dejar su tarea");
         }
 
         private static void CheckEconomyAndWalls()
@@ -117,15 +124,28 @@ namespace SpaceFarm.Editor
             SpaceFarmState economy = new SpaceFarmState();
             economy.GainXp(70);
             Require(economy.Population == 6, "nivel tres suma seis consumidores");
+            economy.SurveyDeposit(0);
+            economy.SurveyDeposit(1);
+            Require(economy.BuildMine(0, out _) && economy.BuildWaterExtractor(1, out _),
+                "el hierro inicial permite comenzar extracción de hierro y agua");
             Require(economy.PlaceStructure(StructureKind.Greenhouse, new Vector2Int(10, 10), true, out _),
                 "primer invernadero");
             Require(economy.PlaceStructure(StructureKind.OxygenPlant, new Vector2Int(20, 20), true, out _),
                 "segunda planta de oxígeno");
+            Require(economy.AssignCrew(1, CrewJob.Oxygen, 0, out _) &&
+                economy.AssignCrew(2, CrewJob.Extractor, 1, out _) &&
+                economy.AssignCrew(3, CrewJob.Greenhouse, 0, out _) &&
+                economy.AssignCrew(4, CrewJob.Mine, 0, out _), "cada astronauta se asigna a una estructura concreta");
             economy.AdvanceSol();
-            Require(economy.LastSol.CrewConsumed == 6 && economy.Oxygen == 14 && economy.Food == 12 &&
-                economy.Water == 7, "producción y consumo crecen con la población y edificios");
+            Require(economy.LastSol.CrewConsumed == 6 && economy.Oxygen == 31 && economy.Food == 24 &&
+                economy.Water == 26 && economy.Deposit(0).MineStored == 8,
+                "una colonia de nivel tres puede cubrir su consumo con instalaciones y trabajadores");
             Require(economy.LastSol.OxygenUnits.Count == 2 && economy.LastSol.GreenhouseUnits.Count == 1,
                 "cada instalación presenta su propia producción");
+            SpaceFarmState grace = new SpaceFarmState();
+            for (int i = 0; i < 4; i++) grace.AdvanceSol();
+            Require(!grace.GameOver && grace.Oxygen > 0 && grace.Water > 0 && grace.Food > 0,
+                "las reservas iniciales dan varios soles para descubrir y construir");
         }
 
         private static void Require(bool condition, string message)

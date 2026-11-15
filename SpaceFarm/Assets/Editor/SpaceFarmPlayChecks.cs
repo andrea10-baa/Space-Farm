@@ -6,6 +6,8 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 namespace SpaceFarm.Editor
 {
@@ -144,6 +146,19 @@ namespace SpaceFarm.Editor
         private static int SceneObjects() =>
             UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsInactive.Include).Length;
 
+        private static void PressCrewButton(GameObject panel, string captionPrefix)
+        {
+            foreach (Button button in panel.GetComponentsInChildren<Button>())
+            {
+                TextMeshProUGUI label = button.GetComponentInChildren<TextMeshProUGUI>();
+                if (label == null || !label.text.StartsWith(captionPrefix, StringComparison.Ordinal)) continue;
+                Require(button.interactable, captionPrefix + " está disponible en el panel");
+                button.onClick.Invoke();
+                return;
+            }
+            throw new InvalidOperationException("No existe el botón de tripulación: " + captionPrefix);
+        }
+
         private static int IronTotal(SpaceFarmGame game)
         {
             int total = game.State.Iron + game.State.RoverCargo;
@@ -246,7 +261,7 @@ namespace SpaceFarm.Editor
             colony.ConfirmPlacementForTools(ice.Cell);
             Require(colony.State.Deposit(ice.Id).Extractor, "se construye un extractor en ese depósito");
             colony.PressAdvanceSol();
-            Require(colony.State.Sol == 2 && colony.State.Deposit(iron.Id).MineStored == 3, "la mina produce 3 Fe en su almacén al avanzar el sol");
+            Require(colony.State.Sol == 2 && colony.State.Deposit(iron.Id).MineStored == 5, "la mina produce 5 Fe en su almacén al avanzar el sol");
             RequireFogHidesDeposits(colony, "tras explorar: ");
 
             // --- Pause in the middle of a collection trip.
@@ -273,7 +288,7 @@ namespace SpaceFarm.Editor
                 "en pausa no se puede avanzar el sol, construir ni recoger");
             colony.SetPaused(false);
             yield return Until(() => !colony.RoverBusy, 60, "fin de la recogida tras reanudar");
-            Require(colony.State.Iron == ironBefore + 3 && colony.State.RoverCargo == 0 &&
+            Require(colony.State.Iron == ironBefore + 5 && colony.State.RoverCargo == 0 &&
                 colony.State.Deposit(iron.Id).MineStored == 0 && IronTotal(colony) == totalBefore,
                 "al reanudar la recogida termina y el hierro no se pierde ni se duplica");
 
@@ -343,7 +358,7 @@ namespace SpaceFarm.Editor
             SpaceFarmGame again = Game();
             again.BeginFromTitleForTools();
             Require(again.Seed == 1 && again.Map.Signature == initialSignature, "reiniciar este mapa conserva la semilla y el mapa");
-            Require(again.State.Sol == 1 && again.State.Iron == 18 && again.State.MineCount == 0 && again.State.BarrierCount == 0 &&
+            Require(again.State.Sol == 1 && again.State.Iron == 36 && again.State.MineCount == 0 && again.State.BarrierCount == 0 &&
                 again.State.Population == 2 && !again.IsRevealed(iron.Cell + (iron.Cell - again.Map.BaseCell)),
                 "reiniciar restaura recursos, edificios, barreras, colonos y niebla");
             Require(SceneObjects() == initialObjects, $"reiniciar no deja objetos duplicados ({initialObjects} objetos antes y después)");
@@ -362,6 +377,23 @@ namespace SpaceFarm.Editor
                 UnityEngine.Object.FindObjectsByType<Canvas>().Length == 1 &&
                 fresh.transform.Find("Marte/Yacimientos").childCount == fresh.Map.Deposits.Count * 3,
                 "el mapa nuevo empieza limpio, sin objetos del anterior");
+            Button crewToggle = GameObject.Find("ASTRONAUTAS")?.GetComponent<Button>();
+            Require(crewToggle != null, "el HUD ofrece un botón propio para gestionar astronautas");
+            crewToggle.onClick.Invoke();
+            GameObject crewPanel = GameObject.Find("Administrar astronautas");
+            Require(crewPanel != null && crewPanel.activeInHierarchy, "el botón abre el panel de tripulación");
+            PressCrewButton(crewPanel, "A-02");
+            PressCrewButton(crewPanel, "Paneles solares");
+            Require(fresh.State.WorkerOn(CrewJob.Solar, 0)?.Id == 2, "el astronauta elegido queda asignado a los paneles");
+            PressCrewButton(crewPanel, "DEJAR TAREA");
+            PressCrewButton(crewPanel, "Planta de O2 1");
+            Require(fresh.State.WorkerOn(CrewJob.Oxygen, 0)?.Id == 2 && fresh.State.WorkerOn(CrewJob.Solar, 0) == null,
+                "el mismo astronauta puede cambiar de instalación sin duplicarse");
+            yield return Shot("astronautas-1280x720");
+            PressCrewButton(crewPanel, "DEJAR TAREA");
+            PressCrewButton(crewPanel, "CERRAR");
+            Require(!crewPanel.activeInHierarchy && fresh.State.FreeWorkers == 2,
+                "cerrar el panel vuelve al mapa y libera a la persona elegida");
         }
     }
 }
