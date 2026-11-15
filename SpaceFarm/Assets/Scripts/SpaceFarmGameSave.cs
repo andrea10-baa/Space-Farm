@@ -119,6 +119,9 @@ namespace SpaceFarm
         {
             GameObject field = Panel("Campo de nombre", parent, SpaceFarmPalette.Background,
                 new Vector2(.5f,1),new Vector2(.5f,1),new Vector2(.5f,1),position,new Vector2(390,40));
+            // Panel() disables raycasts for decorative backgrounds. An input field needs its
+            // background to receive pointer events so clicking it can give it keyboard focus.
+            field.GetComponent<Image>().raycastTarget = true;
             TMP_InputField input = field.AddComponent<TMP_InputField>();
             TextMeshProUGUI text = Label("", field.transform, 16, FontStyles.Normal, SpaceFarmPalette.Text,
                 Vector2.zero,Vector2.one,new Vector2(.5f,.5f),new Vector2(0,0),new Vector2(-22,-10));
@@ -129,6 +132,7 @@ namespace SpaceFarm
             hint.alignment = TextAlignmentOptions.MidlineLeft;
             hint.raycastTarget = false;
             input.textComponent = text;
+            input.textViewport = field.GetComponent<RectTransform>();
             input.placeholder = hint;
             input.targetGraphic = field.GetComponent<Image>();
             input.characterLimit = 28;
