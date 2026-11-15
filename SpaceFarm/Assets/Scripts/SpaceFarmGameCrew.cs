@@ -96,6 +96,8 @@ namespace SpaceFarm
         private void OpenCrewMenu()
         {
             if (paused || titleScreenOpen || state.GameOver) return;
+            if (editMode) SetEditMode(false);
+            CancelEditMove();
             if (constructionMenuOpen) CloseConstructionMenu();
             if (barrierMode) EndBarrierMode();
             if (activeStructure != StructureKind.None) CancelPlacement(false);

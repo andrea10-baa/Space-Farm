@@ -12,6 +12,7 @@ namespace SpaceFarm
     public struct SpaceFarmRandom
     {
         private ulong state;
+        public ulong State { get => state; set => state = value; }
 
         public SpaceFarmRandom(ulong seed) { state = seed + 0x9E3779B97F4A7C15UL; }
 

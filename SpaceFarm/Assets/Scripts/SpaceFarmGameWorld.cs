@@ -422,6 +422,7 @@ namespace SpaceFarm
                 if (Vector2.Distance(world, CellPosition(view.Info.Cell)) >= .8f) continue;
                 SpaceFarmState.DepositState deposit = state.Deposit(view.Info.Id);
                 if (deposit.Surveyed) return SelectDeposit(view.Info.Id);
+                if (editMode) { SetReport("Un yacimiento sin estudiar no se puede editar. Exploralo con el rover primero."); return true; }
                 // A visible but unstudied signal: the click is the order to go and study it.
                 HideWorldSelection();
                 SendRoverTo(view.Info.Cell);
@@ -527,7 +528,7 @@ namespace SpaceFarm
                 int index = greenhouseWorlds.Count;
                 GameObject built = CreateBuilding($"Invernadero {index + 1}", "Art/space-farm-world-modules#greenhouse-3d",
                     state.GreenhouseCells[index], worldRoot.transform);
-                SetUpgradeArtwork(built, 'a', 0, state.ColonyLevel, 1.75f, 1.17f);
+                SetUpgradeArtwork(built, 'a', 0, state.GreenhouseLevel(index), 1.75f, 1.17f);
                 greenhouseWorlds.Add(built);
                 if (greenhouse == null) greenhouse = built;
                 AnimatePop(built.transform, built.transform.localScale);
@@ -537,7 +538,7 @@ namespace SpaceFarm
                 int index = oxygenWorlds.Count;
                 GameObject built = CreateBuilding($"Planta de oxígeno {index + 2}", "Art/space-farm-world-modules#oxygen-3d",
                     state.OxygenCells[index], worldRoot.transform);
-                SetUpgradeArtwork(built, 'b', 1, state.ColonyLevel, 1.75f, 1.17f);
+                SetUpgradeArtwork(built, 'b', 1, state.OxygenLevel(index + 1), 1.75f, 1.17f);
                 oxygenWorlds.Add(built);
                 if (oxygenPlantTwo == null) oxygenPlantTwo = built;
                 AnimatePop(built.transform, built.transform.localScale);
@@ -548,11 +549,11 @@ namespace SpaceFarm
                 GameObject built = CreateArtwork(index == 0 ? "Almacén central" : $"Almacén de recursos {index + 1}",
                     "Art/space-farm-warehouse", CellPosition(state.WarehouseCells[index]) + new Vector3(0f, 0f, -.18f),
                     2.05f, 1.42f, 6, worldRoot.transform).gameObject;
-                SetUpgradeArtwork(built, 'c', 1, state.ColonyLevel, 2.05f, 1.42f);
+                SetUpgradeArtwork(built, 'c', 1, state.WarehouseLevel(index), 2.05f, 1.42f);
                 warehouseWorlds.Add(built);
                 AnimatePop(built.transform, built.transform.localScale);
             }
-            SetUpgradeArtwork(oxygenPlantWorld, 'b', 1, state.ColonyLevel, 1.7f, 1.14f);
+            SetUpgradeArtwork(oxygenPlantWorld, 'b', 1, state.OxygenLevel(0), 1.7f, 1.14f);
             if (state.ColonyLevel != observedHabitatLevel)
             {
                 observedHabitatLevel = state.ColonyLevel;
@@ -561,12 +562,6 @@ namespace SpaceFarm
                 SetUpgradeArtwork(dormWorld, 'c', 0, state.ColonyLevel, 1.65f, 1.1f);
                 dormWorld.transform.localScale = size;
                 if (state.ColonyLevel > 1) AnimatePop(dormWorld.transform, size);
-                for (int i = 0; i < greenhouseWorlds.Count; i++)
-                    SetUpgradeArtwork(greenhouseWorlds[i], 'a', 0, state.ColonyLevel, 1.75f, 1.17f);
-                for (int i = 0; i < oxygenWorlds.Count; i++)
-                    SetUpgradeArtwork(oxygenWorlds[i], 'b', 1, state.ColonyLevel, 1.75f, 1.17f);
-                for (int i = 0; i < warehouseWorlds.Count; i++)
-                    SetUpgradeArtwork(warehouseWorlds[i], 'c', 1, state.ColonyLevel, 2.05f, 1.42f);
                 SetUpgradeArtwork(solarWorld, 'b', 0, state.SolarLevel, 2.1f, 1.4f);
                 solarWorld.transform.localScale = solarBaseScale * (1f + .12f * (state.SolarLevel - 1));
             }
@@ -578,6 +573,12 @@ namespace SpaceFarm
                 solarWorld.transform.localScale = size;
                 if (state.SolarLevel > 1) AnimatePop(solarWorld.transform, size);
             }
+            for (int i = 0; i < greenhouseWorlds.Count; i++)
+                SetUpgradeArtwork(greenhouseWorlds[i], 'a', 0, state.GreenhouseLevel(i), 1.75f, 1.17f);
+            for (int i = 0; i < oxygenWorlds.Count; i++)
+                SetUpgradeArtwork(oxygenWorlds[i], 'b', 1, state.OxygenLevel(i + 1), 1.75f, 1.17f);
+            for (int i = 0; i < warehouseWorlds.Count; i++)
+                SetUpgradeArtwork(warehouseWorlds[i], 'c', 1, state.WarehouseLevel(i), 2.05f, 1.42f);
             previousGreenhouse = state.Greenhouse;
             previousRoverLevel = state.RoverLevel;
             previousOxygenPlants = state.OxygenPlants;
@@ -614,7 +615,7 @@ namespace SpaceFarm
                 view.Building = CreateBuilding(iron ? $"Mina {deposit.Name}" : $"Extractor {deposit.Name}",
                     iron ? "Art/space-farm-iron-mine-animation#iron-mine-base-3d" : "Art/space-farm-world-modules#water-3d",
                     view.Info.Cell, view.Marker.transform.parent);
-                int visualLevel = iron ? Mathf.Max(deposit.MineLevel, state.ColonyLevel) : state.ColonyLevel;
+                int visualLevel = iron ? deposit.MineLevel : deposit.ExtractorLevel;
                 SetUpgradeArtwork(view.Building, 'a', iron ? 1 : 2, visualLevel, 1.75f, 1.17f);
                 if (iron) AddMineDrill(view.Building);
                 view.BuildingScale = view.Building.transform.localScale;
@@ -626,7 +627,7 @@ namespace SpaceFarm
             view.Marker.color = deposit.Surveyed ? Color.white : new Color(1f, 1f, 1f, .8f);
             if (view.Building != null)
             {
-                int visualLevel = iron ? Mathf.Max(deposit.MineLevel, state.ColonyLevel) : state.ColonyLevel;
+                int visualLevel = iron ? deposit.MineLevel : deposit.ExtractorLevel;
                 bool mineImproved = iron && deposit.MineLevel != view.ShownLevel;
                 if (visualLevel != view.ShownVisualLevel || mineImproved)
                 {
@@ -707,11 +708,126 @@ namespace SpaceFarm
 
         private GameObject UpgradeTarget(SpaceFarmState.UpgradeTask task)
         {
+            if (task.Kind == "repair")
+            {
+                switch (state.DamagedStructure)
+                {
+                    case DamagedStructureKind.Rover: return rover;
+                    case DamagedStructureKind.Solar: return solarWorld;
+                    case DamagedStructureKind.Dormitory: return dormWorld;
+                    case DamagedStructureKind.Greenhouse:
+                        return task.Target >= 0 && task.Target < greenhouseWorlds.Count ? greenhouseWorlds[task.Target] : null;
+                    case DamagedStructureKind.Mine:
+                        return task.Target >= 0 && task.Target < depositViews.Length ? depositViews[task.Target].Building : null;
+                }
+            }
             if (task.Kind == "solar") return solarWorld;
             if (task.Kind == "rover") return rover;
             if (task.Kind == "mine" && depositViews != null && task.Target >= 0 && task.Target < depositViews.Length)
                 return depositViews[task.Target].Building;
+            if (task.Kind == "extractor" && depositViews != null && task.Target >= 0 && task.Target < depositViews.Length)
+                return depositViews[task.Target].Building;
+            if (task.Kind == "greenhouse" && task.Target >= 0 && task.Target < greenhouseWorlds.Count)
+                return greenhouseWorlds[task.Target];
+            if (task.Kind == "oxygen")
+                return task.Target == 0 ? oxygenPlantWorld : task.Target - 1 >= 0 && task.Target - 1 < oxygenWorlds.Count ? oxygenWorlds[task.Target - 1] : null;
+            if (task.Kind == "warehouse" && task.Target >= 0 && task.Target < warehouseWorlds.Count)
+                return warehouseWorlds[task.Target];
             return null;
+        }
+
+        private GameObject SelectedUpgradeTarget()
+        {
+            if (selectedBuilding == "solar") return solarWorld;
+            if (selectedBuilding == "rover") return rover;
+            if (selectedBuilding == "oxygen1") return oxygenPlantWorld;
+            if (selectedBuilding == "oxygen2" && selectedBuildingIndex >= 0 && selectedBuildingIndex < oxygenWorlds.Count) return oxygenWorlds[selectedBuildingIndex];
+            if (selectedBuilding == "greenhouse" && selectedBuildingIndex >= 0 && selectedBuildingIndex < greenhouseWorlds.Count) return greenhouseWorlds[selectedBuildingIndex];
+            if (selectedBuilding == "warehouse" && selectedBuildingIndex >= 0 && selectedBuildingIndex < warehouseWorlds.Count) return warehouseWorlds[selectedBuildingIndex];
+            if (selectedBuilding == "deposit" && selectedDeposit >= 0 && selectedDeposit < depositViews.Length) return depositViews[selectedDeposit].Building;
+            return null;
+        }
+
+        private bool RoverAdjacentToSelected()
+        {
+            GameObject target = SelectedUpgradeTarget();
+            if (target == null || rover == null) return false;
+            Vector2Int targetCell = WorldToCell(target.transform.position);
+            Vector2Int delta = roverCell - targetCell;
+            return Mathf.Abs(delta.x) + Mathf.Abs(delta.y) <= 1;
+        }
+
+        private bool SendRoverNextToSelected()
+        {
+            GameObject target = SelectedUpgradeTarget();
+            if (target == null) { SetReport("Seleccioná una instalación construida primero."); return false; }
+            if (RoverBusy) { SetReport("El rover ya está ocupado; la acción puede enviarse al terminar su recorrido."); return false; }
+            Vector2Int center = WorldToCell(target.transform.position);
+            Vector2Int best = default;
+            int bestPath = int.MaxValue;
+            for (int radius = 1; radius <= 2; radius++)
+            for (int y = -radius; y <= radius; y++)
+            for (int x = -radius; x <= radius; x++)
+            {
+                if (Mathf.Abs(x) + Mathf.Abs(y) != radius) continue;
+                Vector2Int candidate = center + new Vector2Int(x, y);
+                if (!map.Inside(candidate) || !state.CanRoverReach(candidate) || state.IsCellBlocked(candidate)) continue;
+                if (!FindRoverPath(roverCell, candidate, out List<Vector2Int> path)) continue;
+                if (path.Count < bestPath) { best = candidate; bestPath = path.Count; }
+            }
+            if (bestPath == int.MaxValue) { SetReport("No hay una ruta accesible hasta esta instalación. Despejá un paso entre los muros."); return false; }
+            SendRoverTo(best);
+            return RoverBusy;
+        }
+
+        private void OrderRepairSelected()
+        {
+            if (paused || state == null || state.DamagedStructure == DamagedStructureKind.None || !DamagedSelectionMatches()) return;
+            if (state.DamagedStructure == DamagedStructureKind.Rover)
+            {
+                Act((out string message) => state.RepairDamagedStructure(out message));
+                RefreshWorld(); RefreshHud(); return;
+            }
+            GameObject target = SelectedUpgradeTarget();
+            if (target == null) { SetReport("No se pudo localizar la instalación averiada."); return; }
+            if (!RoverAdjacentToSelected())
+            {
+                if (!SendRoverNextToSelected()) { RefreshHud(); return; }
+                Vector2Int repairCell = WorldToCell(target.transform.position);
+                StartCoroutine(RepairAfterRoverArrives(state.DamagedStructure, state.DamagedTarget, repairCell));
+                RefreshHud(); return;
+            }
+            Act((out string message) => state.RepairDamagedStructure(out message));
+            RefreshWorld(); RefreshHud();
+        }
+
+        private IEnumerator RepairAfterRoverArrives(DamagedStructureKind targetKind, int targetIndex, Vector2Int repairCell)
+        {
+            collectionActive = true;
+            while (travel != null) yield return null;
+            collectionActive = false;
+            Vector2Int delta = roverCell - repairCell;
+            bool arrived = Mathf.Abs(delta.x) + Mathf.Abs(delta.y) <= 1;
+            if (!arrived)
+                SetReport("El rover no llegó a una celda junto a la instalación. No se cobró la reparación; despejá la ruta y volvé a intentarlo.");
+            else if (state != null && !state.GameOver && state.DamagedStructure == targetKind && state.DamagedTarget == targetIndex)
+                Act((out string message) => state.RepairDamagedStructure(out message));
+            RefreshWorld(); RefreshHud();
+        }
+
+        private bool BeginSelectedUpgrade(Func<bool> upgrade)
+        {
+            if (upgrade == null || state == null || paused || state.GameOver) return false;
+            if (!RoverAdjacentToSelected())
+            {
+                if (SendRoverNextToSelected())
+                    SetReport("El rover va hacia la instalación. Al llegar, confirmá la mejora desde su ficha.");
+                RefreshHud();
+                return false;
+            }
+            bool success = upgrade();
+            RefreshWorld(); RefreshHud();
+            return success;
         }
 
         private UpgradeProgressVisual CreateUpgradeProgressVisual(string key)
@@ -728,52 +844,93 @@ namespace SpaceFarm
 
         private void StartMineCollection(int depositId)
         {
-            if (paused) return;
+            StartResourceCollection(MaterialResource.Iron, depositId);
+        }
+
+        private MaterialResource queuedResourceKind;
+        private int queuedResourceSource = -1;
+        private bool hasQueuedResourceOrder;
+        private bool cargoDeliveryQueued;
+        private float logisticsScheduleClock;
+
+        public void OrderResourceCollectionForTools(MaterialResource kind, int source) => StartResourceCollection(kind, source);
+
+        private void StartResourceCollection(MaterialResource kind, int source)
+        {
+            if (paused || titleScreenOpen || arrivalSequenceActive) return;
             if (state.IsDamaged(DamagedStructureKind.Rover))
             {
                 SetReport($"El rover está averiado. Reparalo por {state.RepairIronCost} Fe y {state.RepairEnergyCost} energía.");
                 return;
             }
-            SpaceFarmState.DepositState deposit = state.Deposit(depositId);
-            if (deposit == null || deposit.MineLevel == 0) { SetReport("Elegí una mina para recoger su hierro."); return; }
-            if (!state.CanRoverReach(map.Deposits[depositId].Cell)) { SetReport("La mina queda fuera del alcance de esta colonia. Subí de nivel."); return; }
+            Vector2Int sourceCell;
+            if (!TryGetResourceSourceCell(kind, source, out sourceCell)) { SetReport("No se encontró ese depósito local."); return; }
+            if (!state.CanRoverReach(sourceCell)) { SetReport($"El depósito queda fuera del alcance del rover ({state.RoverRange} sectores). Subí el nivel de colonia."); return; }
             if (state.GameOver) { SetReport("La misión terminó. Abrí PAUSA (Esc) para reiniciar."); return; }
-            if (travel != null || collectionActive) { SetReport("Esperá a que el rover termine su recorrido."); return; }
-            if (deposit.MineStored == 0) { SetReport($"La mina de {deposit.Name} todavía no tiene hierro almacenado."); return; }
+            if (RoverBusy)
+            {
+                queuedResourceKind = kind; queuedResourceSource = source; hasQueuedResourceOrder = true;
+                SetReport("La orden de recolección quedó en cola; el rover terminará primero el viaje actual.");
+                return;
+            }
+            if (state.LocalStored(kind, source) <= 0) { SetReport($"No hay {MaterialLabel(kind)} en el depósito local seleccionado."); return; }
+            if (state.WarehouseFree <= 0 && state.RoverCargoTotal == 0) { SetReport("El almacén compartido está lleno; no se inició el viaje."); return; }
             collectionActive = true;
-            StartCoroutine(MineCollectionRoutine(depositId));
+            StartCoroutine(ResourceCollectionRoutine(kind, source, sourceCell));
             RefreshHud();
         }
 
-        private IEnumerator MineCollectionRoutine(int depositId)
+        private string MaterialLabel(MaterialResource kind) => kind == MaterialResource.Iron ? "hierro" :
+            kind == MaterialResource.Oxygen ? "oxígeno" : kind == MaterialResource.Water ? "agua" : "comida";
+
+        private bool TryGetResourceSourceCell(MaterialResource kind, int source, out Vector2Int cell)
         {
-            if (!FindReachableCellNear(map.Deposits[depositId].Cell, out Vector2Int mineCell))
+            cell = default;
+            switch (kind)
+            {
+                case MaterialResource.Iron:
+                case MaterialResource.Water:
+                    if (source < 0 || source >= map.Deposits.Count) return false;
+                    cell = map.Deposits[source].Cell; return true;
+                case MaterialResource.Oxygen:
+                    if (source < 0 || source >= state.OxygenPlants) return false;
+                    cell = source == 0 ? BaseCell + new Vector2Int(2, 0) : state.OxygenCells[source - 1]; return true;
+                case MaterialResource.Food:
+                    if (source < 0 || source >= state.GreenhouseCells.Count) return false;
+                    cell = state.GreenhouseCells[source]; return true;
+                default: return false;
+            }
+        }
+
+        private IEnumerator ResourceCollectionRoutine(MaterialResource kind, int source, Vector2Int sourceCell)
+        {
+            if (!FindReachableCellNear(sourceCell, out Vector2Int pickupCell))
             {
                 collectionActive = false;
-                SetReport("No hay un camino libre hasta la mina. Retirá un muro que bloquee el acceso.");
+                SetReport("No hay una ruta libre hasta la instalación. Retirá un muro que bloquee el acceso.");
                 RefreshHud();
                 yield break;
             }
-            roverDestination = mineCell;
-            routeMarker.transform.position = CellPosition(mineCell);
+            roverDestination = pickupCell;
+            routeMarker.transform.position = CellPosition(pickupCell);
             routeMarker.enabled = true;
-            SetReport($"Rover en camino a la mina de {map.Deposits[depositId].Name}.");
+            SetReport($"Rover en camino a recoger {MaterialLabel(kind)}.");
             travel = StartCoroutine(TravelTo());
             yield return travel;
-            if (roverCell != mineCell)
+            if (roverCell != pickupCell)
             {
                 collectionActive = false;
                 RefreshHud();
                 yield break;
             }
-            state.LoadMineToRover(depositId, out string loaded);
+            state.LoadResourceToRover(kind, source, out string loaded);
             SetReport(loaded);
             RefreshWorld();
             RefreshHud();
             if (!FindNearestWarehouseDockCell(out Vector2Int dockCell))
             {
                 collectionActive = false;
-                SetReport("El rover quedó cargado porque no hay un camino libre hasta un almacén. Abrí un paso entre los muros.");
+                SetReport("El rover conservó la carga porque no hay una ruta libre hasta un almacén. Abrí un paso entre los muros.");
                 RefreshHud();
                 yield break;
             }
@@ -789,25 +946,31 @@ namespace SpaceFarm
                 RefreshHud();
                 yield break;
             }
-            // Cargo moves in two atomic steps (mine to rover, rover to habitat), so a pause in between cannot lose or duplicate iron.
+            // Loading and unloading are separate atomic state changes; pausing between them cannot duplicate cargo.
             bool stored = state.UnloadRover(out string unloaded);
             collectionActive = false;
             SetReport(unloaded);
-            if (stored) PlayWorldPing(CellPosition(dockCell), SpaceFarmPalette.Iron);
+            if (stored) PlayWorldPing(CellPosition(dockCell), kind == MaterialResource.Iron ? SpaceFarmPalette.Iron : SpaceFarmPalette.Oxygen);
             RefreshWorld();
             RefreshHud();
         }
 
         private void OrderCargoDelivery()
         {
-            if (paused || state.RoverCargo <= 0) return;
+            if (paused || state.RoverCargoTotal <= 0) return;
             if (state.IsDamaged(DamagedStructureKind.Rover))
             {
                 SetReport("El rover está averiado. Reparalo antes de enviarlo al almacén.");
                 return;
             }
-            if (travel != null || collectionActive) { SetReport("Esperá a que el rover termine su recorrido."); return; }
-            if (state.Iron >= state.WarehouseCapacity) { SetReport("El almacén está lleno. Construí otro antes de descargar."); return; }
+            if (RoverBusy)
+            {
+                cargoDeliveryQueued = true;
+                hasQueuedResourceOrder = false;
+                SetReport("La descarga quedó en cola; se atenderá al terminar el recorrido actual.");
+                return;
+            }
+            if (state.WarehouseFree <= 0) { SetReport("El almacén compartido está lleno. La carga permanece en el rover."); return; }
             if (!FindNearestWarehouseDockCell(out Vector2Int dockCell))
             {
                 SetReport("No hay una ruta libre hasta el almacén. Despejá un paso entre los muros.");
@@ -835,6 +998,33 @@ namespace SpaceFarm
             if (stored) PlayWorldPing(CellPosition(dockCell), SpaceFarmPalette.Iron);
             RefreshWorld();
             RefreshHud();
+        }
+
+        private void TickAutomaticLogistics()
+        {
+            if (paused || titleScreenOpen || arrivalSequenceActive || state == null || state.GameOver) return;
+            logisticsScheduleClock -= Time.deltaTime;
+            if (logisticsScheduleClock > 0f) return;
+            logisticsScheduleClock = 1f;
+            if (RoverBusy) return;
+            if (cargoDeliveryQueued || state.AutomaticCollection && state.RoverCargoTotal > 0)
+            {
+                cargoDeliveryQueued = false;
+                OrderCargoDelivery();
+                return;
+            }
+            if (hasQueuedResourceOrder)
+            {
+                MaterialResource kind = queuedResourceKind;
+                int source = queuedResourceSource;
+                hasQueuedResourceOrder = false;
+                queuedResourceSource = -1;
+                StartResourceCollection(kind, source);
+                return;
+            }
+            if (!state.AutomaticCollection) return;
+            if (state.TryGetBestPickup(out MaterialResource nextKind, out int nextSource))
+                StartResourceCollection(nextKind, nextSource);
         }
 
         private void SyncAstronauts()

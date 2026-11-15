@@ -21,6 +21,8 @@ namespace SpaceFarm
         private GameObject buildModePanel;
         private TextMeshProUGUI buildModeText;
         private TextMeshProUGUI defenseText;
+        private RectTransform xpBarFill;
+        private const float XpBarWidth = 132f;
         private GameObject infoPanel;
         private TextMeshProUGUI infoTitle;
         private TextMeshProUGUI infoBody;
@@ -35,6 +37,10 @@ namespace SpaceFarm
         private GameObject constructionMenuRoot;
         private bool constructionMenuOpen;
         private Button constructionMenuToggle;
+        private Button upgradeMenuToggle;
+        private Button editModeToggle;
+        private Button exploreModeToggle;
+        private string upgradeCatalogSignature = string.Empty;
 
         private sealed class ActionCard
         {
@@ -88,10 +94,26 @@ namespace SpaceFarm
             objectiveText.fontSizeMax = 16;
             defenseText = Label("", header.transform, 12, FontStyles.Bold, SpaceFarmPalette.Iron,
                 new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1),
-                new Vector2(712, -12), new Vector2(132, 48));
+                new Vector2(712, -10), new Vector2(XpBarWidth, 32));
+            defenseText.textWrappingMode = TextWrappingModes.NoWrap;
+            GameObject xpTrack = new GameObject("Progreso de experiencia", typeof(RectTransform), typeof(Image));
+            xpTrack.transform.SetParent(header.transform, false);
+            RectTransform xpTrackRect = xpTrack.GetComponent<RectTransform>();
+            xpTrackRect.anchorMin = xpTrackRect.anchorMax = xpTrackRect.pivot = new Vector2(0, 1);
+            xpTrackRect.anchoredPosition = new Vector2(712, -47);
+            xpTrackRect.sizeDelta = new Vector2(XpBarWidth, 6);
+            xpTrack.GetComponent<Image>().color = SpaceFarmPalette.Background;
+            GameObject xpFill = new GameObject("XP acumulada", typeof(RectTransform), typeof(Image));
+            xpFill.transform.SetParent(xpTrack.transform, false);
+            xpBarFill = xpFill.GetComponent<RectTransform>();
+            xpBarFill.anchorMin = new Vector2(0, 0); xpBarFill.anchorMax = new Vector2(0, 1);
+            xpBarFill.pivot = new Vector2(0, .5f); xpBarFill.anchoredPosition = Vector2.zero;
+            xpBarFill.sizeDelta = new Vector2(0, 0);
+            xpFill.GetComponent<Image>().color = SpaceFarmPalette.Oxygen;
             roverText = Label("", header.transform, 13, FontStyles.Bold, SpaceFarmPalette.Ice,
                 new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1),
                 new Vector2(-176, -12), new Vector2(160, 48));
+            roverText.enableAutoSizing = true; roverText.fontSizeMin = 8; roverText.fontSizeMax = 12;
             statsText = Label("", header.transform, 15, FontStyles.Bold, SpaceFarmPalette.Text,
                 new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0),
                 Vector2.zero, new Vector2(78, 28));
@@ -114,18 +136,29 @@ namespace SpaceFarm
             footer.GetComponent<Image>().raycastTarget = true;
             reportText = Label("", footer.transform, 14, FontStyles.Normal, SpaceFarmPalette.Text,
                 new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1),
-                new Vector2(18, -5), new Vector2(-365, 34));
+                new Vector2(18, -5), new Vector2(-700, 34));
             reportText.enableAutoSizing = true;
             reportText.fontSizeMin = 10;
             reportText.fontSizeMax = 14;
+            reportText.textWrappingMode = TextWrappingModes.Normal;
+            reportText.overflowMode = TextOverflowModes.Ellipsis;
             constructionMenuToggle = AddButton("CONSTRUIR", footer.transform, ToggleConstructionMenu,
                 14, SpaceFarmPalette.Iron, SpaceFarmPalette.Background,
                 new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(1, .5f),
-                new Vector2(-10, 0), new Vector2(152, 34));
+                new Vector2(-10, 0), new Vector2(128, 34));
+            upgradeMenuToggle = AddButton("MEJORAS", footer.transform, OpenUpgradeMenu,
+                13, SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
+                new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(-146,0),new Vector2(128,34));
+            editModeToggle = AddButton("EDITAR", footer.transform, () => SetEditMode(!editMode),
+                13, SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
+                new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(-282,0),new Vector2(128,34));
+            exploreModeToggle = AddButton("EXPLORAR", footer.transform, EnterExploreMode,
+                13, SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
+                new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(-418,0),new Vector2(128,34));
             crewMenuToggle = AddButton("ASTRONAUTAS", footer.transform, ToggleCrewMenu,
                 14, SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
                 new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(1, .5f),
-                new Vector2(-170, 0), new Vector2(165, 34));
+                new Vector2(-554, 0), new Vector2(128, 34));
 
             constructionMenuRoot = Panel("Menú de construcción", canvasObject.transform, SpaceFarmPalette.Panel,
                 new Vector2(0, 0), new Vector2(0, 1), new Vector2(0, .5f), Vector2.zero, Vector2.zero);
@@ -143,13 +176,25 @@ namespace SpaceFarm
                 11, FontStyles.Normal, SpaceFarmPalette.MutedText,
                 new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1),
                 new Vector2(13, -76), new Vector2(-26, 18));
-            GameObject cards = new GameObject("Action Cards", typeof(RectTransform), typeof(VerticalLayoutGroup));
-            cards.transform.SetParent(constructionMenuRoot.transform, false);
+            GameObject viewport = new GameObject("Action Cards Viewport", typeof(RectTransform), typeof(Image), typeof(RectMask2D), typeof(ScrollRect));
+            viewport.transform.SetParent(constructionMenuRoot.transform, false);
+            RectTransform viewportRect = viewport.GetComponent<RectTransform>();
+            viewportRect.anchorMin = Vector2.zero; viewportRect.anchorMax = Vector2.one;
+            viewportRect.offsetMin = new Vector2(10, 8); viewportRect.offsetMax = new Vector2(-10, -100);
+            viewport.GetComponent<Image>().color = new Color(0, 0, 0, 0);
+            ScrollRect actionScroll = viewport.GetComponent<ScrollRect>();
+            actionScroll.horizontal = false; actionScroll.vertical = true;
+            actionScroll.movementType = ScrollRect.MovementType.Clamped; actionScroll.scrollSensitivity = 34f;
+            GameObject cards = new GameObject("Action Cards", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+            cards.transform.SetParent(viewport.transform, false);
             actionCardsRoot = cards.GetComponent<RectTransform>();
-            actionCardsRoot.anchorMin = new Vector2(0, 0);
+            actionCardsRoot.anchorMin = new Vector2(0, 1);
             actionCardsRoot.anchorMax = new Vector2(1, 1);
-            actionCardsRoot.offsetMin = new Vector2(10, 8);
-            actionCardsRoot.offsetMax = new Vector2(-10, -100);
+            actionCardsRoot.pivot = new Vector2(.5f, 1);
+            actionCardsRoot.anchoredPosition = Vector2.zero;
+            actionCardsRoot.sizeDelta = new Vector2(-6, 0);
+            actionScroll.content = actionCardsRoot;
+            actionScroll.viewport = viewportRect;
             VerticalLayoutGroup cardLayout = cards.GetComponent<VerticalLayoutGroup>();
             cardLayout.spacing = 4;
             cardLayout.childAlignment = TextAnchor.UpperCenter;
@@ -157,8 +202,11 @@ namespace SpaceFarm
             cardLayout.childControlHeight = false;
             cardLayout.childForceExpandWidth = true;
             cardLayout.childForceExpandHeight = false;
+            ContentSizeFitter actionContentSize = cards.GetComponent<ContentSizeFitter>();
+            actionContentSize.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+            actionContentSize.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            AddAction("Mina de hierro", () => $"{state.MineCost} Fe · {state.MineCount}/{state.MaxMines}", 0,
+            AddAction("Mina de hierro", () => $"{state.MineCost} Fe · {state.MineCount}/{state.IronDepositCount}", 0,
                 null, () => state.PlacementAvailability(StructureKind.Mine), StructureKind.Mine,
                 "Art/space-farm-iron-mine-animation#iron-mine-base-3d", "Extrae hierro del yacimiento elegido");
             AddAction("Extractor de agua", () => $"{state.ExtractorCost} Fe · {state.ExtractorCount}/{SpaceFarmState.MaxExtractors}", 0,
@@ -176,30 +224,18 @@ namespace SpaceFarm
             AddAction("Construir muros", () => "1 Fe por muro", 0, null,
                 () => state.PlacementAvailability(StructureKind.Barrier), StructureKind.Barrier,
                 "Art/space-farm-world-modules#habitat-3d", "Colocá muros en cualquier sector libre").BarrierMode = true;
-            AddAction("Mejorar mina", () => $"{state.MineUpgradeCost(MineTarget())} Fe · {state.UpgradeSecondsToDisplay("mine", MineTarget())} s", 1, () => state.UpgradeMine(MineTarget(), out _),
-                () => state.MineCount == 0 ? "Construí primero una mina" : MineTarget() < 0 ? "No hay minas para mejorar (nivel máximo)" : state.HasUpgrade("mine", MineTarget()) ? "La mina ya se está mejorando" : MissingIron(state.MineUpgradeCost(MineTarget())),
-                StructureKind.None, "Art/space-farm-iron-mine-animation#iron-mine-base-3d", "Sube una mina al nivel 2");
-            AddAction("Mejorar rover", () => $"{state.RoverUpgradeCost} Fe · {state.UpgradeSecondsToDisplay("rover", 0)} s", 1, () => state.UpgradeRover(out _),
-                () => state.RoverLevel >= 2 ? "Nivel máximo" : state.HasUpgrade("rover", 0) ? "El rover ya se está mejorando" : MissingIron(state.RoverUpgradeCost),
-                StructureKind.None, "Art/space-farm-rover-directions#rover-facing-south", "Amplía visión y capacidad de carga");
-            AddAction("Mejorar paneles", () => $"{state.SolarUpgradeCost} Fe · {state.UpgradeSecondsToDisplay("solar", 0)} s", 1,
-                () => state.UpgradeSolar(out _),
-                () => state.SolarLevel >= SpaceFarmState.MaxLevel ? "Nivel máximo" : state.HasUpgrade("solar", 0) ? "Los paneles ya se están mejorando" : MissingIron(state.SolarUpgradeCost),
-                StructureKind.None, "Art/space-farm-world-modules#solar-3d", "Más energía y capacidad de batería");
-            AddAction("Reparar instalación", () => $"{state.RepairIronCost} Fe · {state.RepairEnergyCost} energía", 1,
-                () => { Act((out string message) => state.RepairDamagedStructure(out message)); return true; },
-                () => state.DamagedStructure == DamagedStructureKind.None ? "No hay instalaciones averiadas" :
-                    state.Iron < state.RepairIronCost ? MissingIron(state.RepairIronCost) :
-                    state.Energy < state.RepairEnergyCost ? $"Falta {state.RepairEnergyCost - state.Energy} energía" : string.Empty,
-                StructureKind.None, "Art/space-farm-warehouse", "Repara la instalación dañada por una tormenta");
             AddAction("Pedir a la Tierra", () => "4 hierro", 2, () => state.OrderFromEarth(out _),
                 () => state.ShipmentArrivalSol != 0 ? "Ya hay un pedido en camino" : MissingIron(4),
                 StructureKind.None, "Art/space-farm-world-modules#habitat-3d", "Recibe agua y alimentos");
-            AddAction("Enviar rover al almacén", () => $"Carga {state.RoverCargo}/{state.RoverCapacity} Fe", 2,
+            AddAction("Enviar rover al almacén", () => $"Carga {state.RoverCargoTotal}/{state.RoverCapacity} unidades", 2,
                 () => { OrderCargoDelivery(); return true; },
-                () => state.RoverCargo <= 0 ? "El rover no lleva carga" : state.IsDamaged(DamagedStructureKind.Rover) ? "Repará el rover primero" :
-                    state.Iron >= state.WarehouseCapacity ? "Almacén lleno: construí otro" : string.Empty,
+                () => state.RoverCargoTotal <= 0 ? "El rover no lleva carga" : state.IsDamaged(DamagedStructureKind.Rover) ? "Repará el rover primero" :
+                    state.WarehouseFree <= 0 ? "Almacén lleno: la carga queda en el rover" : string.Empty,
                 StructureKind.None, "Art/space-farm-warehouse", "Descarga materiales y actualiza el almacén");
+            AddAction("Recolección automática", () => state.AutomaticCollection ? "ACTIVADA · prioriza reservas vitales" : "DESACTIVADA · órdenes manuales",
+                2, () => { state.AutomaticCollection = !state.AutomaticCollection; SetReport(state.AutomaticCollection ? "Recolección automática activada." : "Recolección automática pausada."); return true; },
+                () => string.Empty, StructureKind.None, "Art/space-farm-rover-directions#rover-facing-south",
+                "El rover recoge recursos locales al terminar su tarea");
 
             GameObject flashObject = new GameObject("Event Flash", typeof(RectTransform), typeof(Image));
             flashObject.transform.SetParent(canvasObject.transform, false);
@@ -366,7 +402,19 @@ namespace SpaceFarm
                     BeginStructurePlacement(card.Placement);
                     return;
                 }
+                if (card.Category == 1)
+                {
+                    card.Action?.Invoke();
+                    RefreshHud();
+                    return;
+                }
                 bool success = card.Action();
+                if (card.Title.text == "Recolección automática")
+                {
+                    SetReport(state.AutomaticCollection ? "Recolección automática activada." : "Recolección automática pausada.");
+                    RefreshHud();
+                    return;
+                }
                 SetReport(state.LastReport);
                 if (success) FlashScreen(SpaceFarmPalette.Oxygen, .10f, .22f);
                 RefreshWorld();
@@ -446,6 +494,7 @@ namespace SpaceFarm
 
         private void RefreshActionCards()
         {
+            EnsureUpgradeCatalog();
             foreach (ActionCard card in actionCards)
             {
                 bool visible = card.Category == selectedCategory;
@@ -461,6 +510,82 @@ namespace SpaceFarm
                 card.Detail.text = available ? card.Cost() : card.Cost() + " · " + reason;
             }
             LayoutRebuilder.ForceRebuildLayoutImmediate(actionCardsRoot);
+        }
+
+        private void EnsureUpgradeCatalog()
+        {
+            if (state == null || actionCardsRoot == null) return;
+            var signature = new System.Text.StringBuilder();
+            signature.Append(state.SolarLevel).Append('|').Append(state.RoverLevel).Append('|').Append(state.OxygenPlants)
+                .Append('|').Append(state.HasUpgrade("solar", 0)).Append('|').Append(state.HasUpgrade("rover", 0))
+                .Append('|').Append(state.GreenhouseCells.Count).Append('|').Append(state.WarehouseCount).Append('|');
+            for (int i = 0; i < state.Deposits.Count; i++)
+                signature.Append(state.Deposit(i).MineLevel).Append(':').Append(state.ExtractorLevel(i)).Append(':')
+                    .Append(state.HasUpgrade("mine", i)).Append(':').Append(state.HasUpgrade("extractor", i)).Append('|');
+            for (int i = 0; i < state.OxygenPlants; i++) signature.Append(state.OxygenLevel(i)).Append(':').Append(state.HasUpgrade("oxygen", i)).Append('|');
+            for (int i = 0; i < state.GreenhouseCells.Count; i++) signature.Append(state.GreenhouseLevel(i)).Append(':').Append(state.HasUpgrade("greenhouse", i)).Append('|');
+            for (int i = 0; i < state.WarehouseCount; i++) signature.Append(state.WarehouseLevel(i)).Append(':').Append(state.HasUpgrade("warehouse", i)).Append('|');
+            string next = signature.ToString();
+            if (next == upgradeCatalogSignature) return;
+            upgradeCatalogSignature = next;
+            for (int i = actionCards.Count - 1; i >= 0; i--)
+            {
+                if (actionCards[i].Category != 1) continue;
+                if (actionCards[i].Root != null) Destroy(actionCards[i].Root.gameObject);
+                actionCards.RemoveAt(i);
+            }
+
+            AddUpgradeEntry("Panel solar", state.SolarLevel, state.SolarUpgradeCost,
+                state.SolarLevel < SpaceFarmState.MaxLevel, state.HasUpgrade("solar", 0), "solar", 0, "solar", 0,
+                "Más generación y capacidad de batería", "Art/space-farm-world-modules#solar-3d");
+            AddUpgradeEntry("Rover", state.RoverLevel, state.RoverUpgradeCost,
+                state.RoverLevel < 2, state.HasUpgrade("rover", 0), "rover", 0, "rover", 0,
+                "Más carga y radio de exploración", "Art/space-farm-rover-directions#rover-facing-south");
+            for (int i = 0; i < state.OxygenPlants; i++)
+                AddUpgradeEntry($"Planta O2 {i + 1}", state.OxygenLevel(i), state.OxygenUpgradeCost(i),
+                    state.OxygenLevel(i) < SpaceFarmState.MaxLevel, state.HasUpgrade("oxygen", i), "oxygen", i, i == 0 ? "oxygen1" : "oxygen2", i == 0 ? 0 : i - 1,
+                    "Aumenta producción local de oxígeno", "Art/space-farm-world-modules#oxygen-3d");
+            for (int i = 0; i < state.GreenhouseCells.Count; i++)
+                AddUpgradeEntry($"Invernadero {i + 1}", state.GreenhouseLevel(i), state.GreenhouseUpgradeCost(i),
+                    state.GreenhouseLevel(i) < SpaceFarmState.MaxLevel, state.HasUpgrade("greenhouse", i), "greenhouse", i, "greenhouse", i,
+                    "Aumenta producción local de comida", "Art/space-farm-world-modules#greenhouse-3d");
+            for (int i = 0; i < state.WarehouseCount; i++)
+                AddUpgradeEntry($"Almacén {i + 1}", state.WarehouseLevel(i), state.WarehouseUpgradeCost(i),
+                    state.WarehouseLevel(i) < SpaceFarmState.MaxLevel, state.HasUpgrade("warehouse", i), "warehouse", i, "warehouse", i,
+                    "Aumenta capacidad compartida", "Art/space-farm-warehouse");
+            for (int i = 0; i < state.Deposits.Count; i++)
+            {
+                SpaceFarmState.DepositState d = state.Deposit(i);
+                if (d.MineLevel > 0)
+                    AddUpgradeEntry($"Mina {d.Name}", d.MineLevel, state.MineUpgradeCost(i), d.MineLevel < SpaceFarmState.MaxLevel,
+                        state.HasUpgrade("mine", i), "mine", i, "deposit", i, "Aumenta extracción de hierro", "Art/space-farm-iron-mine-animation#iron-mine-base-3d");
+                else if (d.Extractor)
+                    AddUpgradeEntry($"Extractor {d.Name}", state.ExtractorLevel(i), state.ExtractorUpgradeCost(i), state.ExtractorLevel(i) < SpaceFarmState.MaxLevel,
+                        state.HasUpgrade("extractor", i), "extractor", i, "deposit", i, "Aumenta extracción de agua", "Art/space-farm-world-modules#water-3d");
+            }
+            LayoutRebuilder.ForceRebuildLayoutImmediate(actionCardsRoot);
+        }
+
+        private void AddUpgradeEntry(string name, int level, int cost, bool belowMaximum, bool inProgress,
+            string upgradeKind, int upgradeTarget, string building, int index, string benefit, string icon)
+        {
+            if (!belowMaximum) return;
+            AddAction($"{name} · nivel {level} → {level + 1}",
+                () => $"{cost} Fe · {state.UpgradeSecondsToDisplay(upgradeKind, upgradeTarget)} s",
+                1,
+                () =>
+                {
+                    bool selected = SelectWorldBuilding(building, index);
+                    if (selected)
+                    {
+                        GameObject target = SelectedUpgradeTarget();
+                        if (target != null) FocusWorld(target.transform.position);
+                        SetReport($"{name}: {benefit}. Enviá el rover desde la ficha y confirmá al llegar.");
+                    }
+                    return selected;
+                },
+                () => inProgress ? "Mejora en curso" : string.Empty,
+                StructureKind.None, icon, benefit + " · confirmar en la ficha del edificio");
         }
 
         private string MissingIron(int amount) => state.Iron < amount ? $"Faltan {amount - state.Iron} Fe" : string.Empty;
@@ -488,9 +613,27 @@ namespace SpaceFarm
             else OpenConstructionMenu();
         }
 
+        private void OpenUpgradeMenu()
+        {
+            if (editMode) SetEditMode(false);
+            OpenConstructionMenu();
+            SelectCategory(1);
+        }
+
+        private void EnterExploreMode()
+        {
+            if (activeStructure != StructureKind.None) CancelPlacement();
+            if (barrierMode) EndBarrierMode();
+            if (editMode) SetEditMode(false);
+            if (constructionMenuOpen) CloseConstructionMenu();
+            if (crewMenuOpen) CloseCrewMenu();
+            SetReport("Modo explorar · seleccioná una casilla para mover el rover.");
+        }
+
         private void OpenConstructionMenu()
         {
             if (paused || titleScreenOpen) return;
+            if (editMode) SetEditMode(false);
             if (crewMenuOpen) CloseCrewMenu();
             if (barrierMode) EndBarrierMode();
             if (activeStructure != StructureKind.None) CancelPlacement(false);
@@ -542,15 +685,21 @@ namespace SpaceFarm
             if (statsText == null) return;
             statsText.text = $"SOL <b>{state.Sol:00}</b>";
             roverText.text = collectionActive
-                ? $"ROVER {state.RoverLevel} · RECOGIDA\nCarga {state.RoverCargo}/{state.RoverCapacity} Fe"
+                ? $"ROVER {state.RoverLevel} · LOGÍSTICA\nCarga {state.RoverCargoTotal}/{state.RoverCapacity} · Fe {state.RoverCargo} O2 {state.RoverOxygenCargo}\nAg {state.RoverWaterCargo} Co {state.RoverFoodCargo}"
                 : travel != null
-                    ? $"ROVER {state.RoverLevel} · EN RUTA\nSector {Sector(roverDestination)}"
-                    : $"ROVER {state.RoverLevel} · LISTO\nRadio base {state.RoverRange} · visión {state.ScanRadius}";
+                    ? $"ROVER {state.RoverLevel} · EN RUTA\nSector {Sector(roverDestination)}\nAlmacén {state.WarehouseUsed}/{state.WarehouseCapacity}"
+                    : $"ROVER {state.RoverLevel} · LISTO\nRadio {state.RoverRange} · visión {state.ScanRadius}\nAlmacén {state.WarehouseUsed}/{state.WarehouseCapacity}";
             if (state.GameOver)
                 objectiveText.text = "MISIÓN TERMINADA · Recursos vitales agotados. Abrí PAUSA (Esc) para reiniciar este mapa o probar otro.";
             else if (state.MissionComplete)
                 objectiveText.text = "MISIÓN COMPLETA · Primera cosecha y colonia protegida tras la incursión.";
             else objectiveText.text = "SIGUIENTE PASO  ·  " + NextObjective();
+            if (editModeToggle != null)
+            {
+                editModeToggle.GetComponent<Image>().color = editMode ? SpaceFarmPalette.Iron : SpaceFarmPalette.PanelRaised;
+                TextMeshProUGUI editLabel = editModeToggle.GetComponentInChildren<TextMeshProUGUI>();
+                if (editLabel != null) editLabel.color = editMode ? SpaceFarmPalette.Background : SpaceFarmPalette.Text;
+            }
             RefreshActionCards();
             RefreshResourceHud();
             RefreshSystemsHud();
@@ -870,26 +1019,50 @@ namespace SpaceFarm
 
         private void ContextPrimaryAction()
         {
-            SpaceFarmState.DepositState deposit = state.Deposit(selectedDeposit);
             if (paused || state == null) return;
+            if (editMode) { BeginEditMoveSelected(); return; }
+            SpaceFarmState.DepositState deposit = state.Deposit(selectedDeposit);
             if (selectedBuilding == "rover") return;
             if (selectedBuilding == "warehouse") { OrderCargoDelivery(); RefreshHud(); return; }
+            if (selectedBuilding == "oxygen1" || selectedBuilding == "oxygen2")
+            {
+                StartResourceCollection(MaterialResource.Oxygen, selectedBuilding == "oxygen1" ? 0 : selectedBuildingIndex + 1);
+                RefreshHud(); return;
+            }
+            if (selectedBuilding == "greenhouse") { StartResourceCollection(MaterialResource.Food, selectedBuildingIndex); RefreshHud(); return; }
             if (selectedBuilding != "deposit" || deposit == null) return;
             int id = deposit.Id;
             if (deposit.MineLevel > 0) StartMineCollection(id);
-            else if (deposit.Extractor) return;
+            else if (deposit.Extractor) StartResourceCollection(MaterialResource.Water, id);
             else BeginStructurePlacement(deposit.Kind == DepositKind.Iron ? StructureKind.Mine : StructureKind.Extractor);
         }
 
         private void ContextSecondaryAction()
         {
             if (paused || state == null) return;
-            if (selectedBuilding == "rover") { Act((out string message) => state.UpgradeRover(out message)); RefreshHud(); return; }
-            if (selectedBuilding == "solar") { Act((out string message) => state.UpgradeSolar(out message)); RefreshHud(); return; }
+            if (editMode) { ConfirmDeleteSelected(); return; }
+            if (selectedBuilding == "rover") { BeginSelectedUpgrade(() => Act((out string message) => state.UpgradeRover(out message))); return; }
+            if (selectedBuilding == "solar") { BeginSelectedUpgrade(() => Act((out string message) => state.UpgradeSolar(out message))); return; }
+            if (selectedBuilding == "oxygen1" || selectedBuilding == "oxygen2")
+            {
+                int target = selectedBuilding == "oxygen1" ? 0 : selectedBuildingIndex + 1;
+                BeginSelectedUpgrade(() => Act((out string message) => state.UpgradeOxygen(target, out message))); return;
+            }
+            if (selectedBuilding == "greenhouse")
+            {
+                int target = selectedBuildingIndex;
+                BeginSelectedUpgrade(() => Act((out string message) => state.UpgradeGreenhouse(target, out message))); return;
+            }
+            if (selectedBuilding == "warehouse")
+            {
+                int target = selectedBuildingIndex;
+                BeginSelectedUpgrade(() => Act((out string message) => state.UpgradeWarehouse(target, out message))); return;
+            }
             SpaceFarmState.DepositState deposit = state.Deposit(selectedDeposit);
-            if (paused || selectedBuilding != "deposit" || deposit == null || deposit.MineLevel == 0) return;
+            if (selectedBuilding != "deposit" || deposit == null) return;
             int id = deposit.Id;
-            Act((out string message) => state.UpgradeMine(id, out message));
+            if (deposit.MineLevel > 0) BeginSelectedUpgrade(() => Act((out string message) => state.UpgradeMine(id, out message)));
+            else if (deposit.Extractor) BeginSelectedUpgrade(() => Act((out string message) => state.UpgradeExtractor(id, out message)));
         }
 
         private void RefreshSystemsHud()
@@ -898,7 +1071,12 @@ namespace SpaceFarm
             if (buildModeText != null && barrierMode)
                 buildModeText.text = $"MURO · 1 Fe\nMuros {state.BarrierCount} · Hierro {state.Iron} · Unión automática";
             if (defenseText != null)
-                defenseText.text = $"NV {state.ColonyLevel}/5 · XP {state.Xp}/{(state.XpToNext == 0 ? state.Xp : state.XpToNext)}\nMUROS {state.BarrierCount}";
+            {
+                defenseText.text = state.ColonyLevel >= SpaceFarmState.MaxLevel
+                    ? $"NIVEL {state.ColonyLevel} · MÁXIMO\nXP {state.Xp}"
+                    : $"NIVEL {state.ColonyLevel}/5 · XP {state.Xp}/{state.XpToNext}";
+                if (xpBarFill != null) xpBarFill.sizeDelta = new Vector2(XpBarWidth * state.ColonyLevelProgress, 0);
+            }
             if (infoPanel != null && !string.IsNullOrEmpty(selectedBuilding)) RefreshEducationalCard();
         }
 
@@ -952,7 +1130,7 @@ namespace SpaceFarm
                 string blocker = state.PlacementBlocker(StructureKind.Mine, map.Deposits[deposit.Id].Cell,
                     IsRevealed(map.Deposits[deposit.Id].Cell));
                 infoBody.text = $"Hierro confirmado. {place}\nMina: {state.MineCost} Fe · produce 5 Fe/sol · usa 2 de energía.\n" +
-                    $"Minas activas {state.MineCount}/{state.MaxMines}: cada mina necesita un operador (una por colono a partir del segundo) y cada mina nueva cuesta 4 Fe más.\n" +
+                    $"Minas activas {state.MineCount}/{state.IronDepositCount} yacimientos de hierro de este mapa. No requiere operador para construirse; un astronauta asignado aumenta la producción. Cada mina nueva cuesta 4 Fe más.\n" +
                     (blocker.Length > 0 ? blocker + "." : "Lista para construir.");
                 infoPrimary.gameObject.SetActive(true);
                 primaryLabel.text = $"COLOCAR MINA · {state.MineCost}";

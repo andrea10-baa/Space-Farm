@@ -133,12 +133,26 @@ namespace SpaceFarm
         private void Start()
         {
             Time.timeScale = 1f;
-            seed = pendingSeed ?? NewSeed(0);
+            SpaceFarmSaveData loadedSave = TakePendingSessionLoad();
+            seed = loadedSave != null ? loadedSave.Seed : pendingSeed ?? NewSeed(0);
             pendingSeed = null;
+            loadedSavedSession = loadedSave != null;
+            activeSessionId = loadedSave != null ? loadedSave.Id : Guid.NewGuid().ToString("N");
+            activeSessionName = loadedSave != null ? loadedSave.Name : pendingSessionName;
+            pendingSessionName = null;
             float started = Time.realtimeSinceStartup;
             map = SpaceFarmMap.Generate(seed);
             state = new SpaceFarmState(map);
-            roverCell = roverDestination = RoverDockCell;
+            if (loadedSave != null && !state.RestoreSave(loadedSave.State, out string restoreError))
+            {
+                Debug.LogError("No se pudo restaurar el guardado: " + restoreError);
+                loadedSave = null;
+                loadedSavedSession = false;
+                activeSessionId = Guid.NewGuid().ToString("N");
+                activeSessionName = "Colonia nueva";
+            }
+            Vector2Int savedRover = loadedSave == null ? RoverDockCell : new Vector2Int(loadedSave.RoverX, loadedSave.RoverY);
+            roverCell = roverDestination = map.Inside(savedRover) ? savedRover : RoverDockCell;
             ConfigureCamera();
             CreateSprites();
             CreateWorld();
@@ -147,14 +161,16 @@ namespace SpaceFarm
             InitializeSystems();
             CreateMinimap();
             CreatePauseMenu();
-            // The lander arrives with a partial orbital chart; the rover reveals the rest.
-            Reveal(BaseCell, 5);
+            // Restore the revealed chart exactly; a fresh landing receives its initial orbital survey.
+            if (loadedSave != null) RestoreRevealMask(loadedSave.Revealed);
+            else Reveal(BaseCell, 5);
             roverBaseScale = rover.transform.localScale;
             RefreshWorld();
             PrepareForInitialLanding();
             RefreshHud();
             SetReport($"Preparando el aterrizaje en una región nueva de Marte (semilla {seed}).");
             CreateTitleScreen();
+            if (loadedSavedSession) BeginFromTitle();
             Debug.Log($"SPACE_FARM_MAP_READY: {map.Describe()} en {(Time.realtimeSinceStartup - started) * 1000f:0} ms");
         }
 
@@ -199,9 +215,11 @@ namespace SpaceFarm
             {
                 if (paused) SetPaused(false);
                 else if (crewMenuOpen) CloseCrewMenu();
-                else if (infoPanel != null && infoPanel.activeSelf) HideWorldSelection();
+                else if (editMoveActive) CancelEditMove();
                 else if (activeStructure != StructureKind.None) CancelPlacement();
                 else if (barrierMode) EndBarrierMode();
+                else if (editMode) SetEditMode(false);
+                else if (infoPanel != null && infoPanel.activeSelf) HideWorldSelection();
                 else if (constructionMenuOpen) CloseConstructionMenu();
                 else SetPaused(true);
             }
@@ -225,7 +243,11 @@ namespace SpaceFarm
             UpdateSystems(mouse, keyboard);
             if (mouse != null)
             {
-                if (activeStructure != StructureKind.None && mouse.rightButton.wasPressedThisFrame)
+                if (editMoveActive && mouse.rightButton.wasPressedThisFrame)
+                {
+                    CancelEditMove(); suppressRightPan = true;
+                }
+                else if (activeStructure != StructureKind.None && mouse.rightButton.wasPressedThisFrame)
                 {
                     CancelPlacement();
                     suppressRightPan = true;
@@ -234,9 +256,11 @@ namespace SpaceFarm
                 HandleCameraInput(mouse);
                 HandleWorldPointer(mouse);
                 UpdatePlacementPreview(mouse);
+                UpdateEditMovePreview(mouse);
             }
             UpdateFollow();
             UpdateMinimap();
+            TickAutomaticLogistics();
         }
 
         private void HandleWorldPointer(Mouse mouse)
@@ -276,12 +300,18 @@ namespace SpaceFarm
                 interactionMode = activeStructure != StructureKind.None ? InteractionMode.PlacingStructure : InteractionMode.Explore;
             if (!click || overUi || state.GameOver) return;
             Vector3 world = ScreenToWorld(pointer);
+            if (editMoveActive)
+            {
+                ConfirmEditMove(WorldToCell(world));
+                return;
+            }
             if (activeStructure != StructureKind.None)
             {
                 ConfirmPlacement(WorldToCell(world));
                 return;
             }
             if (TryHandleWorldClick(world)) return;
+            if (editMode) { SetReport("MODO EDITAR · Seleccioná un muro o una estructura construida."); return; }
             Vector2Int target = WorldToCell(world);
             if (map.Inside(target)) SendRoverTo(target);
         }
@@ -948,18 +978,19 @@ namespace SpaceFarm
 
         private delegate bool GameAction(out string message);
 
-        private void Act(GameAction action)
+        private bool Act(GameAction action)
         {
             if (state.GameOver)
             {
                 SetReport("La misión terminó. Abrí PAUSA (Esc) para reiniciar este mapa o empezar uno nuevo.");
-                return;
+                return false;
             }
             bool success = action(out string message);
             SetReport(message);
             if (success) FlashScreen(SpaceFarmPalette.Oxygen, .10f, .22f);
             RefreshWorld();
             RefreshHud();
+            return success;
         }
 
         private void AdvanceSol()

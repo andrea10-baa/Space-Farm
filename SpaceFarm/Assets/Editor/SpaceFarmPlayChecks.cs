@@ -239,6 +239,28 @@ namespace SpaceFarm.Editor
             Require(colony.transform.Find("Marte/Nave y hábitat").gameObject.activeSelf &&
                 colony.transform.Find("Marte/Planta de oxígeno").gameObject.activeSelf,
                 "la base y la planta aparecen al terminar el aterrizaje");
+            string saveNameSuffix = Guid.NewGuid().ToString("N").Substring(0, 8);
+            int savedSolOne = colony.State.Sol;
+            string saveOne = colony.SaveSlotForTools("Prueba A " + saveNameSuffix);
+            colony.PressAdvanceSol();
+            int savedSolTwo = colony.State.Sol;
+            string saveTwo = colony.SaveSlotForTools("Prueba B " + saveNameSuffix);
+            Require(saveOne != saveTwo && savedSolTwo != savedSolOne,
+                "se pueden crear dos slots de partida separados con estados distintos");
+            colony.LoadSlotForTools(saveOne);
+            yield return Until(() => Game() != null && !Game().TitleScreenOpen && Game().State.Sol == savedSolOne,
+                30, "carga del primer slot guardado");
+            colony = Game();
+            Require(colony.State.Sol == savedSolOne && colony.Seed == 1,
+                "continuar restaura semilla y progreso del primer slot");
+            colony.LoadSlotForTools(saveTwo);
+            yield return Until(() => Game() != null && !Game().TitleScreenOpen && Game().State.Sol == savedSolTwo,
+                30, "carga del segundo slot guardado");
+            colony = Game();
+            Require(colony.State.Sol == savedSolTwo && colony.Seed == 1,
+                "cargar otro slot no mezcla el estado de las dos partidas");
+            colony.DeleteSlotForTools(saveOne);
+            colony.DeleteSlotForTools(saveTwo);
             Require(colony.ClickWorldForTools(colony.RoverWorldPosition) && colony.IsWorldCardOpenForTools &&
                 colony.WorldCardTitleForTools.Contains("Rover"), "clic sobre el rover abre su ficha en vez de ordenar movimiento");
             yield return Shot("ficha-rover-1280x720");
@@ -304,8 +326,12 @@ namespace SpaceFarm.Editor
             colony.PressDepositPrimary(ice.Id);
             colony.ConfirmPlacementForTools(ice.Cell);
             Require(colony.State.Deposit(ice.Id).Extractor, "se construye un extractor en ese depósito");
+            int ironBeforeSolProduction = colony.State.Iron;
+            int solBeforeProduction = colony.State.Sol;
             colony.PressAdvanceSol();
-            Require(colony.State.Sol == 2 && colony.State.Deposit(iron.Id).MineStored == 5, "la mina produce 5 Fe en su almacén al avanzar el sol");
+            Require(colony.State.Sol == solBeforeProduction + 1 && colony.State.LastSol.Mine.Actual == 5 &&
+                colony.State.Deposit(iron.Id).MineStored + colony.State.RoverCargo + colony.State.Iron - ironBeforeSolProduction == 5,
+                "la mina produce 5 Fe que permanecen en su depósito, el rover o el almacén");
             RequireFogHidesDeposits(colony, "tras explorar: ");
 
             // --- Pause in the middle of a collection trip.
@@ -379,7 +405,14 @@ namespace SpaceFarm.Editor
             Require(colony.State.Population >= 4 && colony.State.ColonyLevel >= 2,
                 "la exploración y las construcciones otorgan XP y dos astronautas");
             colony.RevealForTools(colony.Map.BaseCell, 0);
-            while (colony.State.Sol < 5 && !colony.State.GameOver) colony.PressAdvanceSol();
+            colony.State.AutomaticCollection = false;
+            yield return Until(() => !colony.RoverBusy, 60, "el rover queda libre antes de avanzar soles");
+            for (int i = 0; i < 5 && colony.State.Sol < 5 && !colony.State.GameOver; i++)
+            {
+                int previousSol = colony.State.Sol;
+                colony.PressAdvanceSol();
+                Require(colony.State.Sol == previousSol + 1, "el sol avanza cuando el rover está libre");
+            }
             yield return Wait(.5);
             Require(colony.State.Sol == 5 && colony.State.LastSol.RaidFoodLoss > 0, "la tormenta y la incursión del sol 5 siguen ocurriendo");
             Require(colony.transform.Find("Marte").GetComponentsInChildren<Transform>().Count(t => t.name.StartsWith("Astronauta")) == colony.State.Population,
@@ -387,10 +420,8 @@ namespace SpaceFarm.Editor
 
             // --- A wide look at the terrain for the docs.
             colony.State.GainXp(240 - colony.State.Xp);
-            for (int y = 2; y < SpaceFarmMap.Height; y += 4)
-            for (int x = 2; x < SpaceFarmMap.Width; x += 4)
-                colony.RevealForTools(new Vector2Int(x, y), 4);
             MapCrater big = colony.Map.Craters[0];
+            colony.RevealForTools(new Vector2Int(Mathf.RoundToInt(big.X), Mathf.RoundToInt(big.Y)), 14);
             colony.FocusCell(new Vector2Int(Mathf.RoundToInt(big.X), Mathf.RoundToInt(big.Y)));
             yield return Wait(1.2);
             yield return Shot("crater-grande-semilla-1-1280x720");
@@ -448,6 +479,8 @@ namespace SpaceFarm.Editor
                 "cerrar el panel vuelve al mapa y libera a la persona elegida");
 
             // --- Earth shipment: state grants once; visuals pause and are destroyed on restart.
+            fresh.State.AutomaticCollection = false;
+            yield return Until(() => !fresh.RoverBusy, 60, "el rover queda libre para comprobar el pedido a la Tierra");
             Require(fresh.State.OrderFromEarth(out _) && fresh.State.ShipmentArrivalSol == fresh.State.Sol + 2,
                 "el pedido conserva el plazo de dos soles");
             fresh.PressAdvanceSol();

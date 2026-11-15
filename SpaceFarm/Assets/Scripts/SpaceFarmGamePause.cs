@@ -22,6 +22,8 @@ namespace SpaceFarm
             if (value)
             {
                 HideWorldSelection();
+                CancelEditMove();
+                editMode = false;
                 CancelPlacement(false);
                 if (barrierMode) EndBarrierMode();
                 CloseConstructionMenu();
@@ -51,7 +53,7 @@ namespace SpaceFarm
             // The dim layer is a raycast target: nothing behind it can be clicked while paused.
             pauseOverlay.GetComponent<Image>().raycastTarget = true;
 
-            pauseMainPage = PausePanel("Menú", 400);
+            pauseMainPage = PausePanel("Menú", 455);
             Transform main = pauseMainPage.transform;
             PauseTitle(main, "PAUSA");
             TextMeshProUGUI seedLabel = Label($"Semilla de este mapa: <b>{seed}</b>", main, 13, FontStyles.Normal,
@@ -60,6 +62,7 @@ namespace SpaceFarm
             seedLabel.alignment = TextAlignmentOptions.Center;
             float y = -92;
             PauseButton(main, "REANUDAR", () => SetPaused(false), SpaceFarmPalette.Iron, SpaceFarmPalette.Background, ref y);
+            PauseButton(main, "GUARDAR PARTIDA", SaveCurrentSession, SpaceFarmPalette.Ice, SpaceFarmPalette.Background, ref y);
             PauseButton(main, "REINICIAR ESTE MAPA", () => Restart(true), SpaceFarmPalette.Button, SpaceFarmPalette.Text, ref y);
             PauseButton(main, "EMPEZAR UN MAPA NUEVO", () => Restart(false), SpaceFarmPalette.Button, SpaceFarmPalette.Text, ref y);
             PauseButton(main, "CONTROLES", () => ShowPausePage(true), SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text, ref y);
@@ -72,7 +75,7 @@ namespace SpaceFarm
             PauseButton(main, "SALIR DEL JUEGO", QuitGame, SpaceFarmPalette.PanelRaised, SpaceFarmPalette.MutedText, ref y);
 #endif
             RectTransform mainRect = pauseMainPage.GetComponent<RectTransform>();
-            mainRect.sizeDelta = new Vector2(mainRect.sizeDelta.x, -y + 14);
+            mainRect.sizeDelta = new Vector2(mainRect.sizeDelta.x, Mathf.Max(455, -y + 14));
 
             pauseControlsPage = PausePanel("Controles", 392);
             Transform controls = pauseControlsPage.transform;

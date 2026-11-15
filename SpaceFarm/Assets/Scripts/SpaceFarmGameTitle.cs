@@ -77,7 +77,7 @@ namespace SpaceFarm
             intro.alignment = TextAlignmentOptions.Center;
 
             Button play = AddButton("INICIAR EXPEDICIÓN", titleScreenRoot.transform,
-                BeginFromTitle, 17, SpaceFarmPalette.Button, SpaceFarmPalette.Text,
+                ShowNewGameNamePrompt, 17, SpaceFarmPalette.Button, SpaceFarmPalette.Text,
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
                 new Vector2(0, -58), new Vector2(310, 48));
             play.transition = Selectable.Transition.ColorTint;
@@ -96,8 +96,18 @@ namespace SpaceFarm
                 14, FontStyles.Bold, SpaceFarmPalette.MutedText,
                 Vector2.zero, Vector2.one, new Vector2(.5f, .5f), Vector2.zero, new Vector2(-12, -6));
             continueLabel.alignment = TextAlignmentOptions.Center;
+            UnityEngine.UI.Button continueButton = continuePanel.AddComponent<UnityEngine.UI.Button>();
+            continueButton.targetGraphic = continuePanel.GetComponent<Image>();
+            continueButton.onClick.AddListener(ShowSaveSlots);
+            continueButton.interactable = SpaceFarmSaveStore.List().Count > 0;
+            continueLabel.color = continueButton.interactable ? SpaceFarmPalette.Ice : SpaceFarmPalette.MutedText;
+            ColorBlock continueColors = continueButton.colors;
+            continueColors.normalColor = SpaceFarmPalette.PanelRaised;
+            continueColors.highlightedColor = SpaceFarmPalette.ButtonHover;
+            continueColors.pressedColor = SpaceFarmPalette.Iron;
+            continueButton.colors = continueColors;
 
-            TextMeshProUGUI futureLabel = Label("PRÓXIMAMENTE", titleScreenRoot.transform,
+            TextMeshProUGUI futureLabel = Label("PARTIDAS LOCALES", titleScreenRoot.transform,
                 9, FontStyles.Bold, SpaceFarmPalette.MutedText,
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
                 new Vector2(0, -156), new Vector2(250, 16));
@@ -124,6 +134,7 @@ namespace SpaceFarm
         private void BeginFromTitle()
         {
             if (!titleScreenOpen) return;
+            DestroySaveDialog();
             titleScreenOpen = false;
             titleScreenRoot.SetActive(false);
             foreach (KeyValuePair<GameObject, bool> visibility in titleVisibilityBeforeMenu)
@@ -131,7 +142,15 @@ namespace SpaceFarm
                 if (visibility.Key != null) visibility.Key.SetActive(visibility.Value);
             }
             titleVisibilityBeforeMenu.Clear();
-            BeginInitialLanding();
+            if (loadedSavedSession)
+            {
+                startingBaseLanded = true;
+                SetStartingBaseVisible(true);
+                RefreshWorld();
+                RefreshHud();
+                SetReport($"Partida «{activeSessionName}» cargada desde el sol {state.Sol}. El rover quedó en su última casilla confirmada.");
+            }
+            else BeginInitialLanding();
         }
     }
 }

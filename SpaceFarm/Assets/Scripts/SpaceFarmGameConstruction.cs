@@ -2,13 +2,14 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 namespace SpaceFarm
 {
     /// <summary>Pointer modes and the visual blueprint. The rules and resource transaction live in SpaceFarmState.</summary>
     public sealed partial class SpaceFarmGame
     {
-        private enum InteractionMode { Explore, DraggingStructure, PlacingStructure, PlacingBarrier, PanningCamera }
+        private enum InteractionMode { Explore, DraggingStructure, PlacingStructure, PlacingBarrier, EditingStructure, PanningCamera }
 
         private InteractionMode interactionMode;
         private StructureKind activeStructure;
@@ -18,6 +19,11 @@ namespace SpaceFarm
         private RectTransform placementTooltip;
         private TextMeshProUGUI placementTooltipText;
         private readonly List<SpriteRenderer> placementDepositHighlights = new List<SpriteRenderer>();
+        private bool editMode;
+        private bool editMoveActive;
+        private StructureKind editKind;
+        private int editIndex = -1;
+        private SpriteRenderer editPreview;
 
         public bool IsPlacingStructure => activeStructure != StructureKind.None;
         public bool IsConstructionMenuOpen => constructionMenuOpen;
@@ -27,6 +33,150 @@ namespace SpaceFarm
         public void BeginPlacementForTools(StructureKind kind) => BeginStructurePlacement(kind);
         public void ConfirmPlacementForTools(Vector2Int cell) => ConfirmPlacement(cell);
         public void CancelPlacementForTools() => CancelPlacement();
+        public bool EditModeForTools => editMode;
+
+        private void SetEditMode(bool active)
+        {
+            editMode = active;
+            if (active)
+            {
+                CancelPlacement(false);
+                EndBarrierMode();
+                CloseConstructionMenu();
+                if (crewMenuOpen) CloseCrewMenu();
+                SetReport("MODO EDITAR · Seleccioná un muro o instalación. La ficha permite mover o eliminar.");
+            }
+            else
+            {
+                CancelEditMove();
+                SetReport("Modo explorar · clic para seleccionar y enviar el rover.");
+            }
+            RefreshHud();
+        }
+
+        private bool BeginEditMoveSelected()
+        {
+            if (!editMode || string.IsNullOrEmpty(selectedBuilding)) return false;
+            editKind = StructureKind.None; editIndex = -1;
+            if (selectedBuilding == "wall") { editKind = StructureKind.Barrier; editIndex = selectedBuildingIndex; }
+            else if (selectedBuilding == "greenhouse") { editKind = StructureKind.Greenhouse; editIndex = selectedBuildingIndex; }
+            else if (selectedBuilding == "oxygen2") { editKind = StructureKind.OxygenPlant; editIndex = selectedBuildingIndex; }
+            else if (selectedBuilding == "warehouse") { editKind = StructureKind.Warehouse; editIndex = selectedBuildingIndex; }
+            if (editKind == StructureKind.None)
+            {
+                SetReport(selectedBuilding == "deposit" ? "Las minas y extractores están anclados a su yacimiento; se pueden eliminar, pero no mover." : "Esta estructura base está fija.");
+                return false;
+            }
+            GameObject target = editKind == StructureKind.Barrier ? null : SelectedUpgradeTarget();
+            Sprite sprite = editKind == StructureKind.Barrier ? Resources.Load<Sprite>("Art/space-farm-wall-post") : target != null ? target.GetComponent<SpriteRenderer>()?.sprite : null;
+            if (sprite == null) { SetReport("No se encontró la imagen de esta estructura para moverla."); return false; }
+            if (editPreview != null) Destroy(editPreview.gameObject);
+            editPreview = CreateWorldSprite("Previsualización de movimiento", sprite, CellPosition(roverCell),
+                editKind == StructureKind.Barrier ? new Vector3(.9f, .65f, 1f) : target.transform.localScale,
+                new Color(.58f, 1f, .88f, .72f), 16, worldRoot.transform);
+            editMoveActive = true;
+            interactionMode = InteractionMode.EditingStructure;
+            HideWorldSelection();
+            SetReport("Mover instalación · apuntá a un sector válido y confirmá con clic. Escape cancela.");
+            return true;
+        }
+
+        private bool SelectedEditTarget(out StructureKind kind, out int index, out bool movable)
+        {
+            kind = StructureKind.None; index = selectedBuildingIndex; movable = false;
+            if (selectedBuilding == "wall") { kind = StructureKind.Barrier; movable = true; }
+            else if (selectedBuilding == "greenhouse") { kind = StructureKind.Greenhouse; movable = true; }
+            else if (selectedBuilding == "oxygen2") { kind = StructureKind.OxygenPlant; movable = true; }
+            else if (selectedBuilding == "warehouse") { kind = StructureKind.Warehouse; movable = true; }
+            else if (selectedBuilding == "deposit")
+            {
+                index = selectedDeposit;
+                SpaceFarmState.DepositState d = state.Deposit(index);
+                if (d == null) return false;
+                kind = d.MineLevel > 0 ? StructureKind.Mine : d.Extractor ? StructureKind.Extractor : StructureKind.None;
+            }
+            return kind != StructureKind.None;
+        }
+
+        private void UpdateEditMovePreview(Mouse mouse)
+        {
+            if (!editMoveActive || mouse == null || editPreview == null) return;
+            Vector2 pointer = mouse.position.ReadValue();
+            if (PointerOverUi(pointer)) { editPreview.enabled = false; return; }
+            editPreview.enabled = true;
+            Vector2Int cell = WorldToCell(ScreenToWorld(pointer));
+            editPreview.transform.position = CellPosition(cell) + new Vector3(0f, 0f, -.25f);
+            string blocker = state.EditMoveBlocker(editKind, editIndex, cell, IsRevealed(cell));
+            if (blocker.Length == 0 && ActorInEditFootprint(cell)) blocker = "No pases por encima de un astronauta o rover";
+            editPreview.color = blocker.Length == 0 ? new Color(.58f, 1f, .88f, .72f) : new Color(1f, .42f, .35f, .72f);
+            if (buildModeText != null) buildModeText.text = blocker.Length == 0 ? "SECTOR VÁLIDO · CLIC PARA MOVER" : blocker;
+        }
+
+        private bool ActorInEditFootprint(Vector2Int cell)
+        {
+            int radius = editKind == StructureKind.Barrier ? 0 : 1;
+            for (int y = -radius; y <= radius; y++)
+            for (int x = -radius; x <= radius; x++)
+                if (IsActorOccupyingCell(cell + new Vector2Int(x, y))) return true;
+            return false;
+        }
+
+        private void ConfirmEditMove(Vector2Int cell)
+        {
+            if (!editMoveActive) return;
+            if (ActorInEditFootprint(cell)) { SetReport("El rover o un astronauta ocupa esa huella. Elegí otro sector."); return; }
+            bool moved = state.MoveStructure(editKind, editIndex, cell, IsRevealed(cell), out string message);
+            SetReport(message);
+            if (!moved) { RefreshHud(); return; }
+            CancelEditMove();
+            RefreshWorld(); RefreshHud();
+            PlayWorldPing(CellPosition(cell), SpaceFarmPalette.Oxygen);
+        }
+
+        private void CancelEditMove()
+        {
+            editMoveActive = false;
+            if (editPreview != null) Destroy(editPreview.gameObject);
+            editPreview = null;
+            if (interactionMode == InteractionMode.EditingStructure) interactionMode = InteractionMode.Explore;
+        }
+
+        private void ConfirmDeleteSelected()
+        {
+            if (!editMode || string.IsNullOrEmpty(selectedBuilding)) return;
+            StructureKind kind = StructureKind.None; int index = selectedBuildingIndex;
+            if (selectedBuilding == "wall") kind = StructureKind.Barrier;
+            else if (selectedBuilding == "greenhouse") kind = StructureKind.Greenhouse;
+            else if (selectedBuilding == "oxygen2") kind = StructureKind.OxygenPlant;
+            else if (selectedBuilding == "warehouse") kind = StructureKind.Warehouse;
+            else if (selectedBuilding == "deposit")
+            {
+                SpaceFarmState.DepositState d = state.Deposit(selectedDeposit);
+                if (d != null) kind = d.MineLevel > 0 ? StructureKind.Mine : d.Extractor ? StructureKind.Extractor : StructureKind.None;
+                index = selectedDeposit;
+            }
+            if (kind == StructureKind.None) { SetReport("Esta estructura base no se puede eliminar."); return; }
+            string blocker = state.RemovalBlocker(kind, index);
+            if (blocker.Length > 0) { SetReport(blocker + "."); RefreshHud(); return; }
+            ShowDeleteConfirmation(kind, index);
+        }
+
+        private void ShowDeleteConfirmation(StructureKind kind, int index)
+        {
+            GameObject dialog = Panel("Confirmar eliminación", hudCanvas.transform, new Color(.02f,.035f,.05f,.92f),
+                Vector2.zero, Vector2.one, new Vector2(.5f,.5f), Vector2.zero, Vector2.zero);
+            GameObject box = Panel("Confirmación de estructura", dialog.transform, SpaceFarmPalette.Panel,
+                new Vector2(.5f,.5f),new Vector2(.5f,.5f),new Vector2(.5f,.5f),Vector2.zero,new Vector2(480,190));
+            Label("ELIMINAR ESTRUCTURA", box.transform, 20, FontStyles.Bold, SpaceFarmPalette.Text,
+                new Vector2(0,1),new Vector2(1,1),new Vector2(.5f,1),new Vector2(0,-20),new Vector2(-30,34)).alignment = TextAlignmentOptions.Center;
+            TextMeshProUGUI detail = Label("Reembolso: aproximadamente 50 % del costo base. Los depósitos minerales permanecen en el terreno.",
+                box.transform,13,FontStyles.Normal,SpaceFarmPalette.MutedText,new Vector2(0,1),new Vector2(1,1),new Vector2(.5f,1),new Vector2(0,-62),new Vector2(-44,48));
+            detail.alignment = TextAlignmentOptions.Center; detail.enableAutoSizing = true; detail.fontSizeMin = 10;
+            AddButton("ELIMINAR",box.transform,() => { bool removed = state.RemoveStructure(kind,index,out string message); Destroy(dialog); SetReport(message); if (removed) HideWorldSelection(); RefreshWorld(); RefreshHud(); },13,
+                SpaceFarmPalette.Danger,SpaceFarmPalette.Text,new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(-92,20),new Vector2(170,40));
+            AddButton("CANCELAR",box.transform,() => Destroy(dialog),13,SpaceFarmPalette.PanelRaised,SpaceFarmPalette.Text,
+                new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(96,20),new Vector2(170,40));
+        }
 
         private static string StructureName(StructureKind kind)
         {

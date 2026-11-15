@@ -193,33 +193,40 @@ namespace SpaceFarm
                 string distance = $"A {d.Distance} sectores de la base, hacia el {SpaceFarmMap.Compass(BaseCell, cell)}.";
                 if (d.MineLevel > 0)
                 {
-                    title = $"Mina {d.Name}"; level = $"Nivel {d.MineLevel} · Almacén {d.MineStored}/{d.MineCapacity} Fe";
+                    title = $"Mina {d.Name}"; level = $"Nivel {d.MineLevel}/{SpaceFarmState.MaxLevel} · Depósito local {d.MineStored}/{d.MineCapacity} Fe";
                     damaged = state.IsDamaged(DamagedStructureKind.Mine, d.Id);
                     status = damaged ? "Averiada por tormenta" : d.MineStored >= d.MineCapacity ? "Almacén lleno" : "Operativa";
                     AddProduction(metrics, "Hierro", d.MineNominal + state.ActiveWorkers(CrewJob.Mine, d.Id) * 3,
                         d.LastResult, ironIcon, "Fe/sol");
                     metrics.Add(new[] { "Energía", $"-{d.MineEnergy}/sol · real -{d.LastResult.EnergyUsed}", energyIcon.ToString() });
-                    metrics.Add(new[] { "Almacén", $"{d.MineStored}/{d.MineCapacity} Fe", ironIcon.ToString() });
-                    metrics.Add(new[] { "Rover", $"{state.RoverCargo}/{state.RoverCapacity} Fe", ironIcon.ToString() });
+                    metrics.Add(new[] { "Depósito local", $"{d.MineStored}/{d.MineCapacity} Fe", ironIcon.ToString() });
+                    metrics.Add(new[] { "Carga del rover", $"{state.RoverCargoTotal}/{state.RoverCapacity} total · Fe {state.RoverCargo}", ironIcon.ToString() });
                     facts = $"{distance}\n{d.LastResult.Reason}";
                     reality = "La composición del suelo marciano cambia de un lugar a otro. Una señal mineral no garantiza que haya hierro fácil de extraer: una misión real tendría que analizar muestras y evaluar el terreno.";
                     game = "El yacimiento estudiado se convierte en una mina abstracta. Cada mina guarda su propio hierro; enviá el rover para recogerlo y vigila su consumo de energía.";
                     showPrimary = true; primaryText = "RECOGER HIERRO"; primaryEnabled = d.MineStored > 0 && !RoverBusy && !state.GameOver;
                     actionReason = d.MineStored == 0 ? "La mina todavía no tiene hierro almacenado." : RoverBusy ? "El rover está ocupado." : "";
-                    showSecondary = d.MineLevel < 2; secondaryText = UpgradeButtonText("mine", d.Id, state.MineUpgradeCost(d.Id)); secondaryEnabled = !state.HasUpgrade("mine", d.Id) && !state.GameOver && state.Iron >= state.MineUpgradeCost(d.Id);
+                    showSecondary = d.MineLevel < SpaceFarmState.MaxLevel; secondaryText = UpgradeActionText("mine", d.Id, state.MineUpgradeCost(d.Id)); secondaryEnabled = !state.HasUpgrade("mine", d.Id) && !state.GameOver && !RoverBusy && state.Iron >= state.MineUpgradeCost(d.Id);
                     if (!secondaryEnabled) actionReason = state.HasUpgrade("mine", d.Id) ? $"Mejora en curso: {state.UpgradeRemaining("mine", d.Id)} s." : state.Iron < state.MineUpgradeCost(d.Id) ? $"Faltan {state.MineUpgradeCost(d.Id) - state.Iron} Fe para mejorar." : actionReason;
                     showRepair = damaged;
                 }
                 else if (d.Extractor)
                 {
-                    title = $"Extractor de agua · {d.Name}"; level = "Sin niveles"; damaged = false;
+                    title = $"Extractor de agua · {d.Name}"; level = $"Nivel {state.ExtractorLevel(d.Id)}/{SpaceFarmState.MaxLevel}"; damaged = false;
                     status = d.LastResult.Actual == 0 && state.Sol > 1 ? "Sin producción" : "Operativa";
                     AddProduction(metrics, "Agua", 8 + state.ActiveWorkers(CrewJob.Extractor, d.Id) * 3, d.LastResult, waterIcon, "unid./sol juego");
                     metrics.Add(new[] { "Energía", $"-2/sol · real -{d.LastResult.EnergyUsed}", energyIcon.ToString() });
-                    metrics.Add(new[] { "Reserva", $"{state.Water}/60", waterIcon.ToString() });
+                    metrics.Add(new[] { "Depósito local", $"{d.WaterStored}/{SpaceFarmState.LocalStorageCapacity} agua", waterIcon.ToString() });
+                    metrics.Add(new[] { "Reserva utilizable", $"{state.Water}/60", waterIcon.ToString() });
+                    metrics.Add(new[] { "Carga del rover", $"{state.RoverWaterCargo}/{state.RoverCapacity} agua", ironIcon.ToString() });
                     facts = $"{distance}\n{d.LastResult.Reason}";
                     reality = "Orbitadores han cartografiado hielo subterráneo en algunas regiones de Marte. Su profundidad y accesibilidad varían; extraerlo requiere localizarlo, perforar y procesar el material.";
                     game = "El juego representa el hielo confirmado como un depósito y resume la perforación en una instalación. La cantidad real depende de energía, capacidad disponible y agua que ya haya en reserva.";
+                    showPrimary = true; primaryText = "RECOGER AGUA"; primaryEnabled = d.WaterStored > 0 && !RoverBusy && !state.GameOver;
+                    actionReason = d.WaterStored <= 0 ? "El depósito local todavía no tiene agua." : RoverBusy ? "El rover está ocupado." : "";
+                    showSecondary = state.ExtractorLevel(d.Id) < SpaceFarmState.MaxLevel;
+                    secondaryText = UpgradeActionText("extractor", d.Id, state.ExtractorUpgradeCost(d.Id));
+                    secondaryEnabled = !state.HasUpgrade("extractor", d.Id) && !state.GameOver && !RoverBusy && state.Iron >= state.ExtractorUpgradeCost(d.Id);
                 }
                 else
                 {
@@ -246,12 +253,13 @@ namespace SpaceFarm
                     sprite = roverRenderer != null ? roverRenderer.sprite : null;
                     metrics.Add(new[] { "Alcance", $"{state.RoverRange} sectores", "" });
                     metrics.Add(new[] { "Exploración", $"Radio {state.ScanRadius} sectores", "" });
-                    metrics.Add(new[] { "Carga", $"{state.RoverCargo}/{state.RoverCapacity} Fe", ironIcon.ToString() });
+                    metrics.Add(new[] { "Carga total", $"{state.RoverCargoTotal}/{state.RoverCapacity} unidades", ironIcon.ToString() });
+                    metrics.Add(new[] { "Fe / O2 / agua / comida", $"{state.RoverCargo} / {state.RoverOxygenCargo} / {state.RoverWaterCargo} / {state.RoverFoodCargo}", "" });
                     metrics.Add(new[] { "Movimiento", "5.2 unidades de juego/s", "" });
                     facts = $"Destino: sector {roverDestination.x},{roverDestination.y}. La velocidad indicada es solo la animación del juego; no representa una velocidad real de un rover.";
                     reality = "Los rovers usan imágenes de cámaras y mapas del terreno para planear rutas seguras. Los equipos evitan pendientes peligrosas, rocas y obstáculos; los comandos se planifican por puntos de recorrido porque Marte está muy lejos para controlarlo en tiempo real.";
                     game = "Este rover ficticio recorre una cuadrícula y revela sectores con su escáner. Mejorarlo aumenta su carga y radio; el nivel de colonia limita hasta dónde puede explorar.";
-                    showSecondary = state.RoverLevel < 2; secondaryText = UpgradeButtonText("rover", 0, state.RoverUpgradeCost); secondaryEnabled = !state.HasUpgrade("rover", 0) && state.Iron >= state.RoverUpgradeCost && !state.GameOver;
+                    showSecondary = state.RoverLevel < 2; secondaryText = UpgradeActionText("rover", 0, state.RoverUpgradeCost); secondaryEnabled = !state.HasUpgrade("rover", 0) && state.Iron >= state.RoverUpgradeCost && !state.GameOver && !RoverBusy;
                     showRepair = damaged;
                     break;
                 case "solar":
@@ -264,34 +272,46 @@ namespace SpaceFarm
                     facts = state.LastSol.Solar.Reason;
                     reality = "Las celdas fotovoltaicas convierten la luz en electricidad. Una tormenta de polvo puede reducir la luz que llega a los paneles y acumular polvo en su superficie, así que una base necesita almacenamiento y planes de respaldo.";
                     game = "El juego resume la generación en energía por sol y reduce la producción durante tormentas. Ampliar los paneles aumenta generación y capacidad de batería.";
-                    showSecondary = state.SolarLevel < SpaceFarmState.MaxLevel; secondaryText = UpgradeButtonText("solar", 0, state.SolarUpgradeCost); secondaryEnabled = !state.HasUpgrade("solar", 0) && state.Iron >= state.SolarUpgradeCost && !state.GameOver;
+                    showSecondary = state.SolarLevel < SpaceFarmState.MaxLevel; secondaryText = UpgradeActionText("solar", 0, state.SolarUpgradeCost); secondaryEnabled = !state.HasUpgrade("solar", 0) && state.Iron >= state.SolarUpgradeCost && !state.GameOver && !RoverBusy;
                     showRepair = damaged;
                     break;
                 case "oxygen1": case "oxygen2":
                     int oxygenIndex = selectedBuilding == "oxygen1" ? 0 : selectedBuildingIndex + 1;
-                    title = $"Planta de oxígeno {oxygenIndex + 1}"; level = "Sin niveles";
+                    title = $"Planta de oxígeno {oxygenIndex + 1}"; level = $"Nivel {state.OxygenLevel(oxygenIndex)}/{SpaceFarmState.MaxLevel}";
                     sprite = oxygenIndex == 0 ? oxygenPlantWorld.GetComponent<SpriteRenderer>().sprite : oxygenWorlds[oxygenIndex - 1].GetComponent<SpriteRenderer>().sprite;
                     SpaceFarmState.SystemResult oxygenResult = oxygenIndex == 0 ? state.LastSol.OxygenOne : oxygenIndex < state.LastSol.OxygenUnits.Count ? state.LastSol.OxygenUnits[oxygenIndex] : new SpaceFarmState.SystemResult();
                     AddProduction(metrics, "Oxígeno", 7 + state.ActiveWorkers(CrewJob.Oxygen, oxygenIndex) * 3, oxygenResult, oxygenIcon, "unid./sol");
+                    metrics.Add(new[] { "Depósito local", $"{state.OxygenLocal(oxygenIndex)}/{SpaceFarmState.LocalStorageCapacity} O2", oxygenIcon.ToString() });
+                    showPrimary = true; primaryText = "RECOGER OXÍGENO"; primaryEnabled = state.OxygenLocal(oxygenIndex) > 0 && !RoverBusy && !state.GameOver;
+                    actionReason = state.OxygenLocal(oxygenIndex) <= 0 ? "El depósito local todavía no tiene oxígeno." : RoverBusy ? "El rover está ocupado." : "";
                     metrics.Add(new[] { "Energía", $"-2/sol · real -{oxygenResult.EnergyUsed}", energyIcon.ToString() });
                     metrics.Add(new[] { "Reserva", $"{state.Oxygen}/60", oxygenIcon.ToString() });
                     status = oxygenResult.Actual == 0 && state.Sol > 1 ? "Detenida o sin energía" : "Operativa";
                     facts = oxygenResult.Reason;
                     reality = "MOXIE fue un experimento tecnológico del rover Perseverance. Recogía dióxido de carbono marciano y lo separaba electroquímicamente para producir oxígeno; fue una demostración, no una planta capaz de sostener por sí sola a una colonia.";
                     game = "La planta del juego está inspirada en MOXIE, pero produce oxígeno de forma continua y simplificada. No simula CO₂, presión, pureza ni el tamaño industrial que necesitaría una misión humana.";
+                    showSecondary = state.OxygenLevel(oxygenIndex) < SpaceFarmState.MaxLevel;
+                    secondaryText = UpgradeActionText("oxygen", oxygenIndex, state.OxygenUpgradeCost(oxygenIndex));
+                    secondaryEnabled = !state.HasUpgrade("oxygen", oxygenIndex) && !state.GameOver && !RoverBusy && state.Iron >= state.OxygenUpgradeCost(oxygenIndex);
                     break;
                 case "greenhouse":
                     int greenhouseIndex = selectedBuildingIndex;
-                    title = $"Invernadero {greenhouseIndex + 1}"; level = "Sin niveles"; damaged = state.IsDamaged(DamagedStructureKind.Greenhouse, greenhouseIndex);
+                    title = $"Invernadero {greenhouseIndex + 1}"; level = $"Nivel {state.GreenhouseLevel(greenhouseIndex)}/{SpaceFarmState.MaxLevel}"; damaged = state.IsDamaged(DamagedStructureKind.Greenhouse, greenhouseIndex);
                     sprite = greenhouseWorlds[greenhouseIndex].GetComponent<SpriteRenderer>().sprite;
                     SpaceFarmState.SystemResult greenhouseResult = greenhouseIndex < state.LastSol.GreenhouseUnits.Count ? state.LastSol.GreenhouseUnits[greenhouseIndex] : new SpaceFarmState.SystemResult();
                     AddProduction(metrics, "Comida", 7 + state.ActiveWorkers(CrewJob.Greenhouse, greenhouseIndex) * 3, greenhouseResult, foodIcon, "unid./sol");
+                    metrics.Add(new[] { "Depósito local", $"{state.GreenhouseLocal(greenhouseIndex)}/{SpaceFarmState.LocalStorageCapacity} comida", foodIcon.ToString() });
+                    showPrimary = true; primaryText = "RECOGER COMIDA"; primaryEnabled = state.GreenhouseLocal(greenhouseIndex) > 0 && !RoverBusy && !state.GameOver;
+                    actionReason = state.GreenhouseLocal(greenhouseIndex) <= 0 ? "El depósito local todavía no tiene comida." : RoverBusy ? "El rover está ocupado." : "";
                     metrics.Add(new[] { "Agua usada", $"-{greenhouseResult.OtherUsed} unid./sol real", waterIcon.ToString() });
                     metrics.Add(new[] { "Energía", $"-2/sol · real -{greenhouseResult.EnergyUsed}", energyIcon.ToString() });
                     status = damaged ? "Averiado" : greenhouseResult.Actual == 0 && state.Sol > 1 ? "Sin producción" : "Operativo";
                     facts = greenhouseResult.Reason;
                     reality = "Las plantas necesitan luz, agua, nutrientes y un ambiente controlado. En el espacio, los equipos estudian cómo cultivar alimentos con recursos limitados y proteger los cultivos de condiciones extremas.";
                     game = "El invernadero convierte agua y energía en comida. La simulación no modela nutrientes, temperatura, iluminación por cultivo ni tiempos biológicos; el jugador decide cuándo puede sostener ese gasto.";
+                    showSecondary = state.GreenhouseLevel(greenhouseIndex) < SpaceFarmState.MaxLevel;
+                    secondaryText = UpgradeActionText("greenhouse", greenhouseIndex, state.GreenhouseUpgradeCost(greenhouseIndex));
+                    secondaryEnabled = !state.HasUpgrade("greenhouse", greenhouseIndex) && !state.GameOver && !RoverBusy && state.Iron >= state.GreenhouseUpgradeCost(greenhouseIndex);
                     showRepair = damaged;
                     break;
                 case "dormitory":
@@ -306,17 +326,22 @@ namespace SpaceFarm
                     showRepair = damaged;
                     break;
                 case "warehouse":
-                    title = "Almacén de recursos"; level = "Sin niveles · capacidad por almacén"; status = state.Iron >= state.WarehouseCapacity ? "Almacén lleno" : "Operativo";
+                    title = "Almacén de recursos"; level = $"Nivel {state.WarehouseLevel(selectedBuildingIndex)}/{SpaceFarmState.MaxLevel}"; status = state.WarehouseFree <= 0 ? "Almacén lleno" : "Operativo";
                     sprite = warehouseWorlds[selectedBuildingIndex].GetComponent<SpriteRenderer>().sprite;
-                    metrics.Add(new[] { "Hierro", $"{state.Iron}/{state.WarehouseCapacity} Fe", ironIcon.ToString() });
+                    metrics.Add(new[] { "Capacidad compartida", $"{state.WarehouseUsed}/{state.WarehouseCapacity} unidades", "" });
+                    metrics.Add(new[] { "Hierro / oxígeno", $"{state.Iron} / {state.Oxygen}", "" });
+                    metrics.Add(new[] { "Agua / comida", $"{state.Water} / {state.Food}", "" });
                     metrics.Add(new[] { "Almacenes", $"{state.WarehouseCount}", "" });
-                    metrics.Add(new[] { "Carga rover", $"{state.RoverCargo}/{state.RoverCapacity} Fe", ironIcon.ToString() });
-                    facts = "El rover descarga los materiales que recogió en este almacén. La capacidad total crece al construir otro.";
+                    metrics.Add(new[] { "Carga rover", $"{state.RoverCargoTotal}/{state.RoverCapacity} · Fe {state.RoverCargo}, O2 {state.RoverOxygenCargo}, Ag {state.RoverWaterCargo}, Co {state.RoverFoodCargo}", ironIcon.ToString() });
+                    facts = "Los cuatro recursos ocupan el mismo espacio. La carga que no cabe permanece a bordo del rover.";
                     reality = "Las bases de exploración necesitan logística para guardar muestras, herramientas y repuestos. El almacenamiento debe proteger el contenido y permitir que la tripulación lo encuentre cuando hace falta.";
-                    game = "En esta versión, el límite de almacenamiento se aplica al hierro de la colonia. No se modela el volumen físico ni el almacenamiento separado de cada recurso.";
-                    showPrimary = state.RoverCargo > 0; primaryText = "ENVIAR ROVER A DESCARGAR";
-                    primaryEnabled = state.RoverCargo > 0 && !RoverBusy && !state.GameOver && state.Iron < state.WarehouseCapacity;
-                    actionReason = state.Iron >= state.WarehouseCapacity ? "La capacidad de hierro está completa." : RoverBusy ? "El rover está ocupado." : "";
+                    game = "Oxígeno, agua, comida y hierro comparten capacidad. Las reservas iniciales y las entregas también ocupan espacio.";
+                    showPrimary = state.RoverCargoTotal > 0; primaryText = "ENVIAR ROVER A DESCARGAR";
+                    primaryEnabled = state.RoverCargoTotal > 0 && !RoverBusy && !state.GameOver && state.WarehouseFree > 0;
+                    actionReason = state.WarehouseFree <= 0 ? "La capacidad compartida está completa." : RoverBusy ? "El rover está ocupado." : "";
+                    showSecondary = state.WarehouseLevel(selectedBuildingIndex) < SpaceFarmState.MaxLevel;
+                    secondaryText = UpgradeActionText("warehouse", selectedBuildingIndex, state.WarehouseUpgradeCost(selectedBuildingIndex));
+                    secondaryEnabled = !state.HasUpgrade("warehouse", selectedBuildingIndex) && !state.GameOver && !RoverBusy && state.Iron >= state.WarehouseUpgradeCost(selectedBuildingIndex);
                     break;
                 case "wall":
                     title = "Muro modular"; level = "Sin niveles"; sprite = Resources.Load<Sprite>("Art/space-farm-wall-post");
@@ -342,6 +367,22 @@ namespace SpaceFarm
                     break;
             }
 
+            string editRemovalReason = string.Empty;
+            if (editMode)
+            {
+                bool hasSelection = SelectedEditTarget(out StructureKind editKind, out int editIndex, out bool movable);
+                editRemovalReason = hasSelection ? state.RemovalBlocker(editKind, editIndex) : "Esta estructura base no se puede eliminar";
+                showRepair = false;
+                showPrimary = movable;
+                primaryText = "MOVER";
+                primaryEnabled = movable && !RoverBusy && !state.GameOver;
+                showSecondary = hasSelection;
+                secondaryText = "ELIMINAR";
+                secondaryEnabled = hasSelection && editRemovalReason.Length == 0 && !state.GameOver;
+                actionReason = movable ? RoverBusy ? "Esperá a que el rover termine su recorrido." : "Elegí MOVER y luego un sector válido." : "Las minas y los extractores quedan anclados al yacimiento.";
+                facts = "Modo Editar conserva el nivel y el trabajador al mover. El reembolso es aproximadamente el 50 % del costo base; los depósitos minerales quedan en su sitio.";
+            }
+
             if (sprite != null) infoPreview.sprite = sprite;
             infoPreview.enabled = sprite != null;
             infoTitle.text = title;
@@ -350,7 +391,8 @@ namespace SpaceFarm
                 facts += $"\nReparación: {state.RepairIronCost} Fe y {state.RepairEnergyCost} energía.";
             if (worker != null) facts += "\n" + WorkerText(worker, job);
             string secondaryReason = "";
-            if (showSecondary && !secondaryEnabled)
+            if (editMode && showSecondary && !secondaryEnabled) secondaryReason = editRemovalReason;
+            if (!editMode && showSecondary && !secondaryEnabled)
             {
                 if (selectedBuilding == "deposit")
                 {
@@ -375,9 +417,13 @@ namespace SpaceFarm
             if (showSecondary) infoSecondary.GetComponentInChildren<TextMeshProUGUI>().text = secondaryText;
             bool globalRepair = state.DamagedStructure != DamagedStructureKind.None && DamagedSelectionMatches();
             infoRepair.gameObject.SetActive(showRepair || globalRepair);
-            infoRepair.interactable = state.Iron >= state.RepairIronCost && state.Energy >= state.RepairEnergyCost && !state.GameOver;
+            infoRepair.interactable = state.Iron >= state.RepairIronCost && state.Energy >= state.RepairEnergyCost && !state.GameOver && !RoverBusy && !state.IsRepairing;
             if (infoRepair.gameObject.activeSelf)
-                infoRepair.GetComponentInChildren<TextMeshProUGUI>().text = $"REPARAR · {state.RepairIronCost} Fe · {state.RepairEnergyCost} energía";
+                infoRepair.GetComponentInChildren<TextMeshProUGUI>().text = state.IsRepairing
+                    ? $"REPARACIÓN · {state.RepairSecondsRemaining} s"
+                    : state.DamagedStructure == DamagedStructureKind.Rover
+                        ? $"REPARAR EN TALLER · {state.RepairIronCost} Fe · 30 s"
+                        : $"{(RoverAdjacentToSelected() ? "INICIAR REPARACIÓN" : "ENVIAR ROVER A REPARAR")} · {state.RepairIronCost} Fe · 30 s";
             infoCrew.gameObject.SetActive(hasWorkerAccess);
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(infoMetricsRoot);
@@ -440,6 +486,10 @@ namespace SpaceFarm
         private string UpgradeButtonText(string kind, int target, int cost) => state.HasUpgrade(kind, target)
             ? $"MEJORA · {state.UpgradeRemaining(kind, target)} s" : $"MEJORAR · {cost} Fe · {state.UpgradeSecondsToDisplay(kind, target)} s";
 
+        private string UpgradeActionText(string kind, int target, int cost) => state.HasUpgrade(kind, target)
+            ? $"MEJORA · {state.UpgradeRemaining(kind, target)} s"
+            : $"{(RoverAdjacentToSelected() ? "MEJORAR" : "ENVIAR ROVER · MEJORAR")} · {cost} Fe · {state.UpgradeSecondsToDisplay(kind, target)} s";
+
         private Sprite FindWorldSprite(int depositId, bool mine)
         {
             if (depositViews == null || depositId < 0 || depositId >= depositViews.Length) return null;
@@ -464,8 +514,7 @@ namespace SpaceFarm
         private void RepairSelected()
         {
             if (paused || state == null || !DamagedSelectionMatches()) return;
-            Act((out string message) => state.RepairDamagedStructure(out message));
-            RefreshHud();
+            OrderRepairSelected();
         }
 
         private void OpenCrewFromInfo()
