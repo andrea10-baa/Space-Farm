@@ -85,6 +85,7 @@ namespace SpaceFarm
         private bool previousGreenhouse;
         private int previousRoverLevel = 1;
         private int previousOxygenPlants;
+        private float upgradeHudClock;
 
         // ---------- Hooks for checks and tools; the game itself never depends on them ----------
 
@@ -196,6 +197,17 @@ namespace SpaceFarm
             }
             // Paused: nothing below runs, so no order, build or sol can happen behind the menu.
             if (paused) return;
+            if (state.Tick(Time.deltaTime))
+            {
+                SetReport(state.LastReport);
+                RefreshWorld();
+                RefreshHud();
+            }
+            if (state.Upgrades.Count > 0 || selectedBuilding != null)
+            {
+                upgradeHudClock += Time.deltaTime;
+                if (upgradeHudClock >= .5f) { upgradeHudClock = 0f; RefreshHud(); }
+            }
             UpdateFogReveal();
             AnimateRover();
             AnimateWorldArt();
@@ -386,6 +398,11 @@ namespace SpaceFarm
         {
             if (paused) return;
             if (!map.Inside(target)) { SetReport("Ese sector queda fuera del mapa."); return; }
+            if (!state.CanRoverReach(target))
+            {
+                SetReport($"Zona bloqueada: la colonia está en nivel {state.ColonyLevel}. Alcance actual: {state.RoverRange} sectores desde la base. Ganá XP para avanzar.");
+                return;
+            }
             if (target != roverCell && state.IsCellBlocked(target))
             {
                 SetReport("El rover no puede entrar en un sector ocupado por un muro o una estructura.");
@@ -532,7 +549,7 @@ namespace SpaceFarm
                 foreach (Vector2Int direction in directions)
                 {
                     Vector2Int next = current + direction;
-                    if (!map.Inside(next) || visited[next.x, next.y] || IsRoverPathCellBlocked(next, goal, avoidColonists)) continue;
+                    if (!map.Inside(next) || !state.CanRoverReach(next) || visited[next.x, next.y] || IsRoverPathCellBlocked(next, goal, avoidColonists)) continue;
                     if (direction.x != 0 && direction.y != 0 &&
                         (IsRoverPathCellBlocked(current + new Vector2Int(direction.x, 0), goal, avoidColonists) ||
                          IsRoverPathCellBlocked(current + new Vector2Int(0, direction.y), goal, avoidColonists))) continue;
@@ -945,8 +962,7 @@ namespace SpaceFarm
                 return $"Hay hielo al {SpaceFarmMap.Compass(BaseCell, ice.Cell)}, a {ice.Distance} sectores. Enviá el rover a localizarlo.";
             if (state.ExtractorCount == 0) return $"Construí un extractor para asegurar agua ({state.ExtractorCost} de hierro).";
             if (!state.Greenhouse) return "Construí un invernadero para iniciar la cosecha (6 de hierro).";
-            if (state.Population < 3) return "Prepará reservas de O2, agua y comida; luego recibí un colono.";
-            if (state.BarrierCount < 8) return $"Protegé las minas: construí muros ({state.BarrierCount}/8).";
+            if (state.ColonyLevel < 3) return $"Explorá y construí para ganar XP y alcanzar el nivel 3 ({state.Xp}/{state.XpToNext}).";
             if (state.Sol < 7) return $"Mantené la colonia hasta el sol 7 (ahora {state.Sol}).";
             return "Revisá recursos y explorá yacimientos lejanos para crecer.";
         }

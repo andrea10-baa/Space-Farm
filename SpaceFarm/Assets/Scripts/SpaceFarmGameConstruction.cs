@@ -97,8 +97,10 @@ namespace SpaceFarm
             placementPreview.transform.position = position;
             placementFootprint.transform.position = position + new Vector3(0f, 0f, -.02f);
             bool overUi = PointerOverUi(pointer);
-            string reason = overUi ? "Soltá sobre el mapa" : IsActorOccupyingCell(cell)
-                ? "No coloqués una estructura debajo de una persona o del rover"
+            bool roverCanMoveAside = (activeStructure == StructureKind.Mine || activeStructure == StructureKind.Extractor) &&
+                !RoverBusy && roverCell == cell && TryRoverAsideCell(cell, out _);
+            string reason = overUi ? "Soltá sobre el mapa" : IsActorOccupyingCell(cell) && !roverCanMoveAside
+                ? "No coloqués una estructura debajo del rover"
                 : state.PlacementBlocker(activeStructure, cell, IsRevealed(cell));
             bool valid = reason.Length == 0;
             placementPreview.enabled = placementFootprint.enabled = !overUi;
@@ -141,23 +143,50 @@ namespace SpaceFarm
             StructureKind kind = activeStructure;
             bool placed;
             string message;
-            if (IsActorOccupyingCell(cell))
+            Vector2Int aside = default;
+            bool roverCanMoveAside = (kind == StructureKind.Mine || kind == StructureKind.Extractor) &&
+                !RoverBusy && roverCell == cell && TryRoverAsideCell(cell, out aside);
+            if (IsActorOccupyingCell(cell) && !roverCanMoveAside)
             {
                 placed = false;
-                message = "No coloqués una estructura debajo de una persona o del rover.";
+                message = "No coloqués una estructura debajo del rover.";
             }
             else placed = state.PlaceStructure(kind, cell, IsRevealed(cell), out message);
             SetReport(message);
             if (!placed) { RefreshHud(); return; }
+            if (roverCanMoveAside) MoveRoverAside(aside);
             CancelPlacement(false);
             CloseConstructionMenu();
             PlayWorldPing(CellPosition(cell), SpaceFarmPalette.Oxygen);
             FlashScreen(SpaceFarmPalette.Oxygen, .09f, .2f);
             RefreshWorld();
             RefreshHud();
-            if (kind == StructureKind.Greenhouse) SelectWorldBuilding("greenhouse");
-            else if (kind == StructureKind.OxygenPlant) SelectWorldBuilding("oxygen2");
+            if (kind == StructureKind.Greenhouse) SelectWorldBuilding("greenhouse", state.GreenhouseCells.Count - 1);
+            else if (kind == StructureKind.OxygenPlant) SelectWorldBuilding("oxygen2", state.OxygenCells.Count - 1);
             else SelectDeposit(map.DepositAt(cell).Id);
+        }
+
+        private bool TryRoverAsideCell(Vector2Int builtCell, out Vector2Int result)
+        {
+            for (int radius = 2; radius <= 4; radius++)
+            for (int y = -radius; y <= radius; y++)
+            for (int x = -radius; x <= radius; x++)
+            {
+                if (Mathf.Abs(x) != radius && Mathf.Abs(y) != radius) continue;
+                Vector2Int candidate = builtCell + new Vector2Int(x, y);
+                if (!map.Inside(candidate) || !state.CanRoverReach(candidate) || state.IsCellBlocked(candidate)) continue;
+                result = candidate;
+                return true;
+            }
+            result = default;
+            return false;
+        }
+
+        private void MoveRoverAside(Vector2Int candidate)
+        {
+            roverCell = roverDestination = candidate;
+            rover.transform.position = CellPosition(candidate) + new Vector3(0f, 0f, -.5f);
+            routeMarker.enabled = false;
         }
 
         private void CancelPlacement(bool report = true)

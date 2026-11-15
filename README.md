@@ -16,25 +16,27 @@ Cada partida genera una región de **128×80 sectores** a partir de una **semill
 
 - **Relieve:** llanuras, campos de dunas, zonas rocosas, un cráter grande, varios medianos y pequeños, crestas y un cauce seco. Todo el relieve es visual: el rover puede cruzar cualquier sector, así que ninguna semilla deja un recurso inaccesible.
 - **Base:** aterriza cerca del centro, en el terreno más despejado de esa zona. A 5 sectores a la redonda no hay cráteres, yacimientos ni puntos de interés.
-- **Yacimientos:** de 6 a 10 de hierro (`Fe-1`, `Fe-2`…) y de 4 a 6 de hielo (`Hielo-1`…), numerados del más cercano al más lejano, más 4 a 6 puntos de interés con una recompensa única. Siempre hay un hierro a 9 sectores o menos y un hielo a 10 o menos; el resto se reparte por todo el mapa. Nada aparece hasta que el rover revela su sector.
+- **Yacimientos:** de 7 a 10 de hierro (`Fe-1`, `Fe-2`…) y de 5 a 7 de hielo (`Hielo-1`…), numerados del más cercano al más lejano, más 4 a 6 puntos de interés. Hay al menos un depósito de cada recurso en cada una de las cinco zonas de progreso. La misma semilla reproduce sus posiciones.
+- **Niveles y exploración:** el nivel de la colonia sube con XP al estudiar depósitos, descubrir puntos, construir, mejorar y sobrevivir soles. Los niveles 1–4 permiten al rover llegar hasta 11, 24, 39 y 56 sectores desde la base; el nivel 5 abre todo el mapa. La niebla también respeta ese límite. Cada nivel suma dos astronautas y dos plazas al hábitat.
 - **Varias instalaciones:** cada yacimiento estudiado admite su propia mina o extractor, con su nivel y almacén. Las reglas que evitan que eso vuelva trivial la partida:
-  - Cada mina necesita un operador: 2 colonos operan 1 mina, 3 colonos 2 y 4 colonos 3 (máximo).
+  - La capacidad de minas crece con la tripulación, hasta tres; asignar un astronauta a una mina aumenta su producción en 1 Fe por sol mientras esté descansado.
   - Cada mina nueva cuesta 4 Fe más (8, 12, 16) y consume su propia energía cada sol.
-  - Máximo 2 extractores; el segundo cuesta 10 Fe y el agua nunca supera 30.
+  - Máximo 5 extractores; cada uno nuevo cuesta 4 Fe más. Agua, O2 y comida se almacenan hasta 60.
   - La primera muestra de cada recurso trae 2 unidades; las siguientes, 1.
   - Incursión del sol 5: los muros reducen la pérdida de comida. Las minas nunca se averían.
 
 ## Controles
 
 - **Cámara:** arrastrar el mapa con el mouse, WASD o flechas. Rueda: zoom. Un arrastre nunca se convierte en orden. **Volver a la base** e **Ir al rover** reubican la vista; **Seguir** acompaña al rover hasta que movés la cámara.
-- **Explorar:** clic en el terreno envía el rover por un camino libre. No cruza muros ni instalaciones; los colonos tampoco pasan sobre el rover, estructuras o muros. Clic en una señal (`SEÑAL Fe-2`) lo manda a estudiarla.
-- **Construcción:** el botón **Construir** abre un catálogo con miniaturas, función, costo y requisitos. Elegí un plano y movelo por el mapa: cian indica posición válida y rojo explica el bloqueo. Un clic sobre un sector válido confirma; Escape, clic derecho o **Cancelar** abandonan el plano sin gastar hierro. También podés arrastrar una tarjeta del catálogo y soltarla sobre el mapa. Invernadero y segunda planta de O2 necesitan una celda revelada y libre; mina y extractor deben ir exactamente sobre el yacimiento estudiado que elijas.
+- **Explorar:** clic en el terreno envía el rover por un camino libre dentro del alcance del nivel actual. No cruza muros ni instalaciones. Clic en una señal (`SEÑAL Fe-2`) lo manda a estudiarla.
+- **Construcción:** el botón **Construir** abre un catálogo con miniaturas, función, costo y requisitos. Elegí un plano y movelo por el mapa: cian indica posición válida y rojo explica el bloqueo. Un clic sobre un sector válido confirma; Escape, clic derecho o **Cancelar** abandonan el plano sin gastar hierro. También podés arrastrar una tarjeta del catálogo y soltarla sobre el mapa. Hasta cinco invernaderos y cinco plantas de O2 pueden ocupar celdas reveladas y libres; mina y extractor deben ir exactamente sobre el yacimiento estudiado que elijas.
 - **Fichas:** clic en un yacimiento estudiado o una instalación abre su ficha. Desde ahí podés iniciar la colocación de una mina o extractor, mejorar y ordenar **Recoger** en una mina concreta: el rover carga, vuelve a la base y descarga.
-- **Muros:** elegí **Construir muros** en el catálogo y colocá hasta 12 en celdas reveladas libres. Cada uno cuesta 1 Fe; **R** cambia entre orientación horizontal y vertical. No se pueden poner sobre instalaciones, personajes, rover u otros muros.
-- **Otras acciones:** las pestañas **Mejorar** y **Colonia** del mismo menú conservan la mejora del rover, las minas, los colonos y los pedidos a la Tierra. La barra inferior muestra solo el mensaje reciente y el acceso al menú.
+- **Muros:** elegí **Construir muros** en el catálogo y colocalos libremente en celdas reveladas. No hay un máximo fijo. Cada uno cuesta 1 Fe; **R** cambia su orientación. No se pueden poner sobre instalaciones, el rover u otros muros. Los astronautas no bloquean la construcción. Los muros próximos al hábitat reducen la pérdida de comida durante la incursión.
+- **Tripulación:** el dormitorio aparece junto al hábitat. Seleccioná una mina, extractor, invernadero o planta de O2 y usá **Asignar astronauta** en **Colonia** para acelerar su producción. La misma acción retira la asignación. Quienes se cansan vuelven al dormitorio y descansan automáticamente; durante el descanso no dan bonificación. Más astronautas consumen más O2, agua y comida por sol.
+- **Mejoras:** las minas, el rover y los paneles solares tardan 30 segundos reales en mejorar; la pausa detiene el contador. Los paneles mejorados generan más energía y amplían la batería. Las mejoras en curso no se cobran dos veces.
 - **Minimapa:** muestra terreno explorado, niebla, base, rover, yacimientos y puntos ya descubiertos y el recuadro de la cámara. Clic en zona explorada: centra la cámara sin mover al rover. `+`/`-` cambia el tamaño y `<`/`>` lo pasa de esquina; la preferencia se guarda.
 - **Pausa:** Escape o el botón **Pausa**. Detiene rover, astronautas y simulación. Ofrece reanudar, reiniciar este mapa (misma semilla), empezar un mapa nuevo (otra semilla), ver controles y elegir el lado del minimapa.
-- La tormenta ocurre en los soles 3 y 4 y la incursión en el sol 5. La primera victoria requiere llegar al sol 7 con al menos una mina, invernadero, tres colonos y 8 muros.
+- La tormenta ocurre en los soles 3 y 4 y la incursión en el sol 5. La primera victoria requiere llegar al sol 7 con al menos una mina, un invernadero y la colonia en nivel 3.
 
 La simulación es deliberadamente simplificada. La planta de oxígeno es una extrapolación ficticia inspirada en MOXIE; las criaturas son ciencia ficción.
 
@@ -57,7 +59,7 @@ Todos los scripts de juego están en `SpaceFarm/Assets/Scripts/`.
 
 ## Pruebas
 
-- **Space Farm → Comprobar reglas básicas:** reglas de la colonia, varias minas independientes y generación (semillas 1, 42 y 12345 más un barrido de 500 semillas).
+- **Space Farm → Comprobar reglas básicas:** recursos garantizados en cinco zonas para 100 semillas, niveles, alcance, descanso, producción y mejoras de 30 segundos.
 - **Space Farm → Probar partida en Play Mode:** juega la escena real (descubrir, construir, producir, recoger, pausar en pleno viaje, minimapa, reinicios) y guarda capturas en `docs/screenshots/`.
 
 Desde la línea de comandos:

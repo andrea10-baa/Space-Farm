@@ -205,6 +205,9 @@ namespace SpaceFarm.Editor
             SpaceFarmGame colony = Game();
             colony.BeginFromTitleForTools();
             Vector2Int roverAtStart = colony.RoverCell;
+            colony.OrderRover(new Vector2Int(1, 1));
+            Require(colony.RoverCell == roverAtStart && !colony.RoverBusy,
+                "nivel 1 impide viajar fuera del alcance de la base");
             int ironAtStart = colony.State.Iron;
             colony.OpenConstructionForTools();
             Require(colony.IsConstructionMenuOpen && !colony.RoverBusy,
@@ -311,7 +314,8 @@ namespace SpaceFarm.Editor
             for (int i = 0; i < 4 && colony.State.Iron > 0; i++)
                 colony.State.BuildBarrierSegment(wallBase + new Vector2Int(0, i), false,
                     colony.IsRevealed(wallBase + new Vector2Int(0, i)), out _);
-            colony.State.AddColonist(out _);
+            Require(colony.State.Population >= 4 && colony.State.ColonyLevel >= 2,
+                "la exploración y las construcciones otorgan XP y dos astronautas");
             colony.RevealForTools(colony.Map.BaseCell, 0);
             while (colony.State.Sol < 5 && !colony.State.GameOver) colony.PressAdvanceSol();
             yield return Wait(.5);
@@ -320,6 +324,7 @@ namespace SpaceFarm.Editor
                 "los astronautas visibles coinciden con la población");
 
             // --- A wide look at the terrain for the docs.
+            colony.State.GainXp(240 - colony.State.Xp);
             for (int y = 2; y < SpaceFarmMap.Height; y += 4)
             for (int x = 2; x < SpaceFarmMap.Width; x += 4)
                 colony.RevealForTools(new Vector2Int(x, y), 4);

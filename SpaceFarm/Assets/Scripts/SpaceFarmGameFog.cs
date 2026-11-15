@@ -50,7 +50,8 @@ namespace SpaceFarm
             {
                 int dx = x - center.x;
                 int dy = y - center.y;
-                if (dx * dx + dy * dy > radius * radius || revealed[x, y]) continue;
+                if (dx * dx + dy * dy > radius * radius || revealed[x, y] ||
+                    !state.CanRoverReach(new Vector2Int(x, y))) continue;
                 revealed[x, y] = true;
                 revealAmount[x, y] = 0f;
                 fadingCells.Add(new Vector2Int(x, y));

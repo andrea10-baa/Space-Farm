@@ -82,6 +82,8 @@ namespace SpaceFarm
         public const int NearIceMaxDistance = 10;
         public const int FarDistance = 22;
         public const int DiscoveryKindCount = 4;
+        // Each colony level opens a new annulus. Level five covers the whole 128x80 map.
+        public static readonly int[] ZoneOuterDistance = { 0, 11, 24, 39, 56, 999 };
         private const int EdgeMargin = 3;
         private const int DepositSeparation = 7;
         private const int PointSeparation = 5;
@@ -355,19 +357,25 @@ namespace SpaceFarm
 
         private bool PlaceDeposits(ref SpaceFarmRandom random)
         {
-            int ironCount = random.Range(6, 11);
-            int iceCount = random.Range(4, 7);
+            int ironCount = random.Range(7, 11);
+            int iceCount = random.Range(5, 8);
             List<Vector2Int> iron = new List<Vector2Int>();
             List<Vector2Int> ice = new List<Vector2Int>();
-
-            // Early access first: one iron and one ice deposit within a short drive of the lander.
-            if (!PickRing(ref random, 5, 8, null, 0, out Vector2Int nearIron)) return false;
-            iron.Add(nearIron);
-            if (!PickRing(ref random, 5, 9, iron, 5, out Vector2Int nearIce)) return false;
-            ice.Add(nearIce);
+            List<Vector2Int> reserved = new List<Vector2Int>();
+            int[] inner = { 0, 5, 12, 25, 40, 57 };
+            int[] outer = { 0, 8, 23, 38, 55, 76 };
+            for (int zone = 1; zone <= 5; zone++)
+            {
+                if (!PickRing(ref random, inner[zone], outer[zone], reserved, 5, out Vector2Int ore)) return false;
+                iron.Add(ore);
+                reserved.Add(ore);
+                if (!PickRing(ref random, inner[zone], zone == 1 ? 9 : outer[zone], reserved, 5, out Vector2Int frost)) return false;
+                ice.Add(frost);
+                reserved.Add(frost);
+            }
 
             // The rest are spread with best-candidate sampling so exploring pays off in every direction.
-            for (int i = 0; i < ironCount + iceCount - 2; i++)
+            for (int i = 0; i < ironCount + iceCount - 10; i++)
             {
                 bool wantIron = iron.Count < ironCount && (ice.Count >= iceCount || i % 3 != 2);
                 List<Vector2Int> same = wantIron ? iron : ice;
@@ -591,7 +599,7 @@ namespace SpaceFarm
             int iron = Count(DepositKind.Iron);
             int ice = Count(DepositKind.Ice);
             if (iron < 6 || iron > 10) return Invalid($"hierro fuera de rango ({iron})", out error);
-            if (ice < 4 || ice > 6) return Invalid($"hielo fuera de rango ({ice})", out error);
+            if (ice < 5 || ice > 7) return Invalid($"hielo fuera de rango ({ice})", out error);
             if (Points.Count < 4 || Points.Count > 6) return Invalid($"puntos de interés fuera de rango ({Points.Count})", out error);
 
             List<Vector2Int> cells = new List<Vector2Int>();
@@ -617,6 +625,19 @@ namespace SpaceFarm
             MapDeposit nearIce = Nearest(DepositKind.Ice);
             if (nearIron == null || nearIron.Distance > NearIronMaxDistance) return Invalid("sin hierro cercano", out error);
             if (nearIce == null || nearIce.Distance > NearIceMaxDistance) return Invalid("sin hielo cercano", out error);
+            for (int zone = 1; zone <= 5; zone++)
+            {
+                int lower = ZoneOuterDistance[zone - 1];
+                int upper = ZoneOuterDistance[zone];
+                bool foundIron = false, foundIce = false;
+                foreach (MapDeposit deposit in Deposits)
+                {
+                    if (deposit.Distance <= lower || deposit.Distance > upper) continue;
+                    if (deposit.Kind == DepositKind.Iron) foundIron = true;
+                    else foundIce = true;
+                }
+                if (!foundIron || !foundIce) return Invalid($"faltan hierro o hielo en zona {zone}", out error);
+            }
             if (Quadrants(DepositKind.Iron) < 3) return Invalid("hierro concentrado en pocas regiones", out error);
             if (Quadrants(DepositKind.Ice) < 2) return Invalid("hielo concentrado en una región", out error);
             bool far = false;

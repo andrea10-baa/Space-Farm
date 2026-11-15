@@ -49,19 +49,29 @@ namespace SpaceFarm
         private readonly List<MineDrillVisual> mineDrills = new List<MineDrillVisual>();
         private readonly Vector2[] astronautStops =
         {
-            new Vector2(-.15f, -2.3f), new Vector2(.55f, -2.6f),
-            new Vector2(1.3f, -2.1f), new Vector2(2.1f, -2.6f)
+            new Vector2(-1.6f, -2.3f), new Vector2(-.7f, -3.1f),
+            new Vector2(.2f, -2.4f), new Vector2(1.1f, -3.2f),
+            new Vector2(2f, -2.5f), new Vector2(-1.8f, -3.8f),
+            new Vector2(-.9f, -4.3f), new Vector2(0f, -3.9f),
+            new Vector2(1f, -4.4f), new Vector2(2.1f, -3.9f)
         };
         private DepositView[] depositViews;
         private SpriteRenderer[] discoveryMarkers;
         private Color32[] terrainCellColors;
         private GameObject barrierPreview;
         private GameObject solarWorld;
+        private GameObject dormWorld;
+        private readonly List<GameObject> greenhouseWorlds = new List<GameObject>();
+        private readonly List<GameObject> oxygenWorlds = new List<GameObject>();
         private bool barrierMode;
         private bool barrierVertical;
         private bool collectionActive;
         private Vector2Int hoveredBarrierCell;
         private int observedPopulation;
+        private int observedHabitatLevel;
+        private Vector3 dormBaseScale;
+        private int observedSolarLevel;
+        private Vector3 solarBaseScale;
         private Sprite[] astronautFacingSprites;
         private Sprite[] astronautPassASprites;
         private Sprite[] astronautWalkingSprites;
@@ -92,6 +102,10 @@ namespace SpaceFarm
             // Optional buildings are created only after a player confirms their chosen cell.
             CreateBarrierWorld();
             CreateSolarWorld();
+            dormWorld = CreateArtwork("Dormitorio de astronautas", "Art/space-farm-world-modules#habitat-3d",
+                CellPosition(BaseCell + new Vector2Int(-1, 2)) + new Vector3(0f, 0f, -.22f),
+                1.65f, 1.1f, 6, worldRoot.transform).gameObject;
+            dormBaseScale = dormWorld.transform.localScale;
             CreatePointsOfInterest();
             routeMarker = CreateWorldSprite("Destino del rover", ringSprite, CellPosition(roverCell),
                 new Vector3(.65f, .65f, 1f), SpaceFarmPalette.Ice, 9, worldRoot.transform);
@@ -245,6 +259,7 @@ namespace SpaceFarm
         {
             solarWorld = CreateArtwork("Matriz solar", "Art/space-farm-world-modules#solar-3d",
                 CellPosition(BaseCell) + new Vector3(-2.1f,-.8f,-.25f), 2.1f, 1.4f, 6, worldRoot.transform).gameObject;
+            solarBaseScale = solarWorld.transform.localScale;
         }
 
         private static Color DiscoveryColor(int kind)
@@ -278,7 +293,7 @@ namespace SpaceFarm
                 if (!map.Inside(cell))
                     SetReport("Elegí un sector dentro del mapa.");
                 else if (IsActorOccupyingCell(cell))
-                    SetReport("No coloqués el muro debajo de una persona o del rover.");
+                    SetReport("No coloqués el muro debajo del rover.");
                 else
                 {
                     bool built = state.BuildBarrierSegment(cell, barrierVertical, revealed[cell.x, cell.y], out string message);
@@ -288,7 +303,6 @@ namespace SpaceFarm
                         PlayWorldPing(CellPosition(cell), SpaceFarmPalette.Iron);
                         RefreshWorld();
                         RefreshHud();
-                        if (state.BarrierCount == SpaceFarmState.MaxBarrierCount) EndBarrierMode();
                     }
                 }
                 RefreshSystems();
@@ -307,14 +321,17 @@ namespace SpaceFarm
                 return true;
             }
             Vector3 basePosition = CellPosition(BaseCell);
-            if (state.Greenhouse && greenhouse != null && Vector2.Distance(world, greenhouse.transform.position) < .85f)
-                return SelectWorldBuilding("greenhouse");
-            if (state.OxygenPlants > 1 && oxygenPlantTwo != null && Vector2.Distance(world, oxygenPlantTwo.transform.position) < .8f)
-                return SelectWorldBuilding("oxygen2");
+            for (int i = 0; i < greenhouseWorlds.Count; i++)
+                if (Vector2.Distance(world, greenhouseWorlds[i].transform.position) < .85f)
+                    return SelectWorldBuilding("greenhouse", i);
+            for (int i = 0; i < oxygenWorlds.Count; i++)
+                if (Vector2.Distance(world, oxygenWorlds[i].transform.position) < .8f)
+                    return SelectWorldBuilding("oxygen2", i);
             if (Vector2.Distance(world, CellPosition(BaseCell + new Vector2Int(2,0))) < .78f)
                 return SelectWorldBuilding("oxygen1");
             if (Vector2.Distance(world, solarWorld.transform.position + new Vector3(.33f,0,0)) < .9f)
                 return SelectWorldBuilding("solar");
+            if (Vector2.Distance(world, dormWorld.transform.position) < .7f) return SelectWorldBuilding("dormitory");
             if (Vector2.Distance(world, basePosition) < 1.1f) return SelectWorldBuilding("habitat");
             HideWorldSelection();
             return false;
@@ -355,7 +372,7 @@ namespace SpaceFarm
                 hoveredBarrierCell = WorldToCell(world);
                 bool inside = map.Inside(hoveredBarrierCell);
                 bool actorCollision = inside && IsActorOccupyingCell(hoveredBarrierCell);
-                string reason = overUi ? "Apuntá al mapa" : !inside ? "Fuera del mapa" : actorCollision ? "No colocar bajo una persona o el rover" :
+                string reason = overUi ? "Apuntá al mapa" : !inside ? "Fuera del mapa" : actorCollision ? "No colocar bajo el rover" :
                     state.BarrierBlocker(hoveredBarrierCell, revealed[hoveredBarrierCell.x, hoveredBarrierCell.y]);
                 bool valid = reason.Length == 0;
                 if (buildModeText != null)
@@ -374,16 +391,13 @@ namespace SpaceFarm
 
         private bool IsActorOccupyingCell(Vector2Int cell)
         {
-            if (rover != null && WorldToCell(rover.transform.position) == cell) return true;
-            for (int i = 0; i < astronauts.Count; i++)
-                if (astronauts[i].Root != null && WorldToCell(astronauts[i].Root.position) == cell) return true;
-            return false;
+            return rover != null && WorldToCell(rover.transform.position) == cell;
         }
 
         private bool IsAstronautPositionBlocked(Vector3 position, AstronautView moving)
         {
             Vector2Int cell = WorldToCell(position);
-            if (!map.Inside(cell) || state.IsCellBlocked(cell)) return true;
+            if (!map.Inside(cell)) return true;
             if (rover != null && Vector2.Distance(position, rover.transform.position) < .72f) return true;
             for (int i = 0; i < astronauts.Count; i++)
             {
@@ -404,17 +418,37 @@ namespace SpaceFarm
                 roverBaseScale *= 1.12f;
                 PlayWorldPing(rover.transform.position, SpaceFarmPalette.Ice);
             }
-            if (state.GreenhouseCell.HasValue && greenhouse == null)
+            while (greenhouseWorlds.Count < state.GreenhouseCells.Count)
             {
-                greenhouse = CreateBuilding("Invernadero", "Art/space-farm-world-modules#greenhouse-3d",
-                    state.GreenhouseCell.Value, worldRoot.transform);
-                AnimatePop(greenhouse.transform, greenhouse.transform.localScale);
+                int index = greenhouseWorlds.Count;
+                GameObject built = CreateBuilding($"Invernadero {index + 1}", "Art/space-farm-world-modules#greenhouse-3d",
+                    state.GreenhouseCells[index], worldRoot.transform);
+                greenhouseWorlds.Add(built);
+                if (greenhouse == null) greenhouse = built;
+                AnimatePop(built.transform, built.transform.localScale);
             }
-            if (state.OxygenPlantTwoCell.HasValue && oxygenPlantTwo == null)
+            while (oxygenWorlds.Count < state.OxygenCells.Count)
             {
-                oxygenPlantTwo = CreateBuilding("Planta de oxígeno 2", "Art/space-farm-world-modules#oxygen-3d",
-                    state.OxygenPlantTwoCell.Value, worldRoot.transform);
-                AnimatePop(oxygenPlantTwo.transform, oxygenPlantTwo.transform.localScale);
+                int index = oxygenWorlds.Count;
+                GameObject built = CreateBuilding($"Planta de oxígeno {index + 2}", "Art/space-farm-world-modules#oxygen-3d",
+                    state.OxygenCells[index], worldRoot.transform);
+                oxygenWorlds.Add(built);
+                if (oxygenPlantTwo == null) oxygenPlantTwo = built;
+                AnimatePop(built.transform, built.transform.localScale);
+            }
+            if (state.ColonyLevel != observedHabitatLevel)
+            {
+                observedHabitatLevel = state.ColonyLevel;
+                Vector3 size = dormBaseScale * (1f + .08f * (state.ColonyLevel - 1));
+                if (state.ColonyLevel == 1) dormWorld.transform.localScale = size;
+                else AnimatePop(dormWorld.transform, size);
+            }
+            if (state.SolarLevel != observedSolarLevel)
+            {
+                observedSolarLevel = state.SolarLevel;
+                Vector3 size = solarBaseScale * (1f + .12f * (state.SolarLevel - 1));
+                if (state.SolarLevel == 1) solarWorld.transform.localScale = size;
+                else AnimatePop(solarWorld.transform, size);
             }
             previousGreenhouse = state.Greenhouse;
             previousRoverLevel = state.RoverLevel;
@@ -484,6 +518,7 @@ namespace SpaceFarm
             if (paused) return;
             SpaceFarmState.DepositState deposit = state.Deposit(depositId);
             if (deposit == null || deposit.MineLevel == 0) { SetReport("Elegí una mina para recoger su hierro."); return; }
+            if (!state.CanRoverReach(map.Deposits[depositId].Cell)) { SetReport("La mina queda fuera del alcance de esta colonia. Subí de nivel."); return; }
             if (state.GameOver) { SetReport("La misión terminó. Abrí PAUSA (Esc) para reiniciar."); return; }
             if (travel != null || collectionActive) { SetReport("Esperá a que el rover termine su recorrido."); return; }
             if (deposit.MineStored == 0) { SetReport($"La mina de {deposit.Name} todavía no tiene hierro almacenado."); return; }
@@ -557,7 +592,7 @@ namespace SpaceFarm
                     new Vector2(random.Range(-.12f, .12f), random.Range(-.1f, .1f));
                 for (int attempt = 0; attempt < 24 && IsAstronautPositionBlocked(
                     CellPosition(BaseCell) + (Vector3)ProjectGroundOffset(startOffset), null); attempt++)
-                    startOffset = new Vector2(random.Range(-.2f, 2.5f), random.Range(-3.2f, -2.1f));
+                    startOffset = new Vector2(random.Range(-1.9f, 2.5f), random.Range(-4.4f, -2.1f));
                 GameObject root = new GameObject($"Astronauta {index + 1}");
                 root.transform.SetParent(worldRoot.transform);
                 root.transform.position = CellPosition(BaseCell) +
@@ -605,6 +640,29 @@ namespace SpaceFarm
                     SetAstronautIdle(view);
                     continue;
                 }
+                SpaceFarmState.CrewMember member = state.Crew[i];
+                if (member.Resting || member.Job != CrewJob.None)
+                {
+                    Vector3 destination = member.Resting
+                        ? dormWorld.transform.position + new Vector3((i % 3 - 1) * .18f, -.18f, 0f)
+                        : CrewWorkPosition(member);
+                    Vector3 before = view.Root.position;
+                    Vector3 delta = destination - before;
+                    if (delta.magnitude > .12f)
+                    {
+                        view.Body.enabled = true;
+                        view.Root.position = Vector3.MoveTowards(before, destination, view.Speed * Time.deltaTime * 1.6f);
+                        view.WalkCycle = Mathf.Repeat(view.WalkCycle + Vector3.Distance(before, view.Root.position) / .48f, 1f);
+                        SetAstronautFacing(view, delta, Mathf.FloorToInt(view.WalkCycle * 4f));
+                    }
+                    else
+                    {
+                        view.Body.enabled = !member.Resting;
+                        SetAstronautIdle(view);
+                    }
+                    continue;
+                }
+                view.Body.enabled = true;
                 if (view.Wait > 0f)
                 {
                     view.Wait -= Time.deltaTime;
@@ -640,6 +698,20 @@ namespace SpaceFarm
                     ChooseAstronautTarget(view, view.TargetOffset);
                 }
             }
+        }
+
+        private Vector3 CrewWorkPosition(SpaceFarmState.CrewMember member)
+        {
+            Vector2Int cell = BaseCell;
+            if ((member.Job == CrewJob.Mine || member.Job == CrewJob.Extractor) &&
+                member.Target >= 0 && member.Target < map.Deposits.Count)
+                cell = map.Deposits[member.Target].Cell;
+            else if (member.Job == CrewJob.Greenhouse && member.Target >= 0 && member.Target < state.GreenhouseCells.Count)
+                cell = state.GreenhouseCells[member.Target];
+            else if (member.Job == CrewJob.Oxygen)
+                cell = member.Target == 0 ? BaseCell + new Vector2Int(2, 0) :
+                    member.Target - 1 < state.OxygenCells.Count ? state.OxygenCells[member.Target - 1] : BaseCell;
+            return CellPosition(cell) + new Vector3(.45f, -.28f, -.1f);
         }
 
         private void LoadAstronautSprites()
@@ -696,7 +768,7 @@ namespace SpaceFarm
         {
             for (int attempt = 0; attempt < 28; attempt++)
             {
-                Vector2 candidate = new Vector2(view.Random.Range(-.2f, 2.5f), view.Random.Range(-3.2f, -2.1f));
+                Vector2 candidate = new Vector2(view.Random.Range(-1.9f, 2.5f), view.Random.Range(-4.4f, -2.1f));
                 if ((candidate - currentOffset).sqrMagnitude < .4f) continue;
                 Vector3 candidateWorld = CellPosition(BaseCell) + (Vector3)ProjectGroundOffset(candidate);
                 if (IsAstronautPositionBlocked(candidateWorld, view)) continue;

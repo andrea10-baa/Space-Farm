@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,6 +24,8 @@ namespace SpaceFarm
         private RectTransform minimapFrame;
         private RectTransform minimapGreenhouse;
         private RectTransform minimapOxygenTwo;
+        private readonly List<RectTransform> minimapGreenhouses = new List<RectTransform>();
+        private readonly List<RectTransform> minimapOxygenPlants = new List<RectTransform>();
         private RectTransform[] minimapPoints;
         private Texture2D minimapTexture;
         private Color32[] minimapPixels;
@@ -100,6 +103,8 @@ namespace SpaceFarm
             MinimapMarker("Base", squareSprite, BaseCell, SpaceFarmPalette.Text, 8f, 0f).gameObject.SetActive(true);
             minimapGreenhouse = MinimapMarker("Invernadero", circleSprite, BaseCell, SpaceFarmPalette.Greenhouse, 8f, 0f);
             minimapOxygenTwo = MinimapMarker("Planta de O2 adicional", circleSprite, BaseCell, SpaceFarmPalette.Oxygen, 8f, 0f);
+            minimapGreenhouses.Add(minimapGreenhouse);
+            minimapOxygenPlants.Add(minimapOxygenTwo);
 
             GameObject frame = new GameObject("Cámara", typeof(RectTransform));
             frame.transform.SetParent(minimapView, false);
@@ -235,10 +240,22 @@ namespace SpaceFarm
             }
             for (int i = 0; i < minimapPoints.Length; i++)
                 minimapPoints[i].gameObject.SetActive(revealed[map.Points[i].Cell.x, map.Points[i].Cell.y] && !state.HasDiscovery(i));
-            minimapGreenhouse.gameObject.SetActive(state.GreenhouseCell.HasValue);
-            if (state.GreenhouseCell.HasValue) minimapGreenhouse.anchorMin = minimapGreenhouse.anchorMax = CellToMinimap(state.GreenhouseCell.Value);
-            minimapOxygenTwo.gameObject.SetActive(state.OxygenPlantTwoCell.HasValue);
-            if (state.OxygenPlantTwoCell.HasValue) minimapOxygenTwo.anchorMin = minimapOxygenTwo.anchorMax = CellToMinimap(state.OxygenPlantTwoCell.Value);
+            while (minimapGreenhouses.Count < state.GreenhouseCells.Count)
+                minimapGreenhouses.Add(MinimapMarker("Invernadero", circleSprite, BaseCell, SpaceFarmPalette.Greenhouse, 8f, 0f));
+            while (minimapOxygenPlants.Count < state.OxygenCells.Count)
+                minimapOxygenPlants.Add(MinimapMarker("Planta de O2 adicional", circleSprite, BaseCell, SpaceFarmPalette.Oxygen, 8f, 0f));
+            for (int i = 0; i < minimapGreenhouses.Count; i++)
+            {
+                bool visible = i < state.GreenhouseCells.Count;
+                minimapGreenhouses[i].gameObject.SetActive(visible);
+                if (visible) minimapGreenhouses[i].anchorMin = minimapGreenhouses[i].anchorMax = CellToMinimap(state.GreenhouseCells[i]);
+            }
+            for (int i = 0; i < minimapOxygenPlants.Count; i++)
+            {
+                bool visible = i < state.OxygenCells.Count;
+                minimapOxygenPlants[i].gameObject.SetActive(visible);
+                if (visible) minimapOxygenPlants[i].anchorMin = minimapOxygenPlants[i].anchorMax = CellToMinimap(state.OxygenCells[i]);
+            }
         }
 
         private void NavigateFromMinimap(Vector2 screen, Camera eventCamera)
