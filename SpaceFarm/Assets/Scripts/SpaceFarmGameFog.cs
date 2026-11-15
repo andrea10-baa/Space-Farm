@@ -34,7 +34,8 @@ namespace SpaceFarm
             fogTexture.Apply(false);
             Sprite fogSprite = Sprite.Create(fogTexture, new Rect(0, 0, fogTexture.width, fogTexture.height),
                 new Vector2(.5f, .5f), FogPixelsPerCell / TileSize, 0, SpriteMeshType.FullRect);
-            CreateWorldSprite("Niebla de guerra", fogSprite, Vector3.zero, Vector3.one, Color.white, 0, worldRoot.transform);
+            CreateWorldSprite("Niebla de guerra", fogSprite, Vector3.zero,
+                new Vector3(1f, SpaceFarmMap.TerrainPerspectiveYScale, 1f), Color.white, 0, worldRoot.transform);
             runtimeAssets.Add(fogSprite);
             runtimeAssets.Add(fogTexture);
             ClearDirty();

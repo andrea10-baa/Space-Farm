@@ -22,10 +22,10 @@ namespace SpaceFarm
         private const float TileSize = 0.9f;
         private const float RoverSpeed = 5.2f;
         private const float MinCameraSize = 2.6f;
-        private const float MaxCameraSize = 8.2f;
+        private const float MaxCameraSize = 28f;
         private const float DefaultCameraSize = 5.2f;
         private const float DragThreshold = 9f;
-        private const float HeaderHeight = 96f;
+        private const float HeaderHeight = 112f;
         private const float FooterHeight = 164f;
 
         /// <summary>Seed the next session must use. Null means "pick a new one".</summary>
@@ -36,6 +36,11 @@ namespace SpaceFarm
         private int seed;
         private Camera gameCamera;
         private GameObject rover;
+        private SpriteRenderer roverRenderer;
+        private Sprite[] roverDirectionalSprites;
+        private Sprite[] roverWheelSprites;
+        private int roverFacingIndex = 4;
+        private Vector2 roverHeading = Vector2.down;
         private GameObject greenhouse;
         private GameObject oxygenPlantTwo;
         private Coroutine travel;
@@ -137,6 +142,7 @@ namespace SpaceFarm
             RefreshWorld();
             RefreshHud();
             SetReport($"La nave aterrizó en una región nueva de Marte (semilla {seed}). Enviá el rover a explorar los sectores ocultos.");
+            CreateTitleScreen();
             Debug.Log($"SPACE_FARM_MAP_READY: {map.Describe()} en {(Time.realtimeSinceStartup - started) * 1000f:0} ms");
         }
 
@@ -175,6 +181,7 @@ namespace SpaceFarm
         private void Update()
         {
             if (state == null) return;
+            if (titleScreenOpen) return;
             Keyboard keyboard = Keyboard.current;
             Mouse mouse = Mouse.current;
             if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
@@ -187,6 +194,7 @@ namespace SpaceFarm
             if (paused) return;
             UpdateFogReveal();
             AnimateRover();
+            AnimateWorldArt();
             UpdateSystems(mouse, keyboard);
             if (mouse != null)
             {
@@ -304,7 +312,21 @@ namespace SpaceFarm
         private SpriteRenderer CreateArtwork(string name, string path, Vector3 position, float width, float height,
             int order, Transform parent)
         {
-            Sprite sprite = Resources.Load<Sprite>(path);
+            Sprite sprite = null;
+            int separator = path.IndexOf('#');
+            if (separator >= 0)
+            {
+                string atlasPath = path.Substring(0, separator);
+                string spriteName = path.Substring(separator + 1);
+                Sprite[] sprites = Resources.LoadAll<Sprite>(atlasPath);
+                for (int i = 0; i < sprites.Length; i++)
+                    if (sprites[i] != null && sprites[i].name == spriteName)
+                    {
+                        sprite = sprites[i];
+                        break;
+                    }
+            }
+            else sprite = Resources.Load<Sprite>(path);
             if (sprite == null) sprite = squareSprite;
             Vector3 scale = new Vector3(width / sprite.bounds.size.x, height / sprite.bounds.size.y, 1f);
             return CreateWorldSprite(name, sprite, position, scale, Color.white, order, parent);
@@ -327,13 +349,13 @@ namespace SpaceFarm
         private Vector3 CellPosition(Vector2Int cell)
         {
             return new Vector3((cell.x - (Width - 1) / 2f) * TileSize,
-                (cell.y - (Height - 1) / 2f) * TileSize, 0f);
+                (cell.y - (Height - 1) / 2f) * TileSize * SpaceFarmMap.TerrainPerspectiveYScale, 0f);
         }
 
         private Vector2Int WorldToCell(Vector3 world)
         {
             return new Vector2Int(Mathf.RoundToInt(world.x / TileSize + (Width - 1) / 2f),
-                Mathf.RoundToInt(world.y / TileSize + (Height - 1) / 2f));
+                Mathf.RoundToInt(world.y / (TileSize * SpaceFarmMap.TerrainPerspectiveYScale) + (Height - 1) / 2f));
         }
 
         private static string Sector(Vector2Int cell) => $"{cell.x + 1},{cell.y + 1}";
@@ -372,7 +394,7 @@ namespace SpaceFarm
                 Vector3 start = rover.transform.position;
                 Vector3 end = CellPosition(nextCell) + new Vector3(0f, 0f, -.5f);
                 Vector3 direction = (end - start).normalized;
-                float desiredAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+                SetRoverFacing(direction);
                 float duration = Vector3.Distance(start, end) / RoverSpeed;
                 float elapsed = 0f;
                 while (elapsed < duration)
@@ -381,8 +403,6 @@ namespace SpaceFarm
                     elapsed += Time.deltaTime;
                     float progress = Mathf.Clamp01(elapsed / duration);
                     rover.transform.position = Vector3.LerpUnclamped(start, end, progress);
-                    Quaternion rotation = Quaternion.Euler(0f, 0f, desiredAngle);
-                    rover.transform.rotation = Quaternion.RotateTowards(rover.transform.rotation, rotation, 720f * Time.deltaTime);
                     Vector2Int revealCenter = WorldToCell(rover.transform.position);
                     if (map.Inside(revealCenter) && revealCenter != lastRevealCenter)
                     {
@@ -455,9 +475,12 @@ namespace SpaceFarm
         {
             roverIdleClock += Time.deltaTime;
             if (rover == null) return;
+            UpdateRoverSprite();
             float movement = travel != null ? .018f : .008f;
             float pulse = 1f + Mathf.Sin(roverIdleClock * (travel != null ? 15f : 3f)) * movement;
             rover.transform.localScale = roverBaseScale * pulse;
+            if (scanTrail != null)
+                scanTrail.transform.localPosition = new Vector3(-roverHeading.x * .34f, -roverHeading.y * .34f, .2f);
             if (scanPulse != null)
             {
                 scanPulse.transform.position = rover.transform.position + new Vector3(0f, 0f, -.12f);
@@ -470,6 +493,43 @@ namespace SpaceFarm
                 float size = .66f + Mathf.PingPong(roverIdleClock * .55f, .18f);
                 routeMarker.transform.localScale = new Vector3(size, size, 1f);
             }
+        }
+
+        private void SetRoverFacing(Vector2 direction)
+        {
+            if (direction.sqrMagnitude < .001f) return;
+            roverHeading = direction.normalized;
+            float angle = Mathf.Atan2(roverHeading.y, roverHeading.x) * Mathf.Rad2Deg;
+            int index = Mathf.RoundToInt((90f - angle) / 45f);
+            roverFacingIndex = ((index % 8) + 8) % 8;
+            UpdateRoverSprite();
+        }
+
+        private void UpdateRoverSprite()
+        {
+            if (roverRenderer == null) return;
+            if (roverDirectionalSprites == null || roverWheelSprites == null)
+            {
+                string[] facings = { "north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest" };
+                roverDirectionalSprites = new Sprite[facings.Length];
+                roverWheelSprites = new Sprite[facings.Length];
+                Sprite[] bodies = Resources.LoadAll<Sprite>("Art/space-farm-rover-directions");
+                Sprite[] wheels = Resources.LoadAll<Sprite>("Art/space-farm-rover-wheels");
+                for (int facing = 0; facing < facings.Length; facing++)
+                {
+                    for (int i = 0; i < bodies.Length; i++)
+                        if (bodies[i] != null && bodies[i].name == "rover-facing-" + facings[facing])
+                            roverDirectionalSprites[facing] = bodies[i];
+                    for (int i = 0; i < wheels.Length; i++)
+                        if (wheels[i] != null && wheels[i].name == "rover-wheel-" + facings[facing])
+                            roverWheelSprites[facing] = wheels[i];
+                }
+            }
+
+            bool wheelTurned = travel != null && (Mathf.FloorToInt(roverIdleClock * 9f) & 1) == 1;
+            Sprite target = wheelTurned ? roverWheelSprites[roverFacingIndex] : null;
+            if (target == null) target = roverDirectionalSprites[roverFacingIndex];
+            if (target != null && roverRenderer.sprite != target) roverRenderer.sprite = target;
         }
 
         // ---------- Camera ----------
@@ -541,7 +601,7 @@ namespace SpaceFarm
             float halfHeight = gameCamera.orthographicSize;
             float halfWidth = halfHeight * gameCamera.aspect;
             float worldHalfWidth = Width * TileSize * .5f;
-            float worldHalfHeight = Height * TileSize * .5f;
+            float worldHalfHeight = Height * TileSize * SpaceFarmMap.TerrainPerspectiveYScale * .5f;
             float unitsPerPixel = 2f * halfHeight / Mathf.Max(1, Screen.height);
             float hudScale = Screen.width / 1280f;
             float top = HeaderHeight * hudScale * unitsPerPixel;
@@ -554,7 +614,7 @@ namespace SpaceFarm
         }
 
         private float MaximumCameraSize() =>
-            Mathf.Min(MaxCameraSize, Height * TileSize * .5f,
+            Mathf.Min(MaxCameraSize, Height * TileSize * SpaceFarmMap.TerrainPerspectiveYScale * .5f,
                 Width * TileSize / (2f * Mathf.Max(.1f, gameCamera.aspect)));
 
         private void FocusWorld(Vector3 position)

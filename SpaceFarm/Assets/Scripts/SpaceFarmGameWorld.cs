@@ -11,6 +11,26 @@ namespace SpaceFarm
     /// <summary>World objects: terrain sprite, deposits and their installations, barriers, solar array and astronauts.</summary>
     public sealed partial class SpaceFarmGame
     {
+        private sealed class MineDrillVisual
+        {
+            public Transform Transform;
+            public Vector3 RestPosition;
+            public float Phase;
+        }
+
+        private sealed class AstronautView
+        {
+            public Transform Root;
+            public SpriteRenderer Body;
+            public Vector3 BaseScale;
+            public SpaceFarmRandom Random;
+            public Vector2 TargetOffset;
+            public float Wait;
+            public float Speed;
+            public float WalkCycle;
+            public int FacingIndex = 4;
+        }
+
         private sealed class DepositView
         {
             public MapDeposit Info;
@@ -27,9 +47,8 @@ namespace SpaceFarm
 
         private readonly GameObject[] barrierSegments = new GameObject[SpaceFarmState.BarrierSlotCount];
         private readonly GameObject[] barrierGuides = new GameObject[SpaceFarmState.BarrierSlotCount];
-        private readonly List<Transform> astronauts = new List<Transform>();
-        private readonly List<float> astronautWait = new List<float>();
-        private readonly List<int> astronautGoal = new List<int>();
+        private readonly List<AstronautView> astronauts = new List<AstronautView>();
+        private readonly List<MineDrillVisual> mineDrills = new List<MineDrillVisual>();
         private readonly Vector2[] astronautStops =
         {
             new Vector2(-1.4f, -1.65f), new Vector2(-.6f, -1.95f),
@@ -45,7 +64,14 @@ namespace SpaceFarm
         private bool collectionActive;
         private int hoveredBarrierSlot = -1;
         private int observedPopulation;
-        private float astronautClock;
+        private Sprite[] astronautFacingSprites;
+        private Sprite[] astronautPassASprites;
+        private Sprite[] astronautWalkingSprites;
+        private Sprite[] astronautPassBSprites;
+        private static readonly string[] AstronautDirectionNames =
+        {
+            "north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"
+        };
 
         private Vector2 BarrierOffset(int index)
         {
@@ -60,18 +86,21 @@ namespace SpaceFarm
             worldRoot = new GameObject("Marte");
             worldRoot.transform.SetParent(transform);
             CreateTerrain();
+            CreateTerrainRocks();
             CreateFog();
             CreateDepositViews();
 
-            CreateArtwork("Nave y hábitat", "Art/lander", CellPosition(BaseCell) + new Vector3(0, 0, -.2f),
+            CreateArtwork("Nave y hábitat", "Art/space-farm-world-modules#habitat-3d", CellPosition(BaseCell) + new Vector3(0, 0, -.2f),
                 3.1f, 2.07f, 5, worldRoot.transform);
-            CreateArtwork("Planta de oxígeno", "Art/oxygen-plant",
+            CreateArtwork("Planta de oxígeno", "Art/space-farm-world-modules#oxygen-3d",
                 CellPosition(BaseCell + new Vector2Int(2, 0)) + new Vector3(0, 0, -.2f),
                 1.7f, 1.14f, 6, worldRoot.transform);
-            rover = CreateArtwork("Rover 1", "Art/rover", CellPosition(roverCell) + new Vector3(-.65f, -.5f, -.5f),
-                1.55f, 1.04f, 8, worldRoot.transform).gameObject;
-            greenhouse = CreateBuilding("Invernadero", "Art/greenhouse", BaseCell + new Vector2Int(-2, 1), worldRoot.transform);
-            oxygenPlantTwo = CreateBuilding("Planta de oxígeno 2", "Art/oxygen-plant", BaseCell + new Vector2Int(2, 2), worldRoot.transform);
+            roverRenderer = CreateArtwork("Rover 1", "Art/space-farm-rover-directions#rover-facing-south",
+                CellPosition(roverCell) + new Vector3(-.65f, -.5f * SpaceFarmMap.TerrainPerspectiveYScale, -.5f),
+                1.55f, 1.55f, 8, worldRoot.transform);
+            rover = roverRenderer.gameObject;
+            greenhouse = CreateBuilding("Invernadero", "Art/space-farm-world-modules#greenhouse-3d", BaseCell + new Vector2Int(-2, 1), worldRoot.transform);
+            oxygenPlantTwo = CreateBuilding("Planta de oxígeno 2", "Art/space-farm-world-modules#oxygen-3d", BaseCell + new Vector2Int(2, 2), worldRoot.transform);
             CreateBarrierWorld();
             CreateSolarWorld();
             CreatePointsOfInterest();
@@ -89,9 +118,10 @@ namespace SpaceFarm
             oxygenPlantTwo.SetActive(false);
         }
 
-        /// <summary>The whole 80×50 region is one painted texture plus one tiled grain layer: two renderers in total.</summary>
+        /// <summary>The whole 128×80 region is one painted ground texture.</summary>
         private void CreateTerrain()
         {
+            Sprite dustSurface = Resources.Load<Sprite>("Art/mars-dust-surface");
             SpaceFarmTerrainPainter.Result painted = SpaceFarmTerrainPainter.Paint(map);
             terrainCellColors = painted.CellColors;
             Texture2D texture = new Texture2D(painted.Width, painted.Height, TextureFormat.RGB24, false);
@@ -101,21 +131,58 @@ namespace SpaceFarm
             texture.Apply(false, true);
             Sprite sprite = Sprite.Create(texture, new Rect(0, 0, painted.Width, painted.Height), new Vector2(.5f, .5f),
                 SpaceFarmTerrainPainter.PixelsPerCell / TileSize, 0, SpriteMeshType.FullRect);
-            CreateWorldSprite("Terreno generado", sprite, Vector3.zero, Vector3.one, Color.white, -11, worldRoot.transform);
+            SpriteRenderer terrainRenderer = CreateWorldSprite("Terreno generado", sprite, Vector3.zero,
+                new Vector3(1f, SpaceFarmMap.TerrainPerspectiveYScale, 1f), Color.white, -11, worldRoot.transform);
 
-            const int grainSize = 128;
-            Texture2D grain = new Texture2D(grainSize, grainSize, TextureFormat.RGBA32, false);
-            grain.filterMode = FilterMode.Bilinear;
-            grain.wrapMode = TextureWrapMode.Repeat;
-            grain.SetPixels32(SpaceFarmTerrainPainter.PaintGrain(grainSize, seed));
-            grain.Apply(false, true);
-            Sprite grainSprite = Sprite.Create(grain, new Rect(0, 0, grainSize, grainSize), new Vector2(.5f, .5f),
-                grainSize / (TileSize * 3f), 0, SpriteMeshType.FullRect);
-            SpriteRenderer grainRenderer = CreateWorldSprite("Grano del suelo", grainSprite, new Vector3(0f, 0f, -.01f),
-                Vector3.one, Color.white, -10, worldRoot.transform);
-            grainRenderer.drawMode = SpriteDrawMode.Tiled;
-            grainRenderer.size = new Vector2(Width * TileSize, Height * TileSize);
-            runtimeAssets.AddRange(new UnityEngine.Object[] { sprite, texture, grainSprite, grain });
+            Shader terrainShader = Resources.Load<Shader>("Shaders/SpaceFarmTerrain");
+            if (dustSurface != null && terrainShader != null)
+            {
+                Material terrainMaterial = new Material(terrainShader);
+                terrainMaterial.SetTexture("_DustTex", dustSurface.texture);
+                terrainMaterial.SetVector("_TileCount", new Vector4(
+                    Width / 24f, Height / 24f,
+                    map.ValueNoise(map.Seed * .019f, map.Seed * .037f, 419),
+                    map.ValueNoise(map.Seed * .031f, map.Seed * .017f, 421)));
+                terrainMaterial.SetFloat("_DustStrength", .82f);
+                terrainRenderer.sharedMaterial = terrainMaterial;
+                runtimeAssets.Add(terrainMaterial);
+            }
+
+            runtimeAssets.AddRange(new UnityEngine.Object[] { sprite, texture });
+        }
+
+        /// <summary>Scatters shaded rock clusters over explored terrain so the ground reads as rocky Mars soil.</summary>
+        private void CreateTerrainRocks()
+        {
+            Sprite[] variants = Resources.LoadAll<Sprite>("Art/mars-rock-clusters");
+            if (variants == null || variants.Length == 0) return;
+
+            Transform root = new GameObject("Rocas y grava marciana").transform;
+            root.SetParent(worldRoot.transform);
+            SpaceFarmRandom random = new SpaceFarmRandom((ulong)(uint)map.Seed * 47UL + 193UL);
+            int desiredCount = SpaceFarmMap.Width * SpaceFarmMap.Height / 13;
+            int placed = 0;
+            int attempts = desiredCount * 5;
+            for (int i = 0; i < attempts && placed < desiredCount; i++)
+            {
+                float x = random.Range(2f, SpaceFarmMap.Width - 3f);
+                float y = random.Range(2f, SpaceFarmMap.Height - 3f);
+                float dx = x - map.BaseCell.x;
+                float dy = y - map.BaseCell.y;
+                if (dx * dx + dy * dy < 18f || random.Value() < .16f - map.RockMask(x, y) * .10f) continue;
+
+                Sprite sprite = variants[random.Range(0, variants.Length)];
+                float width = random.Range(.82f, 1.47f);
+                float depth = random.Range(.78f, .98f);
+                Vector3 position = CellPosition(new Vector2Int(Mathf.RoundToInt(x), Mathf.RoundToInt(y)));
+                position.x += random.Range(-.16f, .16f);
+                position.y += random.Range(-.11f, .11f) * SpaceFarmMap.TerrainPerspectiveYScale;
+                position.z = -.08f;
+                float scale = width / sprite.bounds.size.x;
+                CreateWorldSprite("Afloramiento marciano", sprite, position,
+                    new Vector3(scale, scale * depth, 1f), Color.white, -1, root);
+                placed++;
+            }
         }
 
         private void CreateDepositViews()
@@ -180,9 +247,11 @@ namespace SpaceFarm
         {
             GameObject root = new GameObject(preview ? "Vista previa" : $"Barrera {index + 1}");
             root.transform.SetParent(parent);
-            root.transform.position = CellPosition(BaseCell) + (Vector3)BarrierOffset(index);
+            Vector2 barrierOffset = BarrierOffset(index);
+            barrierOffset.y *= SpaceFarmMap.TerrainPerspectiveYScale;
+            root.transform.position = CellPosition(BaseCell) + (Vector3)barrierOffset;
             bool horizontal = index < 8;
-            float length = horizontal ? 1.25f : 2.2f;
+            float length = horizontal ? 1.25f : 2.2f * SpaceFarmMap.TerrainPerspectiveYScale;
             Color body = preview ? new Color(.5f,.94f,.91f,.55f) : SpaceFarmPalette.Rover;
             Color trim = preview ? new Color(.75f,1f,1f,.55f) : SpaceFarmPalette.Iron;
             CreateWorldSprite("Viga", squareSprite, root.transform.position,
@@ -203,18 +272,8 @@ namespace SpaceFarm
 
         private void CreateSolarWorld()
         {
-            solarWorld = new GameObject("Generación solar");
-            solarWorld.transform.SetParent(worldRoot.transform);
-            solarWorld.transform.position = CellPosition(BaseCell) + new Vector3(-2.1f,-.8f,-.25f);
-            for (int panel = 0; panel < 2; panel++)
-            {
-                Vector3 p = solarWorld.transform.position + new Vector3(panel * .66f,0,0);
-                CreateWorldSprite("Panel solar", squareSprite, p, new Vector3(.58f,.5f,1f),
-                    new Color(.12f,.23f,.34f,1f), 6, solarWorld.transform);
-                for (int line = -1; line <= 1; line++)
-                    CreateWorldSprite("Celdas", squareSprite, p + new Vector3(line * .15f,0,-.02f),
-                        new Vector3(.025f,.43f,1f), SpaceFarmPalette.Ice, 7, solarWorld.transform);
-            }
+            solarWorld = CreateArtwork("Matriz solar", "Art/space-farm-world-modules#solar-3d",
+                CellPosition(BaseCell) + new Vector3(-2.1f,-.8f,-.25f), 2.1f, 1.4f, 6, worldRoot.transform).gameObject;
         }
 
         private static Color DiscoveryColor(int kind)
@@ -275,6 +334,7 @@ namespace SpaceFarm
                 RefreshSystems();
                 return true;
             }
+            if (depositViews == null) return false;
             foreach (DepositView view in depositViews)
             {
                 if (!revealed[view.Info.Cell.x, view.Info.Cell.y]) continue;
@@ -374,7 +434,9 @@ namespace SpaceFarm
             if (deposit.HasBuilding && view.Building == null)
             {
                 view.Building = CreateBuilding(iron ? $"Mina {deposit.Name}" : $"Extractor {deposit.Name}",
-                    iron ? "Art/iron-mine" : "Art/water-extractor", view.Info.Cell, view.Marker.transform.parent);
+                    iron ? "Art/space-farm-iron-mine-animation#iron-mine-base-3d" : "Art/space-farm-world-modules#water-3d",
+                    view.Info.Cell, view.Marker.transform.parent);
+                if (iron) AddMineDrill(view.Building);
                 view.BuildingScale = view.Building.transform.localScale;
                 AnimatePop(view.Building.transform, view.BuildingScale);
                 view.ShownLevel = deposit.MineLevel;
@@ -464,29 +526,43 @@ namespace SpaceFarm
 
         private void SyncAstronauts()
         {
-            if (state.Population == observedPopulation) return;
+            if (state.Population == observedPopulation && astronauts.Count == state.Population) return;
+            LoadAstronautSprites();
             while (astronauts.Count < state.Population)
             {
                 int index = astronauts.Count;
+                SpaceFarmRandom random = new SpaceFarmRandom((ulong)(uint)map.Seed * 131UL + (ulong)(index + 1) * 7919UL);
+                Vector2 startOffset = astronautStops[index % astronautStops.Length] +
+                    new Vector2(random.Range(-.12f, .12f), random.Range(-.1f, .1f));
                 GameObject root = new GameObject($"Astronauta {index + 1}");
                 root.transform.SetParent(worldRoot.transform);
                 root.transform.position = CellPosition(BaseCell) +
-                    (Vector3)(astronautStops[index % astronautStops.Length] + AstronautOffset(index));
-                CreateWorldSprite("Traje", circleSprite, root.transform.position,
-                    new Vector3(.22f,.28f,1f), new Color(.94f,.91f,.78f), 9, root.transform);
-                CreateWorldSprite("Visor", circleSprite, root.transform.position + new Vector3(0,.08f,-.02f),
-                    new Vector3(.14f,.12f,1f), SpaceFarmPalette.Ice, 10, root.transform);
-                astronauts.Add(root.transform);
-                astronautWait.Add(.35f * index);
-                astronautGoal.Add((index + 1) % astronautStops.Length);
+                    (Vector3)ProjectGroundOffset(startOffset);
+                Sprite sprite = astronautPassASprites[4] != null ? astronautPassASprites[4] : astronautFacingSprites[4];
+                if (sprite == null) sprite = circleSprite;
+                float scale = .86f / sprite.bounds.size.y;
+                SpriteRenderer body = CreateWorldSprite("Traje EVA", sprite, root.transform.position,
+                    Vector3.one * scale, Color.white, 9, root.transform);
+                float wait = random.Range(.25f, 1.5f);
+                float speed = random.Range(.42f, .72f);
+                AstronautView view = new AstronautView
+                {
+                    Root = root.transform,
+                    Body = body,
+                    BaseScale = body.transform.localScale,
+                    Random = random,
+                    Wait = wait,
+                    Speed = speed,
+                    WalkCycle = random.Range(0f, 1f)
+                };
+                astronauts.Add(view);
+                ChooseAstronautTarget(view, startOffset);
             }
             while (astronauts.Count > state.Population)
             {
                 int last = astronauts.Count - 1;
-                Destroy(astronauts[last].gameObject);
+                Destroy(astronauts[last].Root.gameObject);
                 astronauts.RemoveAt(last);
-                astronautWait.RemoveAt(last);
-                astronautGoal.RemoveAt(last);
             }
             observedPopulation = state.Population;
         }
@@ -494,25 +570,174 @@ namespace SpaceFarm
         private void AnimateAstronauts()
         {
             if (state == null) return;
-            astronautClock += Time.deltaTime;
             for (int i = 0; i < astronauts.Count; i++)
             {
-                Transform person = astronauts[i];
-                if (state.GameOver) continue;
-                if (astronautWait[i] > 0f) { astronautWait[i] -= Time.deltaTime; continue; }
-                Vector3 target = CellPosition(BaseCell) + (Vector3)(astronautStops[astronautGoal[i]] + AstronautOffset(i));
-                float speed = state.LastSol.Storm || state.LastSol.RaidFoodLoss > 0 ? .27f : .52f;
-                person.position = Vector3.MoveTowards(person.position, target, speed * Time.deltaTime);
-                SpriteRenderer suit = person.GetComponentInChildren<SpriteRenderer>();
-                if (suit != null) suit.transform.localScale = new Vector3(.22f, .28f + Mathf.Sin(astronautClock * 13f + i) * .018f, 1f);
-                if (Vector3.Distance(person.position, target) < .02f)
+                AstronautView view = astronauts[i];
+                // The sprite atlas includes its own ground shadow: bobbing the entire image makes the feet jump.
+                view.Body.transform.localPosition = Vector3.zero;
+                view.Body.transform.localScale = view.BaseScale;
+                if (state.GameOver)
                 {
-                    astronautWait[i] = .5f + i * .18f;
-                    astronautGoal[i] = (astronautGoal[i] + 1) % astronautStops.Length;
+                    SetAstronautIdle(view);
+                    continue;
+                }
+                if (view.Wait > 0f)
+                {
+                    view.Wait -= Time.deltaTime;
+                    SetAstronautIdle(view);
+                    continue;
+                }
+                Vector3 target = CellPosition(BaseCell) +
+                    (Vector3)ProjectGroundOffset(view.TargetOffset);
+                Vector3 direction = target - view.Root.position;
+                float speed = view.Speed * (state.LastSol.Storm || state.LastSol.RaidFoodLoss > 0 ? .55f : 1f);
+                Vector3 previousPosition = view.Root.position;
+                view.Root.position = Vector3.MoveTowards(view.Root.position, target, speed * Time.deltaTime);
+                float traveled = Vector3.Distance(previousPosition, view.Root.position);
+                if (traveled > .0001f)
+                {
+                    // Four grounded poses per stride; the animation slows whenever the colonist slows.
+                    view.WalkCycle = Mathf.Repeat(view.WalkCycle + traveled / .48f, 1f);
+                    SetAstronautFacing(view, direction, Mathf.FloorToInt(view.WalkCycle * 4f));
+                }
+                if (Vector3.Distance(view.Root.position, target) < .025f)
+                {
+                    view.Wait = view.Random.Range(.4f, 1.75f);
+                    view.Speed = view.Random.Range(.42f, .72f);
+                    SetAstronautIdle(view);
+                    ChooseAstronautTarget(view, view.TargetOffset);
                 }
             }
         }
 
-        private Vector2 AstronautOffset(int index) => new Vector2((index - 1) * .27f, -index * .08f);
+        private void LoadAstronautSprites()
+        {
+            if (astronautFacingSprites != null && astronautPassASprites != null &&
+                astronautWalkingSprites != null && astronautPassBSprites != null) return;
+            astronautFacingSprites = new Sprite[AstronautDirectionNames.Length];
+            astronautPassASprites = new Sprite[AstronautDirectionNames.Length];
+            astronautWalkingSprites = new Sprite[AstronautDirectionNames.Length];
+            astronautPassBSprites = new Sprite[AstronautDirectionNames.Length];
+            Sprite[] sprites = Resources.LoadAll<Sprite>("Art/space-farm-colonist-directions");
+            Sprite[] passA = Resources.LoadAll<Sprite>("Art/space-farm-colonist-pass-a");
+            Sprite[] steps = Resources.LoadAll<Sprite>("Art/space-farm-colonist-walk");
+            Sprite[] passB = Resources.LoadAll<Sprite>("Art/space-farm-colonist-pass-b");
+            for (int direction = 0; direction < AstronautDirectionNames.Length; direction++)
+            {
+                string name = AstronautDirectionNames[direction];
+                astronautFacingSprites[direction] = FindAstronautSprite(sprites, "colonist-facing-" + name);
+                astronautPassASprites[direction] = FindAstronautSprite(passA, "colonist-pass-a-" + name);
+                astronautWalkingSprites[direction] = FindAstronautSprite(steps, "colonist-step-" + name);
+                astronautPassBSprites[direction] = FindAstronautSprite(passB, "colonist-pass-b-" + name);
+            }
+        }
+
+        private static Sprite FindAstronautSprite(Sprite[] sprites, string name)
+        {
+            for (int i = 0; i < sprites.Length; i++)
+                if (sprites[i] != null && sprites[i].name == name) return sprites[i];
+            return null;
+        }
+
+        private void SetAstronautIdle(AstronautView view)
+        {
+            Sprite sprite = astronautPassASprites[view.FacingIndex];
+            if (sprite == null) sprite = astronautFacingSprites[view.FacingIndex];
+            if (sprite != null) view.Body.sprite = sprite;
+        }
+
+        private void SetAstronautFacing(AstronautView view, Vector3 direction, int frame)
+        {
+            if (direction.sqrMagnitude < .0001f) return;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            int index = Mathf.RoundToInt((90f - angle) / 45f);
+            index = ((index % AstronautDirectionNames.Length) + AstronautDirectionNames.Length) % AstronautDirectionNames.Length;
+            view.FacingIndex = index;
+            Sprite sprite = frame == 0 ? astronautFacingSprites[index] :
+                frame == 1 ? astronautPassASprites[index] :
+                frame == 2 ? astronautWalkingSprites[index] : astronautPassBSprites[index];
+            if (sprite == null) sprite = astronautFacingSprites[index];
+            if (sprite != null) view.Body.sprite = sprite;
+        }
+
+        private void ChooseAstronautTarget(AstronautView view, Vector2 currentOffset)
+        {
+            for (int attempt = 0; attempt < 12; attempt++)
+            {
+                Vector2 candidate = new Vector2(view.Random.Range(-2.8f, 2.8f), view.Random.Range(-2.8f, -1.7f));
+                if ((candidate - currentOffset).sqrMagnitude < .4f) continue;
+                bool occupied = false;
+                for (int i = 0; i < astronauts.Count; i++)
+                    if (astronauts[i] != view && (astronauts[i].TargetOffset - candidate).sqrMagnitude < .3f)
+                    {
+                        occupied = true;
+                        break;
+                    }
+                if (occupied) continue;
+                view.TargetOffset = candidate;
+                return;
+            }
+            view.TargetOffset = new Vector2(
+                Mathf.Clamp(currentOffset.x + view.Random.Range(-.6f, .6f), -2.8f, 2.8f),
+                Mathf.Clamp(currentOffset.y - .15f, -2.8f, -1.7f));
+        }
+
+        private void AddMineDrill(GameObject mine)
+        {
+            Sprite[] sprites = Resources.LoadAll<Sprite>("Art/space-farm-iron-mine-animation");
+            Sprite drillSprite = null;
+            for (int i = 0; i < sprites.Length; i++)
+                if (sprites[i] != null && sprites[i].name == "iron-mine-drill-3d")
+                {
+                    drillSprite = sprites[i];
+                    break;
+                }
+            if (drillSprite == null || mine == null) return;
+
+            GameObject drill = new GameObject("Taladro animado");
+            drill.transform.SetParent(mine.transform, false);
+            drill.transform.localPosition = new Vector3(0f, .04f, -.025f);
+            drill.transform.localScale = new Vector3(.58f, .58f, 1f);
+            SpriteRenderer renderer = drill.AddComponent<SpriteRenderer>();
+            renderer.sprite = drillSprite;
+            renderer.sortingOrder = 9;
+            mineDrills.Add(new MineDrillVisual
+            {
+                Transform = drill.transform,
+                RestPosition = drill.transform.localPosition,
+                Phase = UnityEngine.Random.value * Mathf.PI * 2f
+            });
+        }
+
+        private void AnimateWorldArt()
+        {
+            float time = Time.time;
+            if (solarWorld != null)
+            {
+                solarWorld.transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(time * .65f) * 1.2f);
+                SpriteRenderer panels = solarWorld.GetComponent<SpriteRenderer>();
+                if (panels != null)
+                {
+                    float brightness = .96f + Mathf.Sin(time * 1.7f) * .04f;
+                    panels.color = new Color(brightness, brightness, brightness, 1f);
+                }
+            }
+            for (int i = mineDrills.Count - 1; i >= 0; i--)
+            {
+                MineDrillVisual drill = mineDrills[i];
+                if (drill.Transform == null)
+                {
+                    mineDrills.RemoveAt(i);
+                    continue;
+                }
+                float cycle = (Mathf.Sin(time * 5.2f + drill.Phase) + 1f) * .5f;
+                float stroke = Mathf.SmoothStep(-.13f, .02f, cycle);
+                drill.Transform.localPosition = drill.RestPosition + Vector3.up * stroke;
+                drill.Transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(time * 5.2f + drill.Phase) * 1.5f);
+            }
+        }
+
+        private static Vector2 ProjectGroundOffset(Vector2 offset) =>
+            new Vector2(offset.x, offset.y * SpaceFarmMap.TerrainPerspectiveYScale);
     }
 }

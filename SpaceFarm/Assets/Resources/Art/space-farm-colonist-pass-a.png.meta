@@ -1,0 +1,724 @@
+fileFormatVersion: 2
+guid: 5ccd971f31515660f889bd125cd1efa8
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8173819326331830337
+    second: space-farm-colonist-pass-a_0
+  - first:
+      213: 4319797559618362826
+    second: space-farm-colonist-pass-a_1
+  - first:
+      213: 5667199885692303730
+    second: space-farm-colonist-pass-a_2
+  - first:
+      213: 6349920604258482310
+    second: space-farm-colonist-pass-a_3
+  - first:
+      213: -2578408533873064283
+    second: space-farm-colonist-pass-a_4
+  - first:
+      213: -2195219241801732576
+    second: space-farm-colonist-pass-a_5
+  - first:
+      213: -6348271629482428854
+    second: space-farm-colonist-pass-a_6
+  - first:
+      213: 3891734262721066776
+    second: space-farm-colonist-pass-a_7
+  - first:
+      213: -8874095309142452537
+    second: space-farm-colonist-pass-a_8
+  - first:
+      213: -2681129127202100553
+    second: space-farm-colonist-pass-a_9
+  - first:
+      213: 1066000862273609260
+    second: space-farm-colonist-pass-a_10
+  - first:
+      213: 2953040073936189832
+    second: space-farm-colonist-pass-a_11
+  - first:
+      213: -1193224214102980202
+    second: space-farm-colonist-pass-a_12
+  - first:
+      213: -320568333302490433
+    second: space-farm-colonist-pass-a_13
+  - first:
+      213: 6342790501375304944
+    second: space-farm-colonist-pass-a_14
+  - first:
+      213: 3125850371210340128
+    second: space-farm-colonist-pass-a_15
+  - first:
+      213: -4566126491684075799
+    second: space-farm-colonist-pass-a_16
+  - first:
+      213: -7808363640780853940
+    second: space-farm-colonist-pass-a_17
+  - first:
+      213: 9063418545946586159
+    second: space-farm-colonist-pass-a_18
+  - first:
+      213: -6024184422437864586
+    second: space-farm-colonist-pass-a_19
+  - first:
+      213: 3157933082226426590
+    second: space-farm-colonist-pass-a_20
+  - first:
+      213: -6630186938558724758
+    second: space-farm-colonist-pass-a_21
+  - first:
+      213: 2154532659690742541
+    second: space-farm-colonist-pass-a_22
+  - first:
+      213: 3155343550063248858
+    second: space-farm-colonist-pass-a_23
+  - first:
+      213: -6670771205000599741
+    second: space-farm-colonist-pass-a_24
+  - first:
+      213: 1329905000200533919
+    second: space-farm-colonist-pass-a_25
+  - first:
+      213: -2801556425881711329
+    second: space-farm-colonist-pass-a_26
+  - first:
+      213: -4697361374956492325
+    second: space-farm-colonist-pass-a_27
+  - first:
+      213: 6268655388854822095
+    second: space-farm-colonist-pass-a_28
+  - first:
+      213: -239361948102600006
+    second: space-farm-colonist-pass-a_29
+  - first:
+      213: 3759221352900956385
+    second: space-farm-colonist-pass-a_30
+  - first:
+      213: 5885012165710744661
+    second: space-farm-colonist-pass-a_31
+  - first:
+      213: 5040290165445598773
+    second: space-farm-colonist-pass-a_32
+  - first:
+      213: 6817621766420303265
+    second: space-farm-colonist-pass-a_33
+  - first:
+      213: 3359152869497392117
+    second: space-farm-colonist-pass-a_34
+  - first:
+      213: 5902231804598228779
+    second: space-farm-colonist-pass-a_35
+  - first:
+      213: -7224730744811099899
+    second: space-farm-colonist-pass-a_36
+  - first:
+      213: -8158501728315764011
+    second: space-farm-colonist-pass-a_37
+  - first:
+      213: 310096478636942699
+    second: space-farm-colonist-pass-a_38
+  - first:
+      213: -5140191099027324129
+    second: space-farm-colonist-pass-a_39
+  - first:
+      213: -913846025236626361
+    second: space-farm-colonist-pass-a_40
+  - first:
+      213: -5034962755101063293
+    second: space-farm-colonist-pass-a_41
+  - first:
+      213: -5413589476848182897
+    second: space-farm-colonist-pass-a_42
+  - first:
+      213: -1257670924334661651
+    second: space-farm-colonist-pass-a_43
+  - first:
+      213: 4623820486857664921
+    second: space-farm-colonist-pass-a_44
+  - first:
+      213: -3360561341298970201
+    second: space-farm-colonist-pass-a_45
+  - first:
+      213: 973213206155622196
+    second: space-farm-colonist-pass-a_46
+  - first:
+      213: 2841019375089757871
+    second: space-farm-colonist-pass-a_47
+  - first:
+      213: -8967865295824779979
+    second: space-farm-colonist-pass-a_48
+  - first:
+      213: 9145218132530377542
+    second: space-farm-colonist-pass-a_49
+  - first:
+      213: -9147190645875717773
+    second: space-farm-colonist-pass-a_50
+  - first:
+      213: -6717144411414314380
+    second: space-farm-colonist-pass-a_51
+  - first:
+      213: 4656763590569410016
+    second: space-farm-colonist-pass-a_52
+  - first:
+      213: 1271500754901866774
+    second: space-farm-colonist-pass-a_53
+  - first:
+      213: -5834155879982527745
+    second: space-farm-colonist-pass-a_54
+  - first:
+      213: -7266367903864801409
+    second: space-farm-colonist-pass-a_55
+  - first:
+      213: -935244226993254614
+    second: space-farm-colonist-pass-a_56
+  - first:
+      213: 611363218848689557
+    second: space-farm-colonist-pass-a_57
+  - first:
+      213: 7007071316473265089
+    second: space-farm-colonist-pass-a_58
+  - first:
+      213: 4365239858678833530
+    second: space-farm-colonist-pass-a_59
+  - first:
+      213: 3923437218014242047
+    second: space-farm-colonist-pass-a_60
+  - first:
+      213: -2245777337105151672
+    second: space-farm-colonist-pass-a_61
+  - first:
+      213: 4583648514101260213
+    second: space-farm-colonist-pass-a_62
+  - first:
+      213: 3153308490639327553
+    second: space-farm-colonist-pass-a_63
+  - first:
+      213: -3794637943635080921
+    second: space-farm-colonist-pass-a_64
+  - first:
+      213: 3995289205528405849
+    second: space-farm-colonist-pass-a_65
+  - first:
+      213: 8575530319442454997
+    second: space-farm-colonist-pass-a_66
+  - first:
+      213: -3220847440734352401
+    second: space-farm-colonist-pass-a_67
+  - first:
+      213: -5924896578666572415
+    second: space-farm-colonist-pass-a_68
+  - first:
+      213: 1196775797729226879
+    second: space-farm-colonist-pass-a_69
+  - first:
+      213: -7111301350022560439
+    second: space-farm-colonist-pass-a_70
+  - first:
+      213: -280822161990302180
+    second: space-farm-colonist-pass-a_71
+  - first:
+      213: 5591084382281187650
+    second: space-farm-colonist-pass-a_72
+  - first:
+      213: -7238520796156092408
+    second: space-farm-colonist-pass-a_73
+  - first:
+      213: -7371008735925641946
+    second: space-farm-colonist-pass-a_74
+  - first:
+      213: 3375117176274240695
+    second: space-farm-colonist-pass-a_75
+  - first:
+      213: 7849901015645104632
+    second: space-farm-colonist-pass-a_76
+  - first:
+      213: -4734800075379164029
+    second: space-farm-colonist-pass-a_77
+  - first:
+      213: 5420458912893834927
+    second: space-farm-colonist-pass-a_78
+  - first:
+      213: -9169492582842827944
+    second: space-farm-colonist-pass-a_79
+  - first:
+      213: -7414085325546424666
+    second: space-farm-colonist-pass-a_80
+  - first:
+      213: 8059853783523790934
+    second: space-farm-colonist-pass-a_81
+  - first:
+      213: 7036772784463655570
+    second: space-farm-colonist-pass-a_82
+  - first:
+      213: 1752913534908682416
+    second: space-farm-colonist-pass-a_83
+  - first:
+      213: 8106571031430151109
+    second: space-farm-colonist-pass-a_84
+  - first:
+      213: 3548321663050005424
+    second: space-farm-colonist-pass-a_85
+  - first:
+      213: -2591972270497030170
+    second: space-farm-colonist-pass-a_86
+  - first:
+      213: 9034755383604553784
+    second: space-farm-colonist-pass-a_87
+  - first:
+      213: 8044656258969800873
+    second: space-farm-colonist-pass-a_88
+  - first:
+      213: -588020821822230237
+    second: space-farm-colonist-pass-a_89
+  - first:
+      213: -1705238360279109018
+    second: space-farm-colonist-pass-a_90
+  - first:
+      213: 5046216391124289597
+    second: space-farm-colonist-pass-a_91
+  - first:
+      213: -890447859085011265
+    second: space-farm-colonist-pass-a_92
+  - first:
+      213: 6289382063907820373
+    second: space-farm-colonist-pass-a_93
+  - first:
+      213: -3389415921804925387
+    second: space-farm-colonist-pass-a_94
+  - first:
+      213: -4857969852842786253
+    second: space-farm-colonist-pass-a_95
+  - first:
+      213: -3191202499528043827
+    second: colonist-pass-a-north
+  - first:
+      213: 8097970540214541392
+    second: colonist-pass-a-northeast
+  - first:
+      213: 6611069010213207655
+    second: colonist-pass-a-east
+  - first:
+      213: -720250638107114082
+    second: colonist-pass-a-southeast
+  - first:
+      213: 4171713057090598720
+    second: colonist-pass-a-south
+  - first:
+      213: -6582511797945528551
+    second: colonist-pass-a-southwest
+  - first:
+      213: 3374858738409428730
+    second: colonist-pass-a-west
+  - first:
+      213: 1509186569311192309
+    second: colonist-pass-a-northwest
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: colonist-pass-a-north
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 829
+        width: 421
+        height: 414
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dc2da410c3296b3d0800000000000000
+      internalID: -3191202499528043827
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: colonist-pass-a-northeast
+      rect:
+        serializedVersion: 2
+        x: 421
+        y: 829
+        width: 421
+        height: 414
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 05cd01b2d45c16070800000000000000
+      internalID: 8097970540214541392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: colonist-pass-a-east
+      rect:
+        serializedVersion: 2
+        x: 842
+        y: 829
+        width: 423
+        height: 414
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76ef953ec3c3fbb50800000000000000
+      internalID: 6611069010213207655
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: colonist-pass-a-southeast
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 415
+        width: 421
+        height: 414
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e9580665cd72106f0800000000000000
+      internalID: -720250638107114082
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: colonist-pass-a-south
+      rect:
+        serializedVersion: 2
+        x: 421
+        y: 415
+        width: 421
+        height: 414
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0477eb83ce6e4e930800000000000000
+      internalID: 4171713057090598720
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: colonist-pass-a-southwest
+      rect:
+        serializedVersion: 2
+        x: 842
+        y: 415
+        width: 423
+        height: 414
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91f83a9356836a4a0800000000000000
+      internalID: -6582511797945528551
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: colonist-pass-a-west
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1
+        width: 421
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af6540e4428e5de20800000000000000
+      internalID: 3374858738409428730
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: colonist-pass-a-northwest
+      rect:
+        serializedVersion: 2
+        x: 421
+        y: 1
+        width: 421
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5f485935035b1f410800000000000000
+      internalID: 1509186569311192309
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      colonist-pass-a-east: 6611069010213207655
+      colonist-pass-a-north: -3191202499528043827
+      colonist-pass-a-northeast: 8097970540214541392
+      colonist-pass-a-northwest: 1509186569311192309
+      colonist-pass-a-south: 4171713057090598720
+      colonist-pass-a-southeast: -720250638107114082
+      colonist-pass-a-southwest: -6582511797945528551
+      colonist-pass-a-west: 3374858738409428730
+      space-farm-colonist-pass-a_0: 8173819326331830337
+      space-farm-colonist-pass-a_1: 4319797559618362826
+      space-farm-colonist-pass-a_10: 1066000862273609260
+      space-farm-colonist-pass-a_11: 2953040073936189832
+      space-farm-colonist-pass-a_12: -1193224214102980202
+      space-farm-colonist-pass-a_13: -320568333302490433
+      space-farm-colonist-pass-a_14: 6342790501375304944
+      space-farm-colonist-pass-a_15: 3125850371210340128
+      space-farm-colonist-pass-a_16: -4566126491684075799
+      space-farm-colonist-pass-a_17: -7808363640780853940
+      space-farm-colonist-pass-a_18: 9063418545946586159
+      space-farm-colonist-pass-a_19: -6024184422437864586
+      space-farm-colonist-pass-a_2: 5667199885692303730
+      space-farm-colonist-pass-a_20: 3157933082226426590
+      space-farm-colonist-pass-a_21: -6630186938558724758
+      space-farm-colonist-pass-a_22: 2154532659690742541
+      space-farm-colonist-pass-a_23: 3155343550063248858
+      space-farm-colonist-pass-a_24: -6670771205000599741
+      space-farm-colonist-pass-a_25: 1329905000200533919
+      space-farm-colonist-pass-a_26: -2801556425881711329
+      space-farm-colonist-pass-a_27: -4697361374956492325
+      space-farm-colonist-pass-a_28: 6268655388854822095
+      space-farm-colonist-pass-a_29: -239361948102600006
+      space-farm-colonist-pass-a_3: 6349920604258482310
+      space-farm-colonist-pass-a_30: 3759221352900956385
+      space-farm-colonist-pass-a_31: 5885012165710744661
+      space-farm-colonist-pass-a_32: 5040290165445598773
+      space-farm-colonist-pass-a_33: 6817621766420303265
+      space-farm-colonist-pass-a_34: 3359152869497392117
+      space-farm-colonist-pass-a_35: 5902231804598228779
+      space-farm-colonist-pass-a_36: -7224730744811099899
+      space-farm-colonist-pass-a_37: -8158501728315764011
+      space-farm-colonist-pass-a_38: 310096478636942699
+      space-farm-colonist-pass-a_39: -5140191099027324129
+      space-farm-colonist-pass-a_4: -2578408533873064283
+      space-farm-colonist-pass-a_40: -913846025236626361
+      space-farm-colonist-pass-a_41: -5034962755101063293
+      space-farm-colonist-pass-a_42: -5413589476848182897
+      space-farm-colonist-pass-a_43: -1257670924334661651
+      space-farm-colonist-pass-a_44: 4623820486857664921
+      space-farm-colonist-pass-a_45: -3360561341298970201
+      space-farm-colonist-pass-a_46: 973213206155622196
+      space-farm-colonist-pass-a_47: 2841019375089757871
+      space-farm-colonist-pass-a_48: -8967865295824779979
+      space-farm-colonist-pass-a_49: 9145218132530377542
+      space-farm-colonist-pass-a_5: -2195219241801732576
+      space-farm-colonist-pass-a_50: -9147190645875717773
+      space-farm-colonist-pass-a_51: -6717144411414314380
+      space-farm-colonist-pass-a_52: 4656763590569410016
+      space-farm-colonist-pass-a_53: 1271500754901866774
+      space-farm-colonist-pass-a_54: -5834155879982527745
+      space-farm-colonist-pass-a_55: -7266367903864801409
+      space-farm-colonist-pass-a_56: -935244226993254614
+      space-farm-colonist-pass-a_57: 611363218848689557
+      space-farm-colonist-pass-a_58: 7007071316473265089
+      space-farm-colonist-pass-a_59: 4365239858678833530
+      space-farm-colonist-pass-a_6: -6348271629482428854
+      space-farm-colonist-pass-a_60: 3923437218014242047
+      space-farm-colonist-pass-a_61: -2245777337105151672
+      space-farm-colonist-pass-a_62: 4583648514101260213
+      space-farm-colonist-pass-a_63: 3153308490639327553
+      space-farm-colonist-pass-a_64: -3794637943635080921
+      space-farm-colonist-pass-a_65: 3995289205528405849
+      space-farm-colonist-pass-a_66: 8575530319442454997
+      space-farm-colonist-pass-a_67: -3220847440734352401
+      space-farm-colonist-pass-a_68: -5924896578666572415
+      space-farm-colonist-pass-a_69: 1196775797729226879
+      space-farm-colonist-pass-a_7: 3891734262721066776
+      space-farm-colonist-pass-a_70: -7111301350022560439
+      space-farm-colonist-pass-a_71: -280822161990302180
+      space-farm-colonist-pass-a_72: 5591084382281187650
+      space-farm-colonist-pass-a_73: -7238520796156092408
+      space-farm-colonist-pass-a_74: -7371008735925641946
+      space-farm-colonist-pass-a_75: 3375117176274240695
+      space-farm-colonist-pass-a_76: 7849901015645104632
+      space-farm-colonist-pass-a_77: -4734800075379164029
+      space-farm-colonist-pass-a_78: 5420458912893834927
+      space-farm-colonist-pass-a_79: -9169492582842827944
+      space-farm-colonist-pass-a_8: -8874095309142452537
+      space-farm-colonist-pass-a_80: -7414085325546424666
+      space-farm-colonist-pass-a_81: 8059853783523790934
+      space-farm-colonist-pass-a_82: 7036772784463655570
+      space-farm-colonist-pass-a_83: 1752913534908682416
+      space-farm-colonist-pass-a_84: 8106571031430151109
+      space-farm-colonist-pass-a_85: 3548321663050005424
+      space-farm-colonist-pass-a_86: -2591972270497030170
+      space-farm-colonist-pass-a_87: 9034755383604553784
+      space-farm-colonist-pass-a_88: 8044656258969800873
+      space-farm-colonist-pass-a_89: -588020821822230237
+      space-farm-colonist-pass-a_9: -2681129127202100553
+      space-farm-colonist-pass-a_90: -1705238360279109018
+      space-farm-colonist-pass-a_91: 5046216391124289597
+      space-farm-colonist-pass-a_92: -890447859085011265
+      space-farm-colonist-pass-a_93: 6289382063907820373
+      space-farm-colonist-pass-a_94: -3389415921804925387
+      space-farm-colonist-pass-a_95: -4857969852842786253
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

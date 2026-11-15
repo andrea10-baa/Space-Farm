@@ -73,8 +73,9 @@ namespace SpaceFarm
     /// </summary>
     public sealed class SpaceFarmMap
     {
-        public const int Width = 80;
-        public const int Height = 50;
+        public const int Width = 128;
+        public const int Height = 80;
+        public const float TerrainPerspectiveYScale = .78f;
         public const int MaxAttempts = 64;
         public const int BaseClearRadius = 5;
         public const int NearIronMaxDistance = 9;
@@ -180,7 +181,7 @@ namespace SpaceFarm
             return .55f * (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(1f, 1.45f, d)));
         }
 
-        public static float CraterAmplitude(float radius) => Mathf.Min(.34f, .11f + .034f * radius);
+        public static float CraterAmplitude(float radius) => Mathf.Min(.66f, .16f + .052f * radius);
 
         public static float SegmentDistance(Vector2 p, Vector2 a, Vector2 b)
         {
@@ -278,17 +279,16 @@ namespace SpaceFarm
 
         private void PlaceCraters(ref SpaceFarmRandom random)
         {
-            float bigRadius = random.Range(5.2f, 7.4f);
-            for (int tries = 0; tries < 400 && Craters.Count == 0; tries++)
+            for (int tries = 0; tries < 800 && Craters.Count < 2; tries++)
             {
-                if (tries == 200) bigRadius = 5f;
-                TryAddCrater(ref random, bigRadius, true);
+                float radius = tries > 400 && Craters.Count == 0 ? 5f : random.Range(5.2f, 7.4f);
+                TryAddCrater(ref random, radius, true);
             }
-            int medium = random.Range(2, 4);
+            int medium = random.Range(5, 9);
             for (int i = 0, tries = 0; i < medium && tries < 300; tries++)
                 if (TryAddCrater(ref random, random.Range(2.4f, 3.9f), true)) i++;
-            int small = random.Range(10, 17);
-            for (int i = 0, tries = 0; i < small && tries < 600; tries++)
+            int small = random.Range(26, 43);
+            for (int i = 0, tries = 0; i < small && tries < 1200; tries++)
                 if (TryAddCrater(ref random, random.Range(.7f, 1.7f), false)) i++;
         }
 
@@ -312,12 +312,12 @@ namespace SpaceFarm
 
         private void PlaceRidges(ref SpaceFarmRandom random)
         {
-            int count = random.Range(2, 4);
+            int count = random.Range(4, 7);
             for (int i = 0, tries = 0; i < count && tries < 200; tries++)
             {
                 Vector2 from = new Vector2(random.Range(6f, Width - 7f), random.Range(5f, Height - 6f));
                 float angle = random.Range(0f, Mathf.PI * 2f);
-                float length = random.Range(8f, 15f);
+                float length = random.Range(10f, 23f);
                 Vector2 to = from + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * length;
                 if (to.x < 4f || to.x > Width - 5f || to.y < 4f || to.y > Height - 5f) continue;
                 if (SegmentDistance(BaseCell, from, to) < BaseClearRadius + 4f) continue;
@@ -334,7 +334,7 @@ namespace SpaceFarm
                 List<Vector2> path = new List<Vector2>();
                 Vector2 point = new Vector2(random.Range(8f, Width - 9f), random.Range(6f, Height - 7f));
                 float heading = random.Range(0f, Mathf.PI * 2f);
-                int nodes = random.Range(8, 13);
+                int nodes = random.Range(10, 17);
                 bool valid = true;
                 for (int i = 0; i < nodes && valid; i++)
                 {

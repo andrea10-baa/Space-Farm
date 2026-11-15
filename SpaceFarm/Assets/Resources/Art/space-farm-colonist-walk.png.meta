@@ -1,0 +1,568 @@
+fileFormatVersion: 2
+guid: fb1152caeb21d9e5da375ec5f7e00f6a
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -3871622977059367654
+    second: space-farm-colonist-walk_0
+  - first:
+      213: 5416240977175106485
+    second: space-farm-colonist-walk_1
+  - first:
+      213: -8854019302431294587
+    second: space-farm-colonist-walk_2
+  - first:
+      213: 6376355982987865692
+    second: space-farm-colonist-walk_3
+  - first:
+      213: 9188812442564807967
+    second: space-farm-colonist-walk_4
+  - first:
+      213: -5325043168974393155
+    second: space-farm-colonist-walk_5
+  - first:
+      213: 78525306987932130
+    second: space-farm-colonist-walk_6
+  - first:
+      213: 839945422571827901
+    second: space-farm-colonist-walk_7
+  - first:
+      213: 1690973360128202699
+    second: space-farm-colonist-walk_8
+  - first:
+      213: 8034241533548285371
+    second: space-farm-colonist-walk_9
+  - first:
+      213: 3320622173671595845
+    second: space-farm-colonist-walk_10
+  - first:
+      213: 5156246777526599650
+    second: space-farm-colonist-walk_11
+  - first:
+      213: 3972833302410154597
+    second: space-farm-colonist-walk_12
+  - first:
+      213: -1610023993593078830
+    second: space-farm-colonist-walk_13
+  - first:
+      213: -1432279879050713358
+    second: space-farm-colonist-walk_14
+  - first:
+      213: 4620864359185091532
+    second: space-farm-colonist-walk_15
+  - first:
+      213: -5046681822488314710
+    second: space-farm-colonist-walk_16
+  - first:
+      213: -5994518545469622269
+    second: space-farm-colonist-walk_17
+  - first:
+      213: -1343471321154307662
+    second: space-farm-colonist-walk_18
+  - first:
+      213: -6712413270841859627
+    second: space-farm-colonist-walk_19
+  - first:
+      213: -1797374634256938074
+    second: space-farm-colonist-walk_20
+  - first:
+      213: -4686740602185438189
+    second: space-farm-colonist-walk_21
+  - first:
+      213: -4879850740176218721
+    second: space-farm-colonist-walk_22
+  - first:
+      213: -8177056229072644804
+    second: space-farm-colonist-walk_23
+  - first:
+      213: 193469785507829790
+    second: space-farm-colonist-walk_24
+  - first:
+      213: 6518100952532721186
+    second: space-farm-colonist-walk_25
+  - first:
+      213: -7700047581895792211
+    second: space-farm-colonist-walk_26
+  - first:
+      213: 3069188722240055073
+    second: space-farm-colonist-walk_27
+  - first:
+      213: -4214507551234954468
+    second: space-farm-colonist-walk_28
+  - first:
+      213: 956405910248698038
+    second: space-farm-colonist-walk_29
+  - first:
+      213: 9014663342982699365
+    second: space-farm-colonist-walk_30
+  - first:
+      213: -6767583431769899427
+    second: space-farm-colonist-walk_31
+  - first:
+      213: 8728996937321582075
+    second: space-farm-colonist-walk_32
+  - first:
+      213: 7241012896885625533
+    second: space-farm-colonist-walk_33
+  - first:
+      213: -8189988665056489878
+    second: space-farm-colonist-walk_34
+  - first:
+      213: -5877893635742312110
+    second: space-farm-colonist-walk_35
+  - first:
+      213: -7587218293634742453
+    second: space-farm-colonist-walk_36
+  - first:
+      213: -1252170613076933882
+    second: space-farm-colonist-walk_37
+  - first:
+      213: 4942633531323689407
+    second: space-farm-colonist-walk_38
+  - first:
+      213: 8851281572220780910
+    second: space-farm-colonist-walk_39
+  - first:
+      213: -8247951142917616307
+    second: space-farm-colonist-walk_40
+  - first:
+      213: -5640212415249792652
+    second: space-farm-colonist-walk_41
+  - first:
+      213: -5055355761323363899
+    second: space-farm-colonist-walk_42
+  - first:
+      213: 5037057286747390601
+    second: space-farm-colonist-walk_43
+  - first:
+      213: 8904285783931743200
+    second: space-farm-colonist-walk_44
+  - first:
+      213: -5390811747829959610
+    second: space-farm-colonist-walk_45
+  - first:
+      213: 916095983945589239
+    second: space-farm-colonist-walk_46
+  - first:
+      213: -4945483236892022353
+    second: space-farm-colonist-walk_47
+  - first:
+      213: -312799456666260048
+    second: space-farm-colonist-walk_48
+  - first:
+      213: -8964530741146695649
+    second: space-farm-colonist-walk_49
+  - first:
+      213: -5456452692583668320
+    second: space-farm-colonist-walk_50
+  - first:
+      213: -5919402523288438727
+    second: space-farm-colonist-walk_51
+  - first:
+      213: -3671524597758809303
+    second: space-farm-colonist-walk_52
+  - first:
+      213: -5365100188835060614
+    second: space-farm-colonist-walk_53
+  - first:
+      213: 311167824099311254
+    second: space-farm-colonist-walk_54
+  - first:
+      213: 3026533039354426761
+    second: space-farm-colonist-walk_55
+  - first:
+      213: -3202294963038519063
+    second: space-farm-colonist-walk_56
+  - first:
+      213: -2145261184876444846
+    second: colonist-step-north
+  - first:
+      213: 2167466783982529704
+    second: colonist-step-northeast
+  - first:
+      213: -6592758430346121574
+    second: colonist-step-east
+  - first:
+      213: -3119865444438294510
+    second: colonist-step-southeast
+  - first:
+      213: -2774541472289152493
+    second: colonist-step-south
+  - first:
+      213: 6100277720912886618
+    second: colonist-step-southwest
+  - first:
+      213: -8184249065767985972
+    second: colonist-step-west
+  - first:
+      213: 6877496055287234299
+    second: colonist-step-northwest
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: colonist-step-north
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 832
+        width: 420
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 253810581508a32e0800000000000000
+      internalID: -2145261184876444846
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: colonist-step-northeast
+      rect:
+        serializedVersion: 2
+        x: 420
+        y: 832
+        width: 420
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8acacb96e83641e10800000000000000
+      internalID: 2167466783982529704
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: colonist-step-east
+      rect:
+        serializedVersion: 2
+        x: 840
+        y: 832
+        width: 421
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a9ee1453321d184a0800000000000000
+      internalID: -6592758430346121574
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: colonist-step-southeast
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 417
+        width: 420
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2104d3578e204b4d0800000000000000
+      internalID: -3119865444438294510
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: colonist-step-south
+      rect:
+        serializedVersion: 2
+        x: 420
+        y: 417
+        width: 420
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 312ad992b39de79d0800000000000000
+      internalID: -2774541472289152493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: colonist-step-southwest
+      rect:
+        serializedVersion: 2
+        x: 840
+        y: 417
+        width: 421
+        height: 415
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a5bfd3a344a88a450800000000000000
+      internalID: 6100277720912886618
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: colonist-step-west
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 2
+        width: 420
+        height: 417
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ccc939136d4bb6e80800000000000000
+      internalID: -8184249065767985972
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: colonist-step-northwest
+      rect:
+        serializedVersion: 2
+        x: 420
+        y: 2
+        width: 420
+        height: 417
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bfebb874936c17f50800000000000000
+      internalID: 6877496055287234299
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      colonist-step-east: -6592758430346121574
+      colonist-step-north: -2145261184876444846
+      colonist-step-northeast: 2167466783982529704
+      colonist-step-northwest: 6877496055287234299
+      colonist-step-south: -2774541472289152493
+      colonist-step-southeast: -3119865444438294510
+      colonist-step-southwest: 6100277720912886618
+      colonist-step-west: -8184249065767985972
+      space-farm-colonist-walk_0: -3871622977059367654
+      space-farm-colonist-walk_1: 5416240977175106485
+      space-farm-colonist-walk_10: 3320622173671595845
+      space-farm-colonist-walk_11: 5156246777526599650
+      space-farm-colonist-walk_12: 3972833302410154597
+      space-farm-colonist-walk_13: -1610023993593078830
+      space-farm-colonist-walk_14: -1432279879050713358
+      space-farm-colonist-walk_15: 4620864359185091532
+      space-farm-colonist-walk_16: -5046681822488314710
+      space-farm-colonist-walk_17: -5994518545469622269
+      space-farm-colonist-walk_18: -1343471321154307662
+      space-farm-colonist-walk_19: -6712413270841859627
+      space-farm-colonist-walk_2: -8854019302431294587
+      space-farm-colonist-walk_20: -1797374634256938074
+      space-farm-colonist-walk_21: -4686740602185438189
+      space-farm-colonist-walk_22: -4879850740176218721
+      space-farm-colonist-walk_23: -8177056229072644804
+      space-farm-colonist-walk_24: 193469785507829790
+      space-farm-colonist-walk_25: 6518100952532721186
+      space-farm-colonist-walk_26: -7700047581895792211
+      space-farm-colonist-walk_27: 3069188722240055073
+      space-farm-colonist-walk_28: -4214507551234954468
+      space-farm-colonist-walk_29: 956405910248698038
+      space-farm-colonist-walk_3: 6376355982987865692
+      space-farm-colonist-walk_30: 9014663342982699365
+      space-farm-colonist-walk_31: -6767583431769899427
+      space-farm-colonist-walk_32: 8728996937321582075
+      space-farm-colonist-walk_33: 7241012896885625533
+      space-farm-colonist-walk_34: -8189988665056489878
+      space-farm-colonist-walk_35: -5877893635742312110
+      space-farm-colonist-walk_36: -7587218293634742453
+      space-farm-colonist-walk_37: -1252170613076933882
+      space-farm-colonist-walk_38: 4942633531323689407
+      space-farm-colonist-walk_39: 8851281572220780910
+      space-farm-colonist-walk_4: 9188812442564807967
+      space-farm-colonist-walk_40: -8247951142917616307
+      space-farm-colonist-walk_41: -5640212415249792652
+      space-farm-colonist-walk_42: -5055355761323363899
+      space-farm-colonist-walk_43: 5037057286747390601
+      space-farm-colonist-walk_44: 8904285783931743200
+      space-farm-colonist-walk_45: -5390811747829959610
+      space-farm-colonist-walk_46: 916095983945589239
+      space-farm-colonist-walk_47: -4945483236892022353
+      space-farm-colonist-walk_48: -312799456666260048
+      space-farm-colonist-walk_49: -8964530741146695649
+      space-farm-colonist-walk_5: -5325043168974393155
+      space-farm-colonist-walk_50: -5456452692583668320
+      space-farm-colonist-walk_51: -5919402523288438727
+      space-farm-colonist-walk_52: -3671524597758809303
+      space-farm-colonist-walk_53: -5365100188835060614
+      space-farm-colonist-walk_54: 311167824099311254
+      space-farm-colonist-walk_55: 3026533039354426761
+      space-farm-colonist-walk_56: -3202294963038519063
+      space-farm-colonist-walk_6: 78525306987932130
+      space-farm-colonist-walk_7: 839945422571827901
+      space-farm-colonist-walk_8: 1690973360128202699
+      space-farm-colonist-walk_9: 8034241533548285371
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

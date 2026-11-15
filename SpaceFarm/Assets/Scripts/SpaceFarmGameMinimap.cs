@@ -140,13 +140,14 @@ namespace SpaceFarm
             new Vector2((cell.x + .5f) / Width, (cell.y + .5f) / Height);
 
         private Vector2 WorldToMinimap(Vector3 world) =>
-            new Vector2(world.x / (Width * TileSize) + .5f, world.y / (Height * TileSize) + .5f);
+            new Vector2(world.x / (Width * TileSize) + .5f,
+                world.y / (Height * TileSize * SpaceFarmMap.TerrainPerspectiveYScale) + .5f);
 
         /// <summary>Sizes and docks the minimap, and moves the installation card to the opposite side so they never overlap.</summary>
         private void ApplyMinimapLayout()
         {
             if (minimapRoot == null) return;
-            Vector2 view = minimapExpanded ? new Vector2(304, 190) : new Vector2(192, 120);
+            Vector2 view = minimapExpanded ? new Vector2(304, 148) : new Vector2(192, 94);
             Vector2 corner = new Vector2(minimapRight ? 1 : 0, 0);
             minimapRoot.anchorMin = minimapRoot.anchorMax = minimapRoot.pivot = corner;
             minimapRoot.anchoredPosition = new Vector2(minimapRight ? -12 : 12, FooterHeight + 10);
@@ -204,7 +205,7 @@ namespace SpaceFarm
             minimapFrame.offsetMin = minimapFrame.offsetMax = Vector2.zero;
         }
 
-        /// <summary>Rebuilds the 80×50 picture and the marker visibility. Hidden cells show only fog, so nothing leaks.</summary>
+        /// <summary>Rebuilds the 128×80 picture and the marker visibility. Hidden cells show only fog, so nothing leaks.</summary>
         private void RefreshMinimap()
         {
             minimapDirty = false;
@@ -245,7 +246,8 @@ namespace SpaceFarm
                 return;
             }
             if (followRover) SetFollow(false);
-            FocusWorld(new Vector3((u - .5f) * Width * TileSize, (v - .5f) * Height * TileSize, 0f));
+            FocusWorld(new Vector3((u - .5f) * Width * TileSize,
+                (v - .5f) * Height * TileSize * SpaceFarmMap.TerrainPerspectiveYScale, 0f));
         }
     }
 }

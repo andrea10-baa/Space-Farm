@@ -14,6 +14,9 @@ namespace SpaceFarm
     {
         private readonly List<TextMeshProUGUI> resourceLabels = new List<TextMeshProUGUI>();
         private readonly List<RectTransform> resourceChips = new List<RectTransform>();
+        private readonly List<TextMeshProUGUI> resourceAmounts = new List<TextMeshProUGUI>();
+        private readonly List<RectTransform> resourceBarRects = new List<RectTransform>();
+        private Sprite[] resourceIconSprites;
         private int[] previousResources;
         private GameObject buildModePanel;
         private TextMeshProUGUI buildModeText;
@@ -432,28 +435,64 @@ namespace SpaceFarm
                 rect.anchorMin = Vector2.zero;
                 rect.anchorMax = Vector2.zero;
                 rect.pivot = Vector2.zero;
-                rect.anchoredPosition = new Vector2(80 + i * 131, 3);
-                rect.sizeDelta = new Vector2(128, 24);
+                rect.anchoredPosition = new Vector2(80 + i * 131, 4);
+                rect.sizeDelta = new Vector2(126, 48);
+                Image card = chip.AddComponent<Image>();
+                card.color = SpaceFarmPalette.PanelRaised;
+                card.raycastTarget = false;
                 resourceChips.Add(rect);
                 GameObject icon = new GameObject(labels[i] + " icono", typeof(RectTransform), typeof(Image));
                 icon.transform.SetParent(chip.transform, false);
                 RectTransform iconRect = icon.GetComponent<RectTransform>();
-                iconRect.anchorMin = new Vector2(0, .5f);
-                iconRect.anchorMax = new Vector2(0, .5f);
-                iconRect.pivot = new Vector2(0, .5f);
-                iconRect.anchoredPosition = new Vector2(0, 0);
-                iconRect.sizeDelta = new Vector2(18, 18);
+                iconRect.anchorMin = new Vector2(0, 1);
+                iconRect.anchorMax = new Vector2(0, 1);
+                iconRect.pivot = new Vector2(0, 1);
+                iconRect.anchoredPosition = new Vector2(5, -9);
+                iconRect.sizeDelta = new Vector2(30, 30);
                 Image image = icon.GetComponent<Image>();
-                image.sprite = MakeResourceIcon(i);
-                image.color = colors[i];
+                image.sprite = ResourceIcon(i);
+                image.color = Color.white;
                 image.raycastTarget = false;
-                TextMeshProUGUI text = Label("", chip.transform, 13, FontStyles.Bold, SpaceFarmPalette.Text,
-                    new Vector2(0,0),new Vector2(0,0),new Vector2(0,0),new Vector2(22,0),new Vector2(106,24));
+                TextMeshProUGUI text = Label("", chip.transform, 10, FontStyles.Bold, SpaceFarmPalette.Text,
+                    new Vector2(0,1),new Vector2(1,1),new Vector2(0,1),new Vector2(41,-5),new Vector2(-8,17));
                 text.textWrappingMode = TextWrappingModes.NoWrap;
                 text.enableAutoSizing = true;
-                text.fontSizeMin = 11;
-                text.fontSizeMax = 13;
+                text.fontSizeMin = 8;
+                text.fontSizeMax = 10;
                 resourceLabels.Add(text);
+
+                TextMeshProUGUI amount = Label("", chip.transform, 10, FontStyles.Bold, colors[i],
+                    new Vector2(0,1),new Vector2(1,1),new Vector2(0,1),new Vector2(41,-21),new Vector2(-8,16));
+                amount.alignment = TextAlignmentOptions.TopLeft;
+                amount.textWrappingMode = TextWrappingModes.NoWrap;
+                amount.enableAutoSizing = true;
+                amount.fontSizeMin = 8;
+                amount.fontSizeMax = 10;
+                resourceAmounts.Add(amount);
+
+                GameObject barBack = new GameObject("Almacén", typeof(RectTransform), typeof(Image));
+                barBack.transform.SetParent(chip.transform, false);
+                RectTransform barRect = barBack.GetComponent<RectTransform>();
+                barRect.anchorMin = new Vector2(0, 0);
+                barRect.anchorMax = new Vector2(1, 0);
+                barRect.pivot = new Vector2(.5f, 0);
+                barRect.anchoredPosition = new Vector2(0, 7);
+                barRect.sizeDelta = new Vector2(-14, 7);
+                Image barBackImage = barBack.GetComponent<Image>();
+                barBackImage.color = SpaceFarmPalette.Background;
+                barBackImage.raycastTarget = false;
+                GameObject fill = new GameObject("Ocupación", typeof(RectTransform), typeof(Image));
+                fill.transform.SetParent(barBack.transform, false);
+                RectTransform fillRect = fill.GetComponent<RectTransform>();
+                fillRect.anchorMin = Vector2.zero;
+                fillRect.anchorMax = Vector2.one;
+                fillRect.pivot = new Vector2(0, .5f);
+                fillRect.offsetMin = Vector2.zero;
+                fillRect.offsetMax = Vector2.zero;
+                Image fillImage = fill.GetComponent<Image>();
+                fillImage.color = colors[i];
+                fillImage.raycastTarget = false;
+                resourceBarRects.Add(fillRect);
             }
         }
 
@@ -468,18 +507,29 @@ namespace SpaceFarm
                 bool on = false;
                 switch (kind)
                 {
-                    case 0: on = Mathf.Abs(x - 10) + Mathf.Abs(y - 10) < 8 && y > 3; break;
-                    case 1: on = (Mathf.Abs(x - (14f - y * .48f)) <= 2f && y >= 3 && y <= 17) ||
-                        (y >= 9 && y <= 11 && x >= 7 && x <= 14); break;
-                    case 2: on = x >= 5 && x <= 14 && y >= 4 && y <= 15 &&
-                        ((x == 5 || x == 14) || y == 4 || y == 15 || (y == 10 && x > 7 && x < 12)); break;
-                    case 3: on = y < 15 && Mathf.Abs(x - 10) <= (15 - y) * .53f && y > 4; break;
-                    case 4: on = (y >= 5 && y <= 13 && x >= 5 && x <= 14 &&
-                        (y == 5 || y == 13 || x == 5 || x == 14)) || (y == 10 && x >= 7 && x <= 12); break;
-                    case 5: on = (Mathf.Pow(x - 10,2) + Mathf.Pow(y - 14,2) <= 9) ||
-                        (y >= 3 && y <= 9 && x >= 5 && x <= 15); break;
-                    case 6: on = (x >= 8 && x <= 11 && y >= 3 && y <= 17) ||
-                        (y >= 8 && y <= 11 && x >= 3 && x <= 17); break;
+                    case 0: // Ingot of iron
+                        on = (y >= 5 && y <= 15 && x >= (y < 9 ? 5 : 3) && x <= (y < 9 ? 14 : 16)) ||
+                            (y == 4 && x >= 6 && x <= 13) || (y == 8 && x >= 4 && x <= 15); break;
+                    case 1: // Energy bolt
+                        on = (y >= 2 && y <= 10 && x >= 8 - (y - 2) * .45f && x <= 14 - (y - 2) * .15f) ||
+                            (y >= 9 && y <= 18 && x >= 6 + (y - 9) * .18f && x <= 12 + (y - 9) * .5f); break;
+                    case 2: // O2 molecule
+                        on = (Mathf.Abs(Mathf.Pow(x - 7, 2) + Mathf.Pow(y - 10, 2) - 16) <= 4) ||
+                            (Mathf.Abs(Mathf.Pow(x - 14, 2) + Mathf.Pow(y - 6, 2) - 9) <= 4) ||
+                            (x >= 8 && x <= 12 && y >= 8 && y <= 10); break;
+                    case 3: // Water droplet
+                        on = y >= 4 && y <= 17 && Mathf.Abs(x - 10) <= (y < 9 ? (y - 3) * .72f : (17 - y) * .8f); break;
+                    case 4: // Green leaf and vein
+                        on = y >= 3 && y <= 17 && Mathf.Abs(x - (8 + (y - 3) * .28f)) <= (y < 10 ? (y - 2) * .42f : (18 - y) * .42f) ||
+                            (y >= 7 && y <= 14 && x == 9); break;
+                    case 5: // Two colonists
+                        on = (Mathf.Pow(x - 7, 2) + Mathf.Pow(y - 5, 2) <= 5) ||
+                            (Mathf.Pow(x - 14, 2) + Mathf.Pow(y - 7, 2) <= 4) ||
+                            (y >= 9 && y <= 17 && x >= 4 && x <= 9) ||
+                            (y >= 11 && y <= 18 && x >= 11 && x <= 16); break;
+                    case 6: // Medical cross
+                        on = (x >= 8 && x <= 11 && y >= 3 && y <= 17) ||
+                            (y >= 8 && y <= 11 && x >= 3 && x <= 16); break;
                 }
                 pixels[y * 20 + x] = on ? new Color32(255,255,255,255) : new Color32(0,0,0,0);
             }
@@ -491,20 +541,48 @@ namespace SpaceFarm
             return sprite;
         }
 
+        private Sprite ResourceIcon(int kind)
+        {
+            if (resourceIconSprites == null)
+                resourceIconSprites = Resources.LoadAll<Sprite>("Art/space-farm-resource-icons");
+            string[] names = { "icon-iron", "icon-energy", "icon-oxygen", "icon-water", "icon-food", "icon-colonists", "icon-health" };
+            for (int i = 0; i < resourceIconSprites.Length; i++)
+                if (resourceIconSprites[i] != null && resourceIconSprites[i].name == names[kind])
+                    return resourceIconSprites[i];
+            return MakeResourceIcon(kind);
+        }
+
         private void RefreshResourceHud()
         {
             if (resourceLabels.Count == 0 || state == null) return;
             int[] now = { state.Iron, state.Energy, state.Oxygen, state.Water, state.Food, state.Population, state.Health };
             string[] names = { "Hierro", "Energía", "Oxígeno", "Agua", "Comida", "Colonos", "Salud" };
+            int[] capacities = { 50, 50, 50, 50, 50, 4, 3 };
             for (int i = 0; i < now.Length; i++)
             {
-                string value = i == 6 ? now[i] + "/3" : now[i].ToString();
                 bool critical = (i == 2 || i == 3 || i == 4) && now[i] <= state.Population * 2;
-                resourceLabels[i].text = critical ? $"<color=#EF806C>{names[i]} {value} !</color>" : $"{names[i]} {value}";
+                resourceLabels[i].text = names[i];
+                resourceAmounts[i].text = $"{now[i]} / {capacities[i]}";
+                resourceAmounts[i].color = critical ? SpaceFarmPalette.Danger : colorsForResource(i);
+                resourceBarRects[i].anchorMax = new Vector2(Mathf.Clamp01(now[i] / (float)capacities[i]), 1f);
                 if (previousResources != null && now[i] != previousResources[i])
                     StartCoroutine(ResourceDelta(resourceChips[i], now[i] - previousResources[i]));
             }
             previousResources = now;
+        }
+
+        private static Color colorsForResource(int index)
+        {
+            switch (index)
+            {
+                case 0: return SpaceFarmPalette.Iron;
+                case 1: return SpaceFarmPalette.Ice;
+                case 2: return SpaceFarmPalette.Oxygen;
+                case 3: return SpaceFarmPalette.Ice;
+                case 4: return SpaceFarmPalette.Greenhouse;
+                case 5: return SpaceFarmPalette.Text;
+                default: return SpaceFarmPalette.Danger;
+            }
         }
 
         private IEnumerator ResourceDelta(RectTransform chip, int delta)
