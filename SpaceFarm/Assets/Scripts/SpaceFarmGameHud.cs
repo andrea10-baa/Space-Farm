@@ -38,6 +38,8 @@ namespace SpaceFarm
         private bool constructionMenuOpen;
         private Button constructionMenuToggle;
         private Button upgradeMenuToggle;
+        private Button colonyMenuToggle;
+        private TextMeshProUGUI actionMenuTitle;
         private Button editModeToggle;
         private Button exploreModeToggle;
         private string upgradeCatalogSignature = string.Empty;
@@ -136,7 +138,7 @@ namespace SpaceFarm
             footer.GetComponent<Image>().raycastTarget = true;
             reportText = Label("", footer.transform, 14, FontStyles.Normal, SpaceFarmPalette.Text,
                 new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1),
-                new Vector2(18, -5), new Vector2(-700, 34));
+                new Vector2(18, -5), new Vector2(-835, 34));
             reportText.enableAutoSizing = true;
             reportText.fontSizeMin = 10;
             reportText.fontSizeMax = 14;
@@ -159,28 +161,31 @@ namespace SpaceFarm
                 14, SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
                 new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(1, .5f),
                 new Vector2(-554, 0), new Vector2(128, 34));
+            colonyMenuToggle = AddButton("COLONIA", footer.transform, OpenColonyMenu,
+                13, SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
+                new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(1, .5f),
+                new Vector2(-690, 0), new Vector2(128, 34));
 
             constructionMenuRoot = Panel("Menú de construcción", canvasObject.transform, SpaceFarmPalette.Panel,
                 new Vector2(0, 0), new Vector2(0, 1), new Vector2(0, .5f), Vector2.zero, Vector2.zero);
             constructionMenuRoot.GetComponent<Image>().raycastTarget = true;
             ApplyConstructionMenuLayout();
-            Label("PLANOS Y ACCIONES", constructionMenuRoot.transform, 17, FontStyles.Bold, SpaceFarmPalette.Text,
+            actionMenuTitle = Label("CONSTRUCCIÓN", constructionMenuRoot.transform, 17, FontStyles.Bold, SpaceFarmPalette.Text,
                 new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1),
                 new Vector2(13, -7), new Vector2(-64, 28));
             AddButton("X", constructionMenuRoot.transform, CloseConstructionMenu, 15,
                 SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
                 new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1),
                 new Vector2(-8, -6), new Vector2(32, 29));
-            CreateCategoryTabs(constructionMenuRoot.transform);
             actionDetailText = Label("Elegí un plano o arrastralo al mapa.", constructionMenuRoot.transform,
                 11, FontStyles.Normal, SpaceFarmPalette.MutedText,
                 new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1),
-                new Vector2(13, -76), new Vector2(-26, 18));
+                new Vector2(13, -42), new Vector2(-26, 24));
             GameObject viewport = new GameObject("Action Cards Viewport", typeof(RectTransform), typeof(Image), typeof(RectMask2D), typeof(ScrollRect));
             viewport.transform.SetParent(constructionMenuRoot.transform, false);
             RectTransform viewportRect = viewport.GetComponent<RectTransform>();
             viewportRect.anchorMin = Vector2.zero; viewportRect.anchorMax = Vector2.one;
-            viewportRect.offsetMin = new Vector2(10, 8); viewportRect.offsetMax = new Vector2(-10, -100);
+            viewportRect.offsetMin = new Vector2(10, 8); viewportRect.offsetMax = new Vector2(-10, -76);
             viewport.GetComponent<Image>().color = new Color(0, 0, 0, 0);
             ScrollRect actionScroll = viewport.GetComponent<ScrollRect>();
             actionScroll.horizontal = false; actionScroll.vertical = true;
@@ -302,21 +307,6 @@ namespace SpaceFarm
             text.textWrappingMode = TextWrappingModes.Normal;
             text.raycastTarget = false;
             return text;
-        }
-
-        private void CreateCategoryTabs(Transform parent)
-        {
-            string[] captions = { "CONSTRUIR", "MEJORAR", "COLONIA" };
-            for (int i = 0; i < captions.Length; i++)
-            {
-                int category = i;
-                Button button = AddButton(captions[i], parent, () => SelectCategory(category),
-                    13, SpaceFarmPalette.Button, SpaceFarmPalette.Text,
-                    new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1),
-                    new Vector2(12 + i * 117, -39), new Vector2(110, 29));
-                button.transition = Selectable.Transition.None;
-                categoryButtons.Add(button);
-            }
         }
 
         private ActionCard AddAction(string title, Func<string> cost, int category, Func<bool> action,
@@ -478,17 +468,12 @@ namespace SpaceFarm
             string[] hints =
             {
                 "Clic: activar plano · arrastrar tarjeta: colocar.",
-                "Mejorá la instalación seleccionada.",
-                "Pedí suministros a la Tierra. La tripulación se administra en ASTRONAUTAS."
+                "Elegí una instalación; confirmá la mejora desde su ficha.",
+                "Pedidos y logística de la colonia."
             };
             actionDetailText.text = hints[Mathf.Clamp(category, 0, hints.Length - 1)];
-            for (int i = 0; i < categoryButtons.Count; i++)
-            {
-                Image image = categoryButtons[i].GetComponent<Image>();
-                image.color = i == category ? SpaceFarmPalette.Iron : SpaceFarmPalette.PanelRaised;
-                TextMeshProUGUI label = categoryButtons[i].GetComponentInChildren<TextMeshProUGUI>();
-                if (label != null) label.color = i == category ? SpaceFarmPalette.Background : SpaceFarmPalette.Text;
-            }
+            if (actionMenuTitle != null)
+                actionMenuTitle.text = new[] { "CONSTRUCCIÓN", "MEJORAS", "COLONIA" }[Mathf.Clamp(category, 0, 2)];
             RefreshActionCards();
         }
 
@@ -580,7 +565,7 @@ namespace SpaceFarm
                     {
                         GameObject target = SelectedUpgradeTarget();
                         if (target != null) FocusWorld(target.transform.position);
-                        SetReport($"{name}: {benefit}. Enviá el rover desde la ficha y confirmá al llegar.");
+                        SetReport($"{name}: {benefit}. Abrí la ficha y enviá el rover; la mejora empezará al llegar.");
                     }
                     return selected;
                 },
@@ -609,15 +594,23 @@ namespace SpaceFarm
 
         private void ToggleConstructionMenu()
         {
-            if (constructionMenuOpen) CloseConstructionMenu();
+            if (constructionMenuOpen && selectedCategory == 0) CloseConstructionMenu();
             else OpenConstructionMenu();
         }
 
         private void OpenUpgradeMenu()
         {
+            if (constructionMenuOpen && selectedCategory == 1) { CloseConstructionMenu(); return; }
             if (editMode) SetEditMode(false);
             OpenConstructionMenu();
             SelectCategory(1);
+        }
+
+        private void OpenColonyMenu()
+        {
+            if (constructionMenuOpen && selectedCategory == 2) { CloseConstructionMenu(); return; }
+            OpenConstructionMenu();
+            SelectCategory(2);
         }
 
         private void EnterExploreMode()
@@ -644,7 +637,7 @@ namespace SpaceFarm
             ApplyConstructionMenuLayout();
             constructionMenuRoot.SetActive(true);
             constructionMenuRoot.transform.SetAsLastSibling();
-            RefreshActionCards();
+            SelectCategory(0);
             constructionMenuToggle.GetComponentInChildren<TextMeshProUGUI>().text = "CERRAR MENÚ";
         }
 

@@ -92,6 +92,7 @@ namespace SpaceFarm
         };
         private readonly List<AstronautView> astronauts = new List<AstronautView>();
         private readonly List<MineDrillVisual> mineDrills = new List<MineDrillVisual>();
+        private readonly Dictionary<int, GameObject> pickupMarkers = new Dictionary<int, GameObject>();
         private readonly Vector2[] astronautStops =
         {
             new Vector2(-1.6f, -2.3f), new Vector2(-.7f, -3.1f),
@@ -113,6 +114,7 @@ namespace SpaceFarm
         private readonly List<GameObject> warehouseWorlds = new List<GameObject>();
         private bool barrierMode;
         private bool collectionActive;
+        private bool upgradeOrderPending;
         private Vector2Int hoveredBarrierCell;
         private int observedPopulation;
         private int observedHabitatLevel;
@@ -579,6 +581,7 @@ namespace SpaceFarm
                 SetUpgradeArtwork(oxygenWorlds[i], 'b', 1, state.OxygenLevel(i + 1), 1.75f, 1.17f);
             for (int i = 0; i < warehouseWorlds.Count; i++)
                 SetUpgradeArtwork(warehouseWorlds[i], 'c', 1, state.WarehouseLevel(i), 2.05f, 1.42f);
+            RefreshPickupMarkers();
             previousGreenhouse = state.Greenhouse;
             previousRoverLevel = state.RoverLevel;
             previousOxygenPlants = state.OxygenPlants;
@@ -651,6 +654,63 @@ namespace SpaceFarm
             if (!visible || view.Label.text == text) return;
             view.Label.text = text;
             view.LabelBacking.transform.localScale = new Vector3(.3f + text.Length * .125f, .36f, 1f);
+        }
+
+        private void RefreshPickupMarkers()
+        {
+            foreach (GameObject marker in pickupMarkers.Values)
+                if (marker != null) marker.SetActive(false);
+
+            for (int i = 0; i < depositViews.Length; i++)
+            {
+                DepositView view = depositViews[i];
+                SpaceFarmState.DepositState deposit = state.Deposit(i);
+                if (view.Building == null || !revealed[view.Info.Cell.x, view.Info.Cell.y]) continue;
+                if (deposit.MineLevel > 0 && deposit.MineStored > 0)
+                    ShowPickupMarker(MaterialResource.Iron, i, deposit.MineStored, view.Building.transform.position);
+                else if (deposit.Extractor && deposit.WaterStored > 0)
+                    ShowPickupMarker(MaterialResource.Water, i, deposit.WaterStored, view.Building.transform.position);
+            }
+            if (oxygenPlantWorld != null && state.OxygenLocal(0) > 0)
+                ShowPickupMarker(MaterialResource.Oxygen, 0, state.OxygenLocal(0), oxygenPlantWorld.transform.position);
+            for (int i = 0; i < oxygenWorlds.Count; i++)
+                if (state.OxygenLocal(i + 1) > 0)
+                    ShowPickupMarker(MaterialResource.Oxygen, i + 1, state.OxygenLocal(i + 1), oxygenWorlds[i].transform.position);
+            for (int i = 0; i < greenhouseWorlds.Count; i++)
+                if (state.GreenhouseLocal(i) > 0)
+                    ShowPickupMarker(MaterialResource.Food, i, state.GreenhouseLocal(i), greenhouseWorlds[i].transform.position);
+        }
+
+        private void ShowPickupMarker(MaterialResource resource, int source, int amount, Vector3 buildingPosition)
+        {
+            int key = (int)resource * 1000 + source;
+            if (!pickupMarkers.TryGetValue(key, out GameObject marker) || marker == null)
+            {
+                marker = new GameObject($"Recoger {resource} {source}");
+                marker.transform.SetParent(worldRoot.transform, false);
+                CreateWorldSprite("Fondo", squareSprite, Vector3.zero, new Vector3(.68f, .62f, 1f),
+                    new Color(.06f, .12f, .17f, .93f), 15, marker.transform).transform.localPosition = Vector3.zero;
+                int iconIndex = resource == MaterialResource.Iron ? 0 : resource == MaterialResource.Oxygen ? 2 : resource == MaterialResource.Water ? 3 : 4;
+                Sprite icon = ResourceIcon(iconIndex);
+                CreateWorldSprite("Recurso", icon, Vector3.zero,
+                    new Vector3(.39f / icon.bounds.size.x, .39f / icon.bounds.size.y, 1f),
+                    Color.white, 16, marker.transform).transform.localPosition = new Vector3(-.1f, .07f, -.01f);
+                GameObject label = new GameObject("Cantidad", typeof(TextMeshPro));
+                label.transform.SetParent(marker.transform, false);
+                TextMeshPro text = label.GetComponent<TextMeshPro>();
+                text.font = TMP_Settings.defaultFontAsset;
+                text.fontSize = 4f;
+                text.fontStyle = FontStyles.Bold;
+                text.alignment = TextAlignmentOptions.Center;
+                text.color = SpaceFarmPalette.Text;
+                text.sortingOrder = 17;
+                label.transform.localPosition = new Vector3(.2f, -.07f, -.02f);
+                label.transform.localScale = Vector3.one * .18f;
+                pickupMarkers[key] = marker;
+            }
+            marker.transform.position = buildingPosition + new Vector3(0f, .96f, -.4f);
+            marker.GetComponentInChildren<TextMeshPro>().text = amount.ToString();
+            marker.SetActive(true);
         }
 
         private void RefreshSystems()
@@ -759,7 +819,11 @@ namespace SpaceFarm
 
         private bool SendRoverNextToSelected()
         {
-            GameObject target = SelectedUpgradeTarget();
+            return SendRoverNextTo(SelectedUpgradeTarget());
+        }
+
+        private bool SendRoverNextTo(GameObject target)
+        {
             if (target == null) { SetReport("Seleccioná una instalación construida primero."); return false; }
             if (RoverBusy) { SetReport("El rover ya está ocupado; la acción puede enviarse al terminar su recorrido."); return false; }
             Vector2Int center = WorldToCell(target.transform.position);
@@ -818,16 +882,47 @@ namespace SpaceFarm
         private bool BeginSelectedUpgrade(Func<bool> upgrade)
         {
             if (upgrade == null || state == null || paused || state.GameOver) return false;
-            if (!RoverAdjacentToSelected())
+            if (upgradeOrderPending) { SetReport("Ya hay una mejora esperando al rover."); return false; }
+            GameObject target = SelectedUpgradeTarget();
+            if (target == null) { SetReport("Seleccioná una instalación construida primero."); return false; }
+            if (RoverBusy || !RoverAdjacentToSelected())
             {
-                if (SendRoverNextToSelected())
-                    SetReport("El rover va hacia la instalación. Al llegar, confirmá la mejora desde su ficha.");
+                upgradeOrderPending = true;
+                StartCoroutine(UpgradeWhenRoverAvailable(upgrade, target));
+                SetReport("Mejora programada. El rover irá a la instalación y comenzará al llegar.");
                 RefreshHud();
                 return false;
             }
             bool success = upgrade();
             RefreshWorld(); RefreshHud();
             return success;
+        }
+
+        private IEnumerator UpgradeWhenRoverAvailable(Func<bool> upgrade, GameObject target)
+        {
+            while (RoverBusy && state != null && !state.GameOver) yield return null;
+            if (target == null || state == null || state.GameOver)
+            {
+                upgradeOrderPending = false;
+                yield break;
+            }
+            Vector2Int targetCell = WorldToCell(target.transform.position);
+            Vector2Int delta = roverCell - targetCell;
+            if (Mathf.Abs(delta.x) + Mathf.Abs(delta.y) > 1 && !SendRoverNextTo(target))
+            {
+                upgradeOrderPending = false;
+                RefreshHud();
+                yield break;
+            }
+            collectionActive = true;
+            while (travel != null) yield return null;
+            delta = roverCell - targetCell;
+            if (state != null && !state.GameOver && Mathf.Abs(delta.x) + Mathf.Abs(delta.y) <= 1)
+                upgrade();
+            else SetReport("El rover no llegó a la instalación. No se cobró la mejora; revisá la ruta.");
+            collectionActive = false;
+            upgradeOrderPending = false;
+            RefreshWorld(); RefreshHud();
         }
 
         private UpgradeProgressVisual CreateUpgradeProgressVisual(string key)
@@ -1003,6 +1098,7 @@ namespace SpaceFarm
         private void TickAutomaticLogistics()
         {
             if (paused || titleScreenOpen || arrivalSequenceActive || state == null || state.GameOver) return;
+            if (upgradeOrderPending) return;
             logisticsScheduleClock -= Time.deltaTime;
             if (logisticsScheduleClock > 0f) return;
             logisticsScheduleClock = 1f;

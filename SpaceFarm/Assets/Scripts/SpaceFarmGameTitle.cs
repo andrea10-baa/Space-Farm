@@ -88,7 +88,7 @@ namespace SpaceFarm
             playColors.selectedColor = SpaceFarmPalette.ButtonHover;
             play.colors = playColors;
 
-            GameObject continuePanel = Panel("Continuar deshabilitado", titleScreenRoot.transform,
+            GameObject continuePanel = Panel("Continuar partida", titleScreenRoot.transform,
                 SpaceFarmPalette.PanelRaised,
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
                 new Vector2(0, -124), new Vector2(310, 42));
@@ -98,6 +98,7 @@ namespace SpaceFarm
             continueLabel.alignment = TextAlignmentOptions.Center;
             UnityEngine.UI.Button continueButton = continuePanel.AddComponent<UnityEngine.UI.Button>();
             continueButton.targetGraphic = continuePanel.GetComponent<Image>();
+            continuePanel.GetComponent<Image>().raycastTarget = true;
             continueButton.onClick.AddListener(ShowSaveSlots);
             continueButton.interactable = SpaceFarmSaveStore.List().Count > 0;
             continueLabel.color = continueButton.interactable ? SpaceFarmPalette.Ice : SpaceFarmPalette.MutedText;

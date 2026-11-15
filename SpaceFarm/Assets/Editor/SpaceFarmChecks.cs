@@ -236,6 +236,15 @@ namespace SpaceFarm.Editor
             Require(delivery.UnloadRover(out _) && delivery.Oxygen == reserve + loaded && delivery.RoverCargoTotal == 0 &&
                 delivery.WarehouseUsed <= delivery.WarehouseCapacity,
                 "el oxígeno pasa a las reservas solo al descargarlo en el almacén");
+
+            SpaceFarmState mining = new SpaceFarmState();
+            mining.SurveyDeposit(0);
+            Require(mining.BuildMine(0, out _), "preparar mina para logística automática");
+            mining.AdvanceSol();
+            Require(mining.Deposit(0).MineStored > 0, "la mina genera hierro local");
+            Require(mining.TryGetBestPickup(out MaterialResource pickup, out int source) &&
+                pickup == MaterialResource.Iron && source == 0,
+                "la recolección automática no debe ignorar la mina con reservas vitales suficientes");
         }
 
         private static void CheckTimedRepair()

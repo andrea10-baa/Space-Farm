@@ -1065,11 +1065,13 @@ namespace SpaceFarm
                     if (ratio < lowestRatio) { lowestRatio = ratio; kind = candidate; source = i; foundVital = true; }
                 }
             }
-            if (foundVital) return true;
+            // Protect critically low reserves first, but do not starve iron collection just
+            // because a noncritical food/water/oxygen source has stock waiting.
+            if (foundVital && lowestRatio < 1f) return true;
             for (int i = 0; i < deposits.Count; i++)
                 if (deposits[i].MineLevel > 0 && deposits[i].MineStored > 0)
                 { kind = MaterialResource.Iron; source = i; return true; }
-            return false;
+            return foundVital;
         }
 
         public bool LoadResourceToRover(MaterialResource kind, int source, out string message)

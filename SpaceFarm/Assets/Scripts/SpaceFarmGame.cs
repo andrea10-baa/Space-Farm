@@ -20,7 +20,7 @@ namespace SpaceFarm
         private const int Width = SpaceFarmMap.Width;
         private const int Height = SpaceFarmMap.Height;
         private const float TileSize = 0.9f;
-        private const float RoverSpeed = 5.2f;
+        private float RoverSpeed => state != null && state.RoverLevel >= 2 ? 5.2f : 2.7f;
         private const float MinCameraSize = 2.6f;
         private const float MaxCameraSize = 28f;
         private const float DefaultCameraSize = 5.2f;
@@ -70,7 +70,6 @@ namespace SpaceFarm
         private TextMeshProUGUI actionDetailText;
         private RectTransform actionCardsRoot;
         private readonly List<ActionCard> actionCards = new List<ActionCard>();
-        private readonly List<Button> categoryButtons = new List<Button>();
         private readonly List<UnityEngine.Object> runtimeAssets = new List<UnityEngine.Object>();
         private int selectedCategory;
         private Image screenFlash;
