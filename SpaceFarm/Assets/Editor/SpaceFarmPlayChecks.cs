@@ -307,7 +307,10 @@ namespace SpaceFarm.Editor
             yield return Wait(.6);
 
             // --- Existing mechanics still run through the scene: barriers, colonist, storm, raid.
-            for (int i = 0; i < 4 && colony.State.Iron > 0; i++) colony.State.BuildBarrierSegment(i, out _);
+            Vector2Int wallBase = colony.Map.BaseCell + new Vector2Int(4, -2);
+            for (int i = 0; i < 4 && colony.State.Iron > 0; i++)
+                colony.State.BuildBarrierSegment(wallBase + new Vector2Int(0, i), false,
+                    colony.IsRevealed(wallBase + new Vector2Int(0, i)), out _);
             colony.State.AddColonist(out _);
             colony.RevealForTools(colony.Map.BaseCell, 0);
             while (colony.State.Sol < 5 && !colony.State.GameOver) colony.PressAdvanceSol();

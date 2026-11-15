@@ -10,10 +10,10 @@ namespace SpaceFarm
     [Serializable]
     public sealed class SpaceFarmState
     {
-        public const int BarrierSlotCount = 12;
+        public const int MaxBarrierCount = 12;
         public const int MaxMineCount = 3;
         public const int MaxExtractors = 2;
-        private readonly bool[] barrierSegments = new bool[BarrierSlotCount];
+        private readonly List<BarrierState> barriers = new List<BarrierState>();
         private readonly bool[] discoveries;
         private readonly int[] discoveryKinds;
         private readonly List<DepositState> deposits = new List<DepositState>();
@@ -28,7 +28,7 @@ namespace SpaceFarm
             public string Reason = "Aún no se avanzó un sol.";
         }
 
-        /// <summary>One iron or ice deposit with the installation built on it. Each keeps its own level, damage and storage.</summary>
+        /// <summary>One iron or ice deposit with the installation built on it. Each keeps its own level and storage.</summary>
         public sealed class DepositState
         {
             public int Id { get; internal set; }
@@ -38,13 +38,18 @@ namespace SpaceFarm
             public bool Surveyed { get; internal set; }
             public int MineLevel { get; internal set; }
             public int MineStored { get; internal set; }
-            public bool MineDamaged { get; internal set; }
             public bool Extractor { get; internal set; }
             public SystemResult LastResult { get; internal set; } = new SystemResult();
             public int MineCapacity => MineLevel == 2 ? 15 : MineLevel == 1 ? 6 : 0;
             public int MineNominal => MineLevel == 2 ? 5 : MineLevel == 1 ? 3 : 0;
             public int MineEnergy => MineLevel == 2 ? 3 : MineLevel == 1 ? 2 : 0;
             public bool HasBuilding => MineLevel > 0 || Extractor;
+        }
+
+        public sealed class BarrierState
+        {
+            public Vector2Int Cell { get; internal set; }
+            public bool Vertical { get; internal set; }
         }
 
         public sealed class SolResults
@@ -60,8 +65,6 @@ namespace SpaceFarm
             public bool Storm;
             public int CrewConsumed;
             public int RaidFoodLoss;
-            public int RaidDamagedMines;
-            public bool RaidDamagedMine => RaidDamagedMines > 0;
         }
 
         public SolResults LastSol { get; private set; } = new SolResults();
@@ -78,7 +81,7 @@ namespace SpaceFarm
         public bool Greenhouse { get; private set; }
         public Vector2Int? GreenhouseCell { get; private set; }
         public Vector2Int? OxygenPlantTwoCell { get; private set; }
-        public int BarrierCount { get; private set; }
+        public int BarrierCount => barriers.Count;
         public int RoverCargo { get; private set; }
         public int RoverCapacity => RoverLevel == 2 ? 8 : 4;
         public int ShipmentArrivalSol { get; private set; }
@@ -90,13 +93,18 @@ namespace SpaceFarm
 
         public IReadOnlyList<DepositState> Deposits => deposits;
         public int DiscoveryCount => discoveries.Length;
-        public bool HasBarrierSegment(int index) => index >= 0 && index < BarrierSlotCount && barrierSegments[index];
+        public IReadOnlyList<BarrierState> Barriers => barriers;
+        public bool HasBarrierAt(Vector2Int cell)
+        {
+            for (int i = 0; i < barriers.Count; i++)
+                if (barriers[i].Cell == cell) return true;
+            return false;
+        }
         public bool HasDiscovery(int index) => index >= 0 && index < discoveries.Length && discoveries[index];
         public DepositState Deposit(int id) => id >= 0 && id < deposits.Count ? deposits[id] : null;
 
         public int MineCount => CountWhere(d => d.MineLevel > 0);
         public int ExtractorCount => CountWhere(d => d.Extractor);
-        public bool AnyMineDamaged => CountWhere(d => d.MineDamaged) > 0;
         public bool AnySurveyed(DepositKind kind) => CountWhere(d => d.Kind == kind && d.Surveyed) > 0;
         /// <summary>Every mine needs an operator: two colonists run one mine, each extra colonist one more.</summary>
         public int MaxMines => Mathf.Clamp(Population - 1, 1, MaxMineCount);
@@ -161,7 +169,7 @@ namespace SpaceFarm
         {
             if (kind == StructureKind.Greenhouse && Greenhouse) return "El invernadero ya está construido";
             if (kind == StructureKind.OxygenPlant && OxygenPlants >= 2) return "La segunda planta ya está construida";
-            if (kind == StructureKind.Barrier && BarrierCount >= BarrierSlotCount) return "Perímetro completo";
+            if (kind == StructureKind.Barrier && BarrierCount >= MaxBarrierCount) return "Límite de 12 muros alcanzado";
             if (kind == StructureKind.Mine)
             {
                 if (MineCount >= MaxMineCount) return "Límite de 3 minas";
@@ -187,11 +195,14 @@ namespace SpaceFarm
         /// <summary>The preview and the final transaction use this exact rule, including current resources.</summary>
         public string PlacementBlocker(StructureKind kind, Vector2Int cell, bool revealed)
         {
-            if (kind == StructureKind.None || kind == StructureKind.Barrier) return "Elegí una estructura";
+            if (kind == StructureKind.Barrier) return BarrierBlocker(cell, revealed);
+            if (kind == StructureKind.None) return "Elegí una estructura";
             if (map != null && !map.Inside(cell)) return "Fuera del mapa";
             if (!revealed) return "Sector oculto: exploralo con el rover";
             string availability = PlacementAvailability(kind);
             if (availability.Length > 0) return availability;
+            if (HasBarrierInFootprint(cell, 1, 1)) return "No se puede colocar una estructura sobre un muro";
+            if (IsCellOccupiedByStructure(cell)) return "Ese sector está ocupado por una estructura";
             if (kind == StructureKind.Mine || kind == StructureKind.Extractor)
             {
                 MapDeposit deposit = map?.DepositAt(cell);
@@ -213,6 +224,51 @@ namespace SpaceFarm
 
         private static bool Near(Vector2Int a, Vector2Int b, int radius) =>
             Mathf.Abs(a.x - b.x) <= radius && Mathf.Abs(a.y - b.y) <= radius;
+
+        public bool IsCellOccupiedByStructure(Vector2Int cell)
+        {
+            if (map == null) return false;
+            Vector2Int baseCell = map.BaseCell;
+            if (Within(cell, baseCell, 2, 1) ||
+                Within(cell, baseCell + new Vector2Int(2, 0), 1, 1) ||
+                Within(cell, baseCell + new Vector2Int(-2, -1), 1, 1)) return true;
+            if (GreenhouseCell.HasValue && Within(cell, GreenhouseCell.Value, 1, 1)) return true;
+            if (OxygenPlantTwoCell.HasValue && Within(cell, OxygenPlantTwoCell.Value, 1, 1)) return true;
+            foreach (DepositState deposit in deposits)
+                if ((deposit.MineLevel > 0 || deposit.Extractor) && Within(cell, map.Deposits[deposit.Id].Cell, 1, 1)) return true;
+            return false;
+        }
+
+        private static bool Within(Vector2Int cell, Vector2Int center, int radiusX, int radiusY) =>
+            Mathf.Abs(cell.x - center.x) <= radiusX && Mathf.Abs(cell.y - center.y) <= radiusY;
+
+        public bool HasBarrierInFootprint(Vector2Int cell, int radiusX, int radiusY)
+        {
+            for (int i = 0; i < barriers.Count; i++)
+                if (Within(cell, barriers[i].Cell, radiusX, radiusY)) return true;
+            return false;
+        }
+
+        public bool IsCellBlocked(Vector2Int cell)
+        {
+            if (map != null && !map.Inside(cell)) return true;
+            return HasBarrierAt(cell) || IsCellOccupiedByStructure(cell);
+        }
+
+        public string BarrierBlocker(Vector2Int cell, bool revealed)
+        {
+            if (BarrierCount >= MaxBarrierCount) return "Límite de 12 muros alcanzado";
+            if (map != null && !map.Inside(cell)) return "Fuera del mapa";
+            if (!revealed) return "Sector oculto: exploralo con el rover";
+            if (HasBarrierAt(cell)) return "Ya hay un muro en ese sector";
+            if (map != null && map.DepositAt(cell) != null) return "Dejá libre el yacimiento para que pueda estudiarlo el rover";
+            if (map != null && map.PointAt(cell) >= 0) return "Dejá libre la señal para que pueda recogerla el rover";
+            if (IsCellOccupiedByStructure(cell)) return "No se puede poner un muro sobre una estructura";
+            if (map != null && Within(cell, map.BaseCell + new Vector2Int(0, -2), 1, 1))
+                return "Dejá libre el acceso del rover a la base";
+            if (Iron < 1) return "Falta 1 Fe";
+            return string.Empty;
+        }
 
         public bool PlaceStructure(StructureKind kind, Vector2Int cell, bool revealed, out string message)
         {
@@ -278,21 +334,10 @@ namespace SpaceFarm
             DepositState deposit = Deposit(id);
             if (deposit == null || deposit.MineLevel == 0) return Fail("Construí primero la mina.", out message);
             if (deposit.MineLevel >= 2) return Fail("El nivel 2 es el máximo de esta demo.", out message);
-            if (deposit.MineDamaged) return Fail("Repará la mina antes de mejorarla.", out message);
             if (Iron < 6) return Fail("La mejora necesita 6 de hierro.", out message);
             Iron -= 6;
             deposit.MineLevel = 2;
             return Success($"Mina de {deposit.Name} en nivel 2. Produce hasta 5 Fe por sol, almacena 15 y requiere 3 de energía.", out message);
-        }
-
-        public bool RepairMine(int id, out string message)
-        {
-            DepositState deposit = Deposit(id);
-            if (deposit == null || !deposit.MineDamaged) return Fail("Esa mina no necesita reparación.", out message);
-            if (Iron < 3) return Fail("La reparación necesita 3 de hierro.", out message);
-            Iron -= 3;
-            deposit.MineDamaged = false;
-            return Success($"Mina de {deposit.Name} reparada y operativa.", out message);
         }
 
         public bool UpgradeRover(out string message)
@@ -326,15 +371,13 @@ namespace SpaceFarm
             return Success($"Extractor listo en {deposit.Name}: obtiene 5 de agua por sol a cambio de 2 de energía.", out message);
         }
 
-        public bool BuildBarrierSegment(int index, out string message)
+        public bool BuildBarrierSegment(Vector2Int cell, bool vertical, bool revealed, out string message)
         {
-            if (index < 0 || index >= BarrierSlotCount) return Fail("Esa posición no admite barrera.", out message);
-            if (barrierSegments[index]) return Fail("Ese segmento ya está construido.", out message);
-            if (Iron < 1) return Fail("Cada segmento cuesta 1 Fe.", out message);
+            string blocker = BarrierBlocker(cell, revealed);
+            if (blocker.Length > 0) return Fail(blocker + ".", out message);
             Iron--;
-            barrierSegments[index] = true;
-            BarrierCount++;
-            return Success($"Segmento instalado. Perímetro {BarrierCount}/{BarrierSlotCount}; desde 8 las minas quedan protegidas.", out message);
+            barriers.Add(new BarrierState { Cell = cell, Vertical = vertical });
+            return Success($"Muro instalado en {cell.x + 1},{cell.y + 1}. Muros {BarrierCount}/{MaxBarrierCount}.", out message);
         }
 
         public bool LoadMineToRover(int id, out string message)
@@ -465,8 +508,7 @@ namespace SpaceFarm
             {
                 if (deposit.MineLevel == 0) continue;
                 SystemResult result = deposit.LastResult = new SystemResult { Nominal = deposit.MineNominal };
-                if (deposit.MineDamaged) result.Reason = "Averiada: repará la mina.";
-                else if (deposit.MineStored >= deposit.MineCapacity) result.Reason = "Almacén lleno: enviá el rover.";
+                if (deposit.MineStored >= deposit.MineCapacity) result.Reason = "Almacén lleno: enviá el rover.";
                 else if (!SpendEnergy(deposit.MineEnergy)) result.Reason = "Falta energía.";
                 else
                 {
@@ -497,9 +539,7 @@ namespace SpaceFarm
                 int foodLoss = BarrierCount >= 12 ? 1 : BarrierCount >= 8 ? 2 : BarrierCount >= 4 ? 3 : 4;
                 LastSol.RaidFoodLoss = foodLoss;
                 Food = Mathf.Max(0, Food - foodLoss);
-                LastSol.RaidDamagedMines = RaidMines();
-                report += $"Incursión alienígena: perímetro {BarrierCount}/12, -{foodLoss} comida";
-                report += LastSol.RaidDamagedMines > 0 ? $"; {LastSol.RaidDamagedMines} mina(s) averiada(s). " : "; minas protegidas. ";
+                report += $"Incursión alienígena: {BarrierCount}/12 muros, -{foodLoss} comida; las minas siguen operativas. ";
             }
             if (Oxygen == 0 || Water == 0 || Food == 0)
             {
@@ -509,33 +549,6 @@ namespace SpaceFarm
             if (GameOver) report += "La misión fracasó. ";
             else if (MissionComplete) report += "¡Misión completada: colonia estable tras la primera incursión! ";
             return LastReport = report;
-        }
-
-        /// <summary>
-        /// Raid exposure grows with the territory: under 4 segments every mine is hit,
-        /// with 4 to 7 only the mine farthest from the base, and from 8 all of them are safe.
-        /// </summary>
-        private int RaidMines()
-        {
-            if (BarrierCount >= 8) return 0;
-            int damaged = 0;
-            DepositState farthest = null;
-            foreach (DepositState deposit in deposits)
-            {
-                if (deposit.MineLevel == 0) continue;
-                if (farthest == null || deposit.Distance > farthest.Distance) farthest = deposit;
-                if (BarrierCount < 4)
-                {
-                    deposit.MineDamaged = true;
-                    damaged++;
-                }
-            }
-            if (BarrierCount >= 4 && farthest != null)
-            {
-                farthest.MineDamaged = true;
-                damaged = 1;
-            }
-            return damaged;
         }
 
         private static void Accumulate(SystemResult total, SystemResult part)

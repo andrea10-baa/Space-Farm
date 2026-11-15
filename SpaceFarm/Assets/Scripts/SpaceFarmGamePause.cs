@@ -80,7 +80,7 @@ namespace SpaceFarm
                 "<b>Zoom</b>  Rueda del mouse. VOLVER A LA BASE e IR AL ROVER reubican la vista; SEGUIR acompaña al rover.\n" +
                 "<b>Explorar</b>  Clic en el terreno: el rover viaja ahí y revela sectores. Clic en una señal: va a estudiarla.\n" +
                 "<b>Construir</b>  Abrí CONSTRUIR. Elegí un plano y hacé clic en un sector válido, o arrastrá una tarjeta al mapa. Esc o clic derecho cancelan.\n" +
-                "<b>Barreras</b>  Elegí barrera en el menú y luego clic en una de las 12 posiciones iluminadas (1 Fe). Esc o CANCELAR salen.\n" +
+                "<b>Muros</b>  Elegí muros en el menú y colocá cada uno en un sector libre (1 Fe). R cambia la orientación; Esc cancela.\n" +
                 "<b>Minimapa</b>  Clic en zona explorada: centra la cámara sin mover al rover. + / - cambia el tamaño; < > lo pasa de lado.\n" +
                 "<b>Pausa</b>  Esc o el botón PAUSA.",
                 controls, 13, FontStyles.Normal, SpaceFarmPalette.Text,

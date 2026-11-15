@@ -41,28 +41,26 @@ namespace SpaceFarm
             public SpriteRenderer LabelBacking;
             public bool Seen;
             public int ShownLevel;
-            public bool ShownDamaged;
             public RectTransform MiniMarker;
         }
 
-        private readonly GameObject[] barrierSegments = new GameObject[SpaceFarmState.BarrierSlotCount];
-        private readonly GameObject[] barrierGuides = new GameObject[SpaceFarmState.BarrierSlotCount];
+        private readonly Dictionary<Vector2Int, GameObject> barrierSegments = new Dictionary<Vector2Int, GameObject>();
         private readonly List<AstronautView> astronauts = new List<AstronautView>();
         private readonly List<MineDrillVisual> mineDrills = new List<MineDrillVisual>();
         private readonly Vector2[] astronautStops =
         {
-            new Vector2(-1.4f, -1.65f), new Vector2(-.6f, -1.95f),
-            new Vector2(.45f, -1.95f), new Vector2(1.55f, -1.6f)
+            new Vector2(-.15f, -2.3f), new Vector2(.55f, -2.6f),
+            new Vector2(1.3f, -2.1f), new Vector2(2.1f, -2.6f)
         };
         private DepositView[] depositViews;
         private SpriteRenderer[] discoveryMarkers;
         private Color32[] terrainCellColors;
         private GameObject barrierPreview;
-        private GameObject barrierPreviewVertical;
         private GameObject solarWorld;
         private bool barrierMode;
+        private bool barrierVertical;
         private bool collectionActive;
-        private int hoveredBarrierSlot = -1;
+        private Vector2Int hoveredBarrierCell;
         private int observedPopulation;
         private Sprite[] astronautFacingSprites;
         private Sprite[] astronautPassASprites;
@@ -72,14 +70,6 @@ namespace SpaceFarm
         {
             "north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"
         };
-
-        private Vector2 BarrierOffset(int index)
-        {
-            if (index < 4) return new Vector2(-1.875f + index * 1.25f, 2.2f);
-            if (index < 8) return new Vector2(-1.875f + (index - 4) * 1.25f, -2.2f);
-            if (index < 10) return new Vector2(-2.5f, index == 8 ? -1.1f : 1.1f);
-            return new Vector2(2.5f, index == 10 ? -1.1f : 1.1f);
-        }
 
         private void CreateWorld()
         {
@@ -96,7 +86,7 @@ namespace SpaceFarm
                 CellPosition(BaseCell + new Vector2Int(2, 0)) + new Vector3(0, 0, -.2f),
                 1.7f, 1.14f, 6, worldRoot.transform);
             roverRenderer = CreateArtwork("Rover 1", "Art/space-farm-rover-directions#rover-facing-south",
-                CellPosition(roverCell) + new Vector3(-.65f, -.5f * SpaceFarmMap.TerrainPerspectiveYScale, -.5f),
+                CellPosition(roverCell) + new Vector3(0f, 0f, -.5f),
                 1.55f, 1.55f, 8, worldRoot.transform);
             rover = roverRenderer.gameObject;
             // Optional buildings are created only after a player confirms their chosen cell.
@@ -220,47 +210,31 @@ namespace SpaceFarm
 
         private void CreateBarrierWorld()
         {
-            GameObject root = new GameObject("Perímetro modular");
+            GameObject root = new GameObject("Muros colocados por el jugador");
             root.transform.SetParent(worldRoot.transform);
-            for (int i = 0; i < barrierSegments.Length; i++)
-            {
-                barrierSegments[i] = CreateBarrierVisual(i, root.transform, false);
-                barrierSegments[i].SetActive(false);
-                barrierGuides[i] = CreateBarrierVisual(i, root.transform, true);
-                barrierGuides[i].name = $"Zona {i + 1}";
-                foreach (SpriteRenderer sprite in barrierGuides[i].GetComponentsInChildren<SpriteRenderer>())
-                    sprite.color = new Color(.6f,1f,.94f,.24f);
-                barrierGuides[i].SetActive(false);
-            }
-            barrierPreview = CreateBarrierVisual(0, root.transform, true);
-            barrierPreview.name = "Vista previa de barrera";
+            barrierPreview = CreateBarrierVisual(map.BaseCell, false, true, root.transform);
+            barrierPreview.name = "Vista previa del muro";
             barrierPreview.SetActive(false);
-            barrierPreviewVertical = CreateBarrierVisual(8, root.transform, true);
-            barrierPreviewVertical.name = "Vista previa vertical";
-            barrierPreviewVertical.SetActive(false);
         }
 
-        private GameObject CreateBarrierVisual(int index, Transform parent, bool preview)
+        private GameObject CreateBarrierVisual(Vector2Int cell, bool vertical, bool preview, Transform parent)
         {
-            GameObject root = new GameObject(preview ? "Vista previa" : $"Barrera {index + 1}");
+            GameObject root = new GameObject(preview ? "Vista previa" : $"Muro {cell.x + 1},{cell.y + 1}");
             root.transform.SetParent(parent);
-            Vector2 barrierOffset = BarrierOffset(index);
-            barrierOffset.y *= SpaceFarmMap.TerrainPerspectiveYScale;
-            root.transform.position = CellPosition(BaseCell) + (Vector3)barrierOffset;
-            bool horizontal = index < 8;
-            float length = horizontal ? 1.25f : 2.2f * SpaceFarmMap.TerrainPerspectiveYScale;
+            root.transform.position = CellPosition(cell) + new Vector3(0f, 0f, -.24f);
+            root.transform.rotation = Quaternion.Euler(0f, 0f, vertical ? 90f : 0f);
+            float length = .82f;
             Color body = preview ? new Color(.5f,.94f,.91f,.55f) : SpaceFarmPalette.Rover;
             Color trim = preview ? new Color(.75f,1f,1f,.55f) : SpaceFarmPalette.Iron;
             CreateWorldSprite("Viga", squareSprite, root.transform.position,
-                horizontal ? new Vector3(length,.15f,1f) : new Vector3(.15f,length,1f),
+                new Vector3(length,.2f,1f),
                 body, 7, root.transform);
             CreateWorldSprite("Refuerzo", squareSprite, root.transform.position + new Vector3(0,0,-.01f),
-                horizontal ? new Vector3(length,.045f,1f) : new Vector3(.045f,length,1f),
+                new Vector3(length,.055f,1f),
                 trim, 8, root.transform);
             for (int end = -1; end <= 1; end += 2)
             {
-                Vector3 offset = horizontal ? new Vector3(end * length * .5f,0,-.02f) :
-                    new Vector3(0,end * length * .5f,-.02f);
+                Vector3 offset = new Vector3(end * length * .5f,0,-.02f);
                 CreateWorldSprite("Unión", squareSprite, root.transform.position + offset,
                     new Vector3(.19f,.19f,1f), trim, 8, root.transform);
             }
@@ -296,36 +270,25 @@ namespace SpaceFarm
             }
         }
 
-        private int FindBarrierSlot(Vector3 world)
-        {
-            Vector2 local = (Vector2)(world - CellPosition(BaseCell));
-            for (int i = 0; i < barrierSegments.Length; i++)
-            {
-                Vector2 d = local - BarrierOffset(i);
-                if (i < 8 ? Mathf.Abs(d.x) <= .62f && Mathf.Abs(d.y) <= .35f :
-                    Mathf.Abs(d.x) <= .35f && Mathf.Abs(d.y) <= 1.08f) return i;
-            }
-            return -1;
-        }
-
         private bool TryHandleWorldClick(Vector3 world)
         {
             if (barrierMode)
             {
-                int slot = FindBarrierSlot(world);
                 Vector2Int cell = WorldToCell(world);
-                if (slot < 0 || !map.Inside(cell) || !revealed[cell.x, cell.y])
-                    SetReport("Solo podés colocar segmentos en las 12 posiciones marcadas alrededor de la base.");
+                if (!map.Inside(cell))
+                    SetReport("Elegí un sector dentro del mapa.");
+                else if (IsActorOccupyingCell(cell))
+                    SetReport("No coloqués el muro debajo de una persona o del rover.");
                 else
                 {
-                    bool built = state.BuildBarrierSegment(slot, out string message);
+                    bool built = state.BuildBarrierSegment(cell, barrierVertical, revealed[cell.x, cell.y], out string message);
                     SetReport(message);
                     if (built)
                     {
-                        PlayWorldPing(barrierSegments[slot].transform.position, SpaceFarmPalette.Iron);
+                        PlayWorldPing(CellPosition(cell), SpaceFarmPalette.Iron);
                         RefreshWorld();
                         RefreshHud();
-                        if (state.BarrierCount == SpaceFarmState.BarrierSlotCount) EndBarrierMode();
+                        if (state.BarrierCount == SpaceFarmState.MaxBarrierCount) EndBarrierMode();
                     }
                 }
                 RefreshSystems();
@@ -361,6 +324,12 @@ namespace SpaceFarm
         {
             if (keyboard != null)
             {
+                if (barrierMode && keyboard.rKey.wasPressedThisFrame)
+                {
+                    barrierVertical = !barrierVertical;
+                    if (barrierPreview != null)
+                        barrierPreview.transform.rotation = Quaternion.Euler(0f, 0f, barrierVertical ? 90f : 0f);
+                }
                 Vector2 direction = Vector2.zero;
                 if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed) direction.x--;
                 if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) direction.x++;
@@ -383,29 +352,45 @@ namespace SpaceFarm
             {
                 bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
                 Vector3 world = ScreenToWorld(mouse.position.ReadValue());
-                hoveredBarrierSlot = overUi ? -1 : FindBarrierSlot(world);
-                Vector2Int cell = WorldToCell(world);
-                bool validCell = map.Inside(cell) && revealed[cell.x, cell.y];
-                string reason = overUi ? "Apuntá al mapa" : hoveredBarrierSlot < 0 ? "Elegí una marca del perímetro" :
-                    !validCell ? "Sector oculto" : state.HasBarrierSegment(hoveredBarrierSlot) ? "Segmento ya construido" :
-                    state.Iron < 1 ? "Falta 1 Fe" : "VÁLIDO · clic para instalar";
+                hoveredBarrierCell = WorldToCell(world);
+                bool inside = map.Inside(hoveredBarrierCell);
+                bool actorCollision = inside && IsActorOccupyingCell(hoveredBarrierCell);
+                string reason = overUi ? "Apuntá al mapa" : !inside ? "Fuera del mapa" : actorCollision ? "No colocar bajo una persona o el rover" :
+                    state.BarrierBlocker(hoveredBarrierCell, revealed[hoveredBarrierCell.x, hoveredBarrierCell.y]);
+                bool valid = reason.Length == 0;
                 if (buildModeText != null)
-                    buildModeText.text = $"Barrera · 1 Fe (tenés {state.Iron})\n{reason}";
-                bool vertical = hoveredBarrierSlot >= 8;
-                barrierPreview.SetActive(!overUi && !vertical);
-                barrierPreviewVertical.SetActive(!overUi && vertical);
-                if (!overUi)
+                    buildModeText.text = $"Muro {(barrierVertical ? "vertical" : "horizontal")} · 1 Fe (tenés {state.Iron})\n" +
+                        (valid ? "Posición libre · clic para colocar" : reason);
+                barrierPreview.SetActive(!overUi && inside);
+                if (!overUi && inside)
                 {
-                    int slot = hoveredBarrierSlot;
-                    GameObject preview = vertical ? barrierPreviewVertical : barrierPreview;
-                    preview.transform.position = slot >= 0 ?
-                        barrierSegments[slot].transform.position : new Vector3(world.x,world.y,-.25f);
-                    bool valid = slot >= 0 && validCell && !state.HasBarrierSegment(slot) && state.Iron > 0;
-                    foreach (SpriteRenderer sprite in preview.GetComponentsInChildren<SpriteRenderer>())
+                    barrierPreview.transform.position = CellPosition(hoveredBarrierCell) + new Vector3(0f, 0f, -.24f);
+                    foreach (SpriteRenderer sprite in barrierPreview.GetComponentsInChildren<SpriteRenderer>())
                         sprite.color = valid ? new Color(.48f,1f,.88f,.58f) : new Color(1f,.31f,.27f,.6f);
                 }
             }
             AnimateAstronauts();
+        }
+
+        private bool IsActorOccupyingCell(Vector2Int cell)
+        {
+            if (rover != null && WorldToCell(rover.transform.position) == cell) return true;
+            for (int i = 0; i < astronauts.Count; i++)
+                if (astronauts[i].Root != null && WorldToCell(astronauts[i].Root.position) == cell) return true;
+            return false;
+        }
+
+        private bool IsAstronautPositionBlocked(Vector3 position, AstronautView moving)
+        {
+            Vector2Int cell = WorldToCell(position);
+            if (!map.Inside(cell) || state.IsCellBlocked(cell)) return true;
+            if (rover != null && Vector2.Distance(position, rover.transform.position) < .72f) return true;
+            for (int i = 0; i < astronauts.Count; i++)
+            {
+                AstronautView other = astronauts[i];
+                if (other != moving && other.Root != null && Vector2.Distance(position, other.Root.position) < .42f) return true;
+            }
+            return false;
         }
 
         /// <summary>Syncs every world object with the rules. Called on state or fog changes, never per frame.</summary>
@@ -458,15 +443,11 @@ namespace SpaceFarm
             {
                 Vector3 scale = view.BuildingScale * (deposit.MineLevel >= 2 ? 1.16f : 1f);
                 if (deposit.MineLevel != view.ShownLevel) AnimatePop(view.Building.transform, scale);
-                view.Building.GetComponent<SpriteRenderer>().color = deposit.MineDamaged ? SpaceFarmPalette.DamagedTint : Color.white;
-                if (deposit.MineDamaged && !view.ShownDamaged) FlashScreen(SpaceFarmPalette.Danger, .13f, .28f);
                 view.ShownLevel = deposit.MineLevel;
-                view.ShownDamaged = deposit.MineDamaged;
             }
 
             string text;
             if (!deposit.Surveyed) text = $"SEÑAL {deposit.Name}";
-            else if (deposit.MineLevel > 0 && deposit.MineDamaged) text = $"{deposit.Name} · AVERIADA";
             else if (deposit.MineLevel > 0 && deposit.MineStored > 0)
                 text = deposit.MineStored == deposit.MineCapacity
                     ? $"{deposit.Name} · LLENO {deposit.MineStored}/{deposit.MineCapacity} Fe"
@@ -482,10 +463,13 @@ namespace SpaceFarm
         private void RefreshSystems()
         {
             if (state == null || worldRoot == null) return;
-            for (int i = 0; i < barrierSegments.Length; i++)
+            foreach (SpaceFarmState.BarrierState barrier in state.Barriers)
             {
-                if (barrierSegments[i] != null) barrierSegments[i].SetActive(state.HasBarrierSegment(i));
-                if (barrierGuides[i] != null) barrierGuides[i].SetActive(barrierMode && !state.HasBarrierSegment(i));
+                if (!barrierSegments.TryGetValue(barrier.Cell, out GameObject visual) || visual == null)
+                {
+                    visual = CreateBarrierVisual(barrier.Cell, barrier.Vertical, false, worldRoot.transform);
+                    barrierSegments[barrier.Cell] = visual;
+                }
             }
             for (int i = 0; i < discoveryMarkers.Length; i++)
                 if (discoveryMarkers[i] != null)
@@ -510,27 +494,53 @@ namespace SpaceFarm
 
         private IEnumerator MineCollectionRoutine(int depositId)
         {
-            Vector2Int mineCell = map.Deposits[depositId].Cell;
+            if (!FindReachableCellNear(map.Deposits[depositId].Cell, out Vector2Int mineCell))
+            {
+                collectionActive = false;
+                SetReport("No hay un camino libre hasta la mina. Retirá un muro que bloquee el acceso.");
+                RefreshHud();
+                yield break;
+            }
             roverDestination = mineCell;
             routeMarker.transform.position = CellPosition(mineCell);
             routeMarker.enabled = true;
             SetReport($"Rover en camino a la mina de {map.Deposits[depositId].Name}.");
             travel = StartCoroutine(TravelTo());
             yield return travel;
+            if (roverCell != mineCell)
+            {
+                collectionActive = false;
+                RefreshHud();
+                yield break;
+            }
             state.LoadMineToRover(depositId, out string loaded);
             SetReport(loaded);
             RefreshWorld();
             RefreshHud();
-            roverDestination = BaseCell;
-            routeMarker.transform.position = CellPosition(BaseCell);
+            if (!FindReachableCellNear(BaseCell, out Vector2Int dockCell))
+            {
+                collectionActive = false;
+                SetReport("El rover quedó cargado porque no hay un camino libre hacia la base. Abrí un paso entre los muros.");
+                RefreshHud();
+                yield break;
+            }
+            roverDestination = dockCell;
+            routeMarker.transform.position = CellPosition(dockCell);
             routeMarker.enabled = true;
             travel = StartCoroutine(TravelTo());
             yield return travel;
+            if (roverCell != dockCell)
+            {
+                collectionActive = false;
+                SetReport("El rover sigue cargado. Despejá el camino hasta la base para continuar.");
+                RefreshHud();
+                yield break;
+            }
             // Cargo moves in two atomic steps (mine to rover, rover to habitat), so a pause in between cannot lose or duplicate iron.
             state.UnloadRover(out string unloaded);
             collectionActive = false;
             SetReport(unloaded);
-            PlayWorldPing(CellPosition(BaseCell), SpaceFarmPalette.Iron);
+            PlayWorldPing(CellPosition(dockCell), SpaceFarmPalette.Iron);
             RefreshWorld();
             RefreshHud();
         }
@@ -545,6 +555,9 @@ namespace SpaceFarm
                 SpaceFarmRandom random = new SpaceFarmRandom((ulong)(uint)map.Seed * 131UL + (ulong)(index + 1) * 7919UL);
                 Vector2 startOffset = astronautStops[index % astronautStops.Length] +
                     new Vector2(random.Range(-.12f, .12f), random.Range(-.1f, .1f));
+                for (int attempt = 0; attempt < 24 && IsAstronautPositionBlocked(
+                    CellPosition(BaseCell) + (Vector3)ProjectGroundOffset(startOffset), null); attempt++)
+                    startOffset = new Vector2(random.Range(-.2f, 2.5f), random.Range(-3.2f, -2.1f));
                 GameObject root = new GameObject($"Astronauta {index + 1}");
                 root.transform.SetParent(worldRoot.transform);
                 root.transform.position = CellPosition(BaseCell) +
@@ -603,7 +616,15 @@ namespace SpaceFarm
                 Vector3 direction = target - view.Root.position;
                 float speed = view.Speed * (state.LastSol.Storm || state.LastSol.RaidFoodLoss > 0 ? .55f : 1f);
                 Vector3 previousPosition = view.Root.position;
-                view.Root.position = Vector3.MoveTowards(view.Root.position, target, speed * Time.deltaTime);
+                Vector3 nextPosition = Vector3.MoveTowards(view.Root.position, target, speed * Time.deltaTime);
+                if (IsAstronautPositionBlocked(nextPosition, view))
+                {
+                    view.Wait = .25f;
+                    ChooseAstronautTarget(view, view.TargetOffset);
+                    SetAstronautIdle(view);
+                    continue;
+                }
+                view.Root.position = nextPosition;
                 float traveled = Vector3.Distance(previousPosition, view.Root.position);
                 if (traveled > .0001f)
                 {
@@ -673,10 +694,12 @@ namespace SpaceFarm
 
         private void ChooseAstronautTarget(AstronautView view, Vector2 currentOffset)
         {
-            for (int attempt = 0; attempt < 12; attempt++)
+            for (int attempt = 0; attempt < 28; attempt++)
             {
-                Vector2 candidate = new Vector2(view.Random.Range(-2.8f, 2.8f), view.Random.Range(-2.8f, -1.7f));
+                Vector2 candidate = new Vector2(view.Random.Range(-.2f, 2.5f), view.Random.Range(-3.2f, -2.1f));
                 if ((candidate - currentOffset).sqrMagnitude < .4f) continue;
+                Vector3 candidateWorld = CellPosition(BaseCell) + (Vector3)ProjectGroundOffset(candidate);
+                if (IsAstronautPositionBlocked(candidateWorld, view)) continue;
                 bool occupied = false;
                 for (int i = 0; i < astronauts.Count; i++)
                     if (astronauts[i] != view && (astronauts[i].TargetOffset - candidate).sqrMagnitude < .3f)
@@ -689,8 +712,8 @@ namespace SpaceFarm
                 return;
             }
             view.TargetOffset = new Vector2(
-                Mathf.Clamp(currentOffset.x + view.Random.Range(-.6f, .6f), -2.8f, 2.8f),
-                Mathf.Clamp(currentOffset.y - .15f, -2.8f, -1.7f));
+                Mathf.Clamp(currentOffset.x + view.Random.Range(-.6f, .6f), -.2f, 2.5f),
+                Mathf.Clamp(currentOffset.y - .15f, -3.2f, -2.1f));
         }
 
         private void AddMineDrill(GameObject mine)

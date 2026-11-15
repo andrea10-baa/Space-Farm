@@ -165,15 +165,12 @@ namespace SpaceFarm
             AddAction("Planta de O2", () => "9 Fe · segunda planta", 0, null,
                 () => state.PlacementAvailability(StructureKind.OxygenPlant), StructureKind.OxygenPlant,
                 "Art/space-farm-world-modules#oxygen-3d", "Produce oxígeno para más colonos");
-            AddAction("Construir barrera", () => "1 Fe por segmento", 0, null,
+            AddAction("Construir muros", () => "1 Fe por muro · hasta 12", 0, null,
                 () => state.PlacementAvailability(StructureKind.Barrier), StructureKind.Barrier,
-                "Art/space-farm-world-modules#habitat-3d", "Protege las minas en la incursión").BarrierMode = true;
-            AddAction("Mejorar mina", () => "6 Fe", 1, () => state.UpgradeMine(MineTarget(false), out _),
-                () => state.MineCount == 0 ? "Construí primero una mina" : MineTarget(false) < 0 ? "No hay minas para mejorar (nivel máximo o averiadas)" : MissingIron(6),
+                "Art/space-farm-world-modules#habitat-3d", "Colocá muros en cualquier sector libre").BarrierMode = true;
+            AddAction("Mejorar mina", () => "6 Fe", 1, () => state.UpgradeMine(MineTarget(), out _),
+                () => state.MineCount == 0 ? "Construí primero una mina" : MineTarget() < 0 ? "No hay minas para mejorar (nivel máximo)" : MissingIron(6),
                 StructureKind.None, "Art/space-farm-iron-mine-animation#iron-mine-base-3d", "Sube una mina al nivel 2");
-            AddAction("Reparar mina", () => "3 hierro", 1, () => state.RepairMine(MineTarget(true), out _),
-                () => MineTarget(true) < 0 ? "Ninguna mina necesita reparación" : MissingIron(3),
-                StructureKind.None, "Art/space-farm-iron-mine-animation#iron-mine-base-3d", "Repara una mina averiada");
             AddAction("Mejorar rover", () => "5 hierro", 1, () => state.UpgradeRover(out _),
                 () => state.RoverLevel >= 2 ? "Nivel máximo de la demo" : MissingIron(5),
                 StructureKind.None, "Art/space-farm-rover-directions#rover-facing-south", "Amplía alcance y capacidad");
@@ -200,17 +197,16 @@ namespace SpaceFarm
         }
 
         /// <summary>Mine an upgrade or repair card acts on: the selected mine first, then the nearest that qualifies.</summary>
-        private int MineTarget(bool repair)
+        private int MineTarget()
         {
             SpaceFarmState.DepositState chosen = state.Deposit(selectedDeposit);
-            if (selectedBuilding == "deposit" && chosen != null && Qualifies(chosen, repair)) return chosen.Id;
+            if (selectedBuilding == "deposit" && chosen != null && Qualifies(chosen)) return chosen.Id;
             foreach (SpaceFarmState.DepositState deposit in state.Deposits)
-                if (Qualifies(deposit, repair)) return deposit.Id;
+                if (Qualifies(deposit)) return deposit.Id;
             return -1;
         }
 
-        private static bool Qualifies(SpaceFarmState.DepositState deposit, bool repair) =>
-            repair ? deposit.MineDamaged : deposit.MineLevel == 1 && !deposit.MineDamaged;
+        private static bool Qualifies(SpaceFarmState.DepositState deposit) => deposit.MineLevel == 1;
 
         private GameObject Panel(string name, Transform parent, Color color, Vector2 anchorMin, Vector2 anchorMax,
             Vector2 pivot, Vector2 position, Vector2 size)
@@ -414,7 +410,7 @@ namespace SpaceFarm
             string[] hints =
             {
                 "Clic: activar plano · arrastrar tarjeta: colocar.",
-                "Mejorá o repará la instalación seleccionada.",
+                "Mejorá la instalación seleccionada.",
                 "Cada colono extra permite operar una mina más, pero consume O2, agua y comida."
             };
             actionDetailText.text = hints[Mathf.Clamp(category, 0, hints.Length - 1)];
@@ -793,8 +789,7 @@ namespace SpaceFarm
                 $"Tripulación -{sol.CrewConsumed} recursos vitales.";
             if (sol.Storm) text += " Tormenta de polvo.";
             if (sol.RaidFoodLoss > 0)
-                text += $" Incursión ({state.BarrierCount}/12): -{sol.RaidFoodLoss} comida" +
-                    (sol.RaidDamagedMines > 0 ? $", {sol.RaidDamagedMines} mina(s) averiada(s)." : ", minas protegidas.");
+                text += $" Incursión ({state.BarrierCount}/12 muros): -{sol.RaidFoodLoss} comida. Las minas siguen operativas.";
             if (state.GameOver) text += " Misión perdida.";
             else if (state.MissionComplete) text += " ¡Misión completa!";
             return text;
@@ -811,7 +806,7 @@ namespace SpaceFarm
             SetFollow(false);
             FocusWorld(CellPosition(BaseCell));
             RefreshSystems();
-            SetReport("Elegí una posición iluminada del perímetro. Cada clic coloca un segmento por 1 Fe; Escape o TERMINAR salen del modo.");
+            SetReport("Elegí cualquier sector libre del mapa para colocar un muro por 1 Fe. R cambia la orientación; Escape termina.");
         }
 
         private void EndBarrierMode()
@@ -819,10 +814,9 @@ namespace SpaceFarm
             barrierMode = false;
             interactionMode = InteractionMode.Explore;
             if (barrierPreview != null) barrierPreview.SetActive(false);
-            if (barrierPreviewVertical != null) barrierPreviewVertical.SetActive(false);
             if (buildModePanel != null) buildModePanel.SetActive(false);
             RefreshSystems();
-            SetReport($"Construcción terminada. Perímetro {state.BarrierCount}/{SpaceFarmState.BarrierSlotCount}.");
+            SetReport($"Construcción terminada. Muros {state.BarrierCount}/{SpaceFarmState.MaxBarrierCount}.");
         }
 
         private bool SelectWorldBuilding(string building)
@@ -867,17 +861,16 @@ namespace SpaceFarm
             SpaceFarmState.DepositState deposit = state.Deposit(selectedDeposit);
             if (paused || selectedBuilding != "deposit" || deposit == null || deposit.MineLevel == 0) return;
             int id = deposit.Id;
-            if (deposit.MineDamaged) Act((out string message) => state.RepairMine(id, out message));
-            else Act((out string message) => state.UpgradeMine(id, out message));
+            Act((out string message) => state.UpgradeMine(id, out message));
         }
 
         private void RefreshSystemsHud()
         {
             if (state == null) return;
             if (buildModeText != null && barrierMode)
-                buildModeText.text = $"BARRERA  ·  1 Fe por segmento\nPerímetro {state.BarrierCount}/12  ·  Hierro {state.Iron}";
+                buildModeText.text = $"MURO · 1 Fe\nMuros {state.BarrierCount}/12 · Hierro {state.Iron} · R gira";
             if (defenseText != null)
-                defenseText.text = $"PERÍMETRO {state.BarrierCount}/12\nMINAS {state.MineCount}/{state.MaxMines}";
+                defenseText.text = $"MUROS {state.BarrierCount}/12\nMINAS {state.MineCount}/{state.MaxMines}";
             if (infoPanel == null || string.IsNullOrEmpty(selectedBuilding)) return;
             if (selectedBuilding == "deposit")
             {
@@ -926,17 +919,17 @@ namespace SpaceFarm
             if (deposit.MineLevel > 0)
             {
                 infoTitle.text = $"Mina {deposit.Name} · nivel {deposit.MineLevel}";
-                string status = deposit.MineDamaged ? "Averiada" : deposit.MineStored == deposit.MineCapacity ? "Almacén lleno" : "Operativa";
-                string reason = deposit.MineDamaged ? "Averiada: repará la mina." : deposit.LastResult.Reason;
+                string status = deposit.MineStored == deposit.MineCapacity ? "Almacén lleno" : "Operativa";
+                string reason = deposit.LastResult.Reason;
                 infoBody.text = $"Estado: {status}\nNominal: {deposit.MineNominal}/sol  ·  Real último: {deposit.LastResult.Actual}\n" +
                     $"Energía: {deposit.MineEnergy}/sol (usó {deposit.LastResult.EnergyUsed})\n" +
                     $"Almacén {deposit.MineStored}/{deposit.MineCapacity} Fe  ·  Rover {state.RoverCargo}/{state.RoverCapacity} Fe\n{place}\n{reason}";
                 infoPrimary.gameObject.SetActive(true);
                 primaryLabel.text = "RECOGER";
                 infoPrimary.interactable = deposit.MineStored > 0 && !busy;
-                infoSecondary.gameObject.SetActive(deposit.MineDamaged || deposit.MineLevel < 2);
+                infoSecondary.gameObject.SetActive(deposit.MineLevel < 2);
                 infoSecondary.interactable = !state.GameOver;
-                infoSecondary.GetComponentInChildren<TextMeshProUGUI>().text = deposit.MineDamaged ? "REPARAR · 3" : "MEJORAR · 6";
+                infoSecondary.GetComponentInChildren<TextMeshProUGUI>().text = "MEJORAR · 6";
             }
             else if (deposit.Extractor)
             {

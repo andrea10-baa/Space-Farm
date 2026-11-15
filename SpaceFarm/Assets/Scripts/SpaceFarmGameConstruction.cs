@@ -97,7 +97,9 @@ namespace SpaceFarm
             placementPreview.transform.position = position;
             placementFootprint.transform.position = position + new Vector3(0f, 0f, -.02f);
             bool overUi = PointerOverUi(pointer);
-            string reason = overUi ? "Soltá sobre el mapa" : state.PlacementBlocker(activeStructure, cell, IsRevealed(cell));
+            string reason = overUi ? "Soltá sobre el mapa" : IsActorOccupyingCell(cell)
+                ? "No coloqués una estructura debajo de una persona o del rover"
+                : state.PlacementBlocker(activeStructure, cell, IsRevealed(cell));
             bool valid = reason.Length == 0;
             placementPreview.enabled = placementFootprint.enabled = !overUi;
             placementPreview.color = valid ? new Color(.78f, 1f, .94f, .72f) : new Color(1f, .52f, .47f, .68f);
@@ -137,7 +139,14 @@ namespace SpaceFarm
         {
             if (activeStructure == StructureKind.None || paused || titleScreenOpen) return;
             StructureKind kind = activeStructure;
-            bool placed = state.PlaceStructure(kind, cell, IsRevealed(cell), out string message);
+            bool placed;
+            string message;
+            if (IsActorOccupyingCell(cell))
+            {
+                placed = false;
+                message = "No coloqués una estructura debajo de una persona o del rover.";
+            }
+            else placed = state.PlaceStructure(kind, cell, IsRevealed(cell), out message);
             SetReport(message);
             if (!placed) { RefreshHud(); return; }
             CancelPlacement(false);

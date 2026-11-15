@@ -48,16 +48,17 @@ namespace SpaceFarm.Editor
             Require(colony.UpgradeRover(out _) && colony.RoverCapacity == 8, "Capacidad del rover mejorado");
             Require(colony.UpgradeMine(0, out _) && mine.MineCapacity == 15, "Capacidad de mina mejorada");
             int beforeBarrier = colony.Iron;
-            Require(colony.BuildBarrierSegment(0, out _) && colony.Iron == beforeBarrier - 1,
+            Vector2Int firstWall = new Vector2Int(100, 100);
+            Require(colony.BuildBarrierSegment(firstWall, false, true, out _) && colony.Iron == beforeBarrier - 1,
                 "Cada segmento cuesta un hierro");
-            Require(!colony.BuildBarrierSegment(0, out _) && colony.Iron == beforeBarrier - 1,
+            Require(!colony.BuildBarrierSegment(firstWall, false, true, out _) && colony.Iron == beforeBarrier - 1,
                 "Un segmento repetido no cobra");
-            Require(!colony.BuildBarrierSegment(-1, out _) && colony.Iron == beforeBarrier - 1,
-                "Una posición inválida no cobra");
-            Require(RaidWith(2).LastSol.RaidFoodLoss == 4 && RaidWith(2).AnyMineDamaged, "Defensa 0-3");
-            Require(RaidWith(5).LastSol.RaidFoodLoss == 3 && RaidWith(5).AnyMineDamaged, "Defensa 4-7");
-            Require(RaidWith(9).LastSol.RaidFoodLoss == 2 && !RaidWith(9).AnyMineDamaged, "Defensa 8-11");
-            Require(RaidWith(12).LastSol.RaidFoodLoss == 1 && !RaidWith(12).AnyMineDamaged, "Defensa completa");
+            Require(!colony.BuildBarrierSegment(new Vector2Int(100, 101), false, false, out _) && colony.Iron == beforeBarrier - 1,
+                "Un muro en niebla no cobra");
+            Require(RaidWith(2).LastSol.RaidFoodLoss == 4 && RaidWith(2).MineCount == 1, "Defensa 0-3 sin averiar minas");
+            Require(RaidWith(5).LastSol.RaidFoodLoss == 3 && RaidWith(5).MineCount == 1, "Defensa 4-7 sin averiar minas");
+            Require(RaidWith(9).LastSol.RaidFoodLoss == 2 && RaidWith(9).MineCount == 1, "Defensa 8-11");
+            Require(RaidWith(12).LastSol.RaidFoodLoss == 1 && RaidWith(12).MineCount == 1, "Defensa completa");
             SpaceFarmState discovery = new SpaceFarmState();
             int iron = discovery.Iron;
             discovery.ClaimDiscovery(0);
@@ -68,7 +69,7 @@ namespace SpaceFarm.Editor
             mission.SurveyDeposit(0);
             mission.SurveyDeposit(1);
             Require(mission.BuildMine(0, out _), "Mina para la misión");
-            for (int i = 0; i < 8; i++) Require(mission.BuildBarrierSegment(i, out _), "Defensa para la misión");
+            for (int i = 0; i < 8; i++) Require(mission.BuildBarrierSegment(new Vector2Int(100 + i, 100), false, true, out _), "Defensa para la misión");
             Require(mission.AddColonist(out _), "Colono para la misión");
             mission.AdvanceSol();
             Require(mission.LoadMineToRover(0, out _) && mission.UnloadRover(out _), "Primera cosecha de hierro");
@@ -193,24 +194,20 @@ namespace SpaceFarm.Editor
                 "Recoger de una mina no toca el almacén de la otra");
             Require(colony.UnloadRover(out _), "Descarga de la mina lejana");
             Require(colony.LoadMineToRover(0, out _) && colony.UnloadRover(out _), "Descarga de la mina cercana");
-            for (int i = 0; i < 4; i++) Require(colony.BuildBarrierSegment(i, out _), "Barreras parciales");
+            for (int i = 0; i < 4; i++) Require(colony.BuildBarrierSegment(new Vector2Int(100 + i, 100), false, true, out _), "Barreras parciales");
             colony.AdvanceSol();
             Require(colony.LoadMineToRover(0, out _) && colony.UnloadRover(out _) &&
                 colony.LoadMineToRover(1, out _) && colony.UnloadRover(out _), "Segunda ronda de recogida");
             Require(colony.UpgradeMine(0, out _) && near.MineLevel == 2 && far.MineLevel == 1,
                 "Mejorar una mina no mejora la otra");
 
-            // Sol 5 raid with 4-7 segments: only the farthest mine is hit.
+            // Sol 5 raids affect food but never disable a mine.
             while (colony.Sol < 5) colony.AdvanceSol();
-            Require(far.MineDamaged && !near.MineDamaged && colony.LastSol.RaidDamagedMines == 1,
-                "Con 4-7 segmentos solo se avería la mina más lejana");
             int nearStored = near.MineStored;
             int farStored = far.MineStored;
             colony.AdvanceSol();
-            Require(far.MineStored == farStored && far.LastResult.Actual == 0 && near.MineStored >= nearStored,
-                "La mina averiada no produce y la sana sigue");
-            if (colony.Iron < 3) { colony.LoadMineToRover(0, out _); colony.UnloadRover(out _); }
-            Require(colony.RepairMine(1, out _) && !far.MineDamaged && near.MineLevel == 2, "Reparar una mina concreta");
+            Require(far.MineStored > farStored && far.LastResult.Actual > 0 && near.MineStored >= nearStored,
+                "Las minas siguen produciendo y nunca se averían tras una incursión");
 
             // Extractors: independent, capped at two, second one costs more.
             SpaceFarmState water = new SpaceFarmState(layout, new[] { 0 });
@@ -267,7 +264,7 @@ namespace SpaceFarm.Editor
         {
             string tag = $"Semilla {map.Seed}: ";
             HashSet<Vector2Int> used = new HashSet<Vector2Int>();
-            // Cells covered by the base buildings and the 12 barrier slots (see SpaceFarmGame.BarrierOffset).
+            // Cells covered by the base buildings and its immediate surroundings.
             for (int dy = -3; dy <= 3; dy++)
             for (int dx = -3; dx <= 3; dx++)
                 used.Add(map.BaseCell + new Vector2Int(dx, dy));
@@ -315,7 +312,7 @@ namespace SpaceFarm.Editor
             SpaceFarmState raid = new SpaceFarmState();
             raid.SurveyDeposit(0);
             Require(raid.BuildMine(0, out _), "Preparación de mina para incursión");
-            for (int i = 0; i < segments; i++) Require(raid.BuildBarrierSegment(i, out _), "Construcción de defensa");
+            for (int i = 0; i < segments; i++) Require(raid.BuildBarrierSegment(new Vector2Int(100 + i, 100), false, true, out _), "Construcción de defensa");
             for (int i = 0; i < 4; i++) raid.AdvanceSol();
             return raid;
         }

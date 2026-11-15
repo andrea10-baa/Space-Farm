@@ -48,6 +48,7 @@ namespace SpaceFarm
         private Coroutine screenFlashRoutine;
         private Vector2Int roverDestination;
         private Vector2Int roverCell;
+        private bool roverRouteDirty;
         private MapDeposit signalDuringTrip;
         private bool isPanning;
         private bool leftPressValid;
@@ -119,6 +120,7 @@ namespace SpaceFarm
         }
 
         private Vector2Int BaseCell => map.BaseCell;
+        private Vector2Int RoverDockCell => BaseCell + new Vector2Int(0, -2);
 
         private void Start()
         {
@@ -128,7 +130,7 @@ namespace SpaceFarm
             float started = Time.realtimeSinceStartup;
             map = SpaceFarmMap.Generate(seed);
             state = new SpaceFarmState(map);
-            roverCell = roverDestination = BaseCell;
+            roverCell = roverDestination = RoverDockCell;
             ConfigureCamera();
             CreateSprites();
             CreateWorld();
@@ -383,6 +385,12 @@ namespace SpaceFarm
         private void SendRoverTo(Vector2Int target)
         {
             if (paused) return;
+            if (!map.Inside(target)) { SetReport("Ese sector queda fuera del mapa."); return; }
+            if (target != roverCell && state.IsCellBlocked(target))
+            {
+                SetReport("El rover no puede entrar en un sector ocupado por un muro o una estructura.");
+                return;
+            }
             if (collectionActive)
             {
                 SetReport("El rover está recogiendo hierro. Esperá a que descargue en el hábitat.");
@@ -390,6 +398,7 @@ namespace SpaceFarm
             }
             signalDuringTrip = null;
             roverDestination = target;
+            roverRouteDirty = true;
             routeMarker.transform.position = CellPosition(target) + new Vector3(0f, 0f, -.35f);
             routeMarker.enabled = target != roverCell;
             SetReport(target == roverCell
@@ -403,24 +412,49 @@ namespace SpaceFarm
         {
             if (scanTrail != null) scanTrail.Play();
             scanPulse.enabled = true;
+            Vector2Int routeTarget = new Vector2Int(int.MinValue, int.MinValue);
+            List<Vector2Int> path = new List<Vector2Int>();
             while (roverCell != roverDestination)
             {
-                // Straight runs with diagonals: every cell is drivable, craters and ridges are only relief.
-                Vector2Int target = roverDestination;
-                Vector2Int nextCell = new Vector2Int(roverCell.x + Math.Sign(target.x - roverCell.x),
-                    roverCell.y + Math.Sign(target.y - roverCell.y));
+                if (roverRouteDirty || routeTarget != roverDestination || path.Count == 0 || state.IsCellBlocked(path[0]))
+                {
+                    routeTarget = roverDestination;
+                    roverRouteDirty = false;
+                    if (!FindRoverPath(roverCell, routeTarget, out path))
+                    {
+                        // A colonist can temporarily stand in a narrow passage. Wait until it moves,
+                        // but stop permanently when walls or structures remove every route.
+                        if (FindRoverPath(roverCell, routeTarget, out _, false))
+                        {
+                            yield return null;
+                            continue;
+                        }
+                        SetReport("No hay un camino libre hasta ese sector. Retirá un muro o una estructura que bloquee el paso.");
+                        break;
+                    }
+                }
+                if (path.Count == 0) break;
+                Vector2Int nextCell = path[0];
+                path.RemoveAt(0);
                 Vector3 start = rover.transform.position;
                 Vector3 end = CellPosition(nextCell) + new Vector3(0f, 0f, -.5f);
                 Vector3 direction = (end - start).normalized;
                 SetRoverFacing(direction);
                 float duration = Vector3.Distance(start, end) / RoverSpeed;
                 float elapsed = 0f;
+                bool colonistBlocked = false;
                 while (elapsed < duration)
                 {
                     // Time.deltaTime is zero while paused: the trip freezes here and resumes untouched.
                     elapsed += Time.deltaTime;
                     float progress = Mathf.Clamp01(elapsed / duration);
-                    rover.transform.position = Vector3.LerpUnclamped(start, end, progress);
+                    Vector3 nextPosition = Vector3.LerpUnclamped(start, end, progress);
+                    if (IsRoverPositionBlocked(nextPosition))
+                    {
+                        colonistBlocked = true;
+                        break;
+                    }
+                    rover.transform.position = nextPosition;
                     Vector2Int revealCenter = WorldToCell(rover.transform.position);
                     if (map.Inside(revealCenter) && revealCenter != lastRevealCenter)
                     {
@@ -429,9 +463,31 @@ namespace SpaceFarm
                     }
                     yield return null;
                 }
+                if (colonistBlocked)
+                {
+                    // Return to the last safe cell before routing around the moving colonist.
+                    while (Vector3.Distance(rover.transform.position, start) > .025f)
+                    {
+                        rover.transform.position = Vector3.MoveTowards(rover.transform.position, start,
+                            RoverSpeed * Time.deltaTime);
+                        yield return null;
+                    }
+                    rover.transform.position = start;
+                    roverRouteDirty = true;
+                    path.Clear();
+                    continue;
+                }
                 rover.transform.position = end;
                 roverCell = nextCell;
                 if (Reveal(roverCell, state.ScanRadius)) RefreshWorld();
+            }
+            if (roverCell != roverDestination)
+            {
+                if (scanTrail != null) scanTrail.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+                routeMarker.enabled = false;
+                travel = null;
+                RefreshHud();
+                yield break;
             }
             MapDeposit here = map.DepositAt(roverCell);
             int point = map.PointAt(roverCell);
@@ -452,6 +508,89 @@ namespace SpaceFarm
             travel = null;
             RefreshWorld();
             RefreshHud();
+        }
+
+        private bool FindRoverPath(Vector2Int start, Vector2Int goal, out List<Vector2Int> path, bool avoidColonists = true)
+        {
+            path = new List<Vector2Int>();
+            if (!map.Inside(start) || !map.Inside(goal) || (goal != start && state.IsCellBlocked(goal))) return false;
+            if (start == goal) return true;
+
+            bool[,] visited = new bool[Width, Height];
+            Vector2Int[,] previous = new Vector2Int[Width, Height];
+            Queue<Vector2Int> open = new Queue<Vector2Int>();
+            Vector2Int[] directions =
+            {
+                new Vector2Int(1, 0), new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(0, -1),
+                new Vector2Int(1, 1), new Vector2Int(1, -1), new Vector2Int(-1, 1), new Vector2Int(-1, -1)
+            };
+            open.Enqueue(start);
+            visited[start.x, start.y] = true;
+            while (open.Count > 0 && !visited[goal.x, goal.y])
+            {
+                Vector2Int current = open.Dequeue();
+                foreach (Vector2Int direction in directions)
+                {
+                    Vector2Int next = current + direction;
+                    if (!map.Inside(next) || visited[next.x, next.y] || IsRoverPathCellBlocked(next, goal, avoidColonists)) continue;
+                    if (direction.x != 0 && direction.y != 0 &&
+                        (IsRoverPathCellBlocked(current + new Vector2Int(direction.x, 0), goal, avoidColonists) ||
+                         IsRoverPathCellBlocked(current + new Vector2Int(0, direction.y), goal, avoidColonists))) continue;
+                    visited[next.x, next.y] = true;
+                    previous[next.x, next.y] = current;
+                    open.Enqueue(next);
+                }
+            }
+            if (!visited[goal.x, goal.y]) return false;
+            Vector2Int cursor = goal;
+            while (cursor != start)
+            {
+                path.Add(cursor);
+                cursor = previous[cursor.x, cursor.y];
+            }
+            path.Reverse();
+            return path.Count > 0;
+        }
+
+        private bool IsRoverPathCellBlocked(Vector2Int cell, Vector2Int goal, bool avoidColonists)
+        {
+            if (state.IsCellBlocked(cell)) return true;
+            if (!avoidColonists || cell == goal) return false;
+            Vector3 center = CellPosition(cell);
+            for (int i = 0; i < astronauts.Count; i++)
+                if (astronauts[i].Root != null && Vector2.Distance(center, astronauts[i].Root.position) < .72f) return true;
+            return false;
+        }
+
+        private bool IsRoverPositionBlocked(Vector3 position)
+        {
+            Vector2Int cell = WorldToCell(position);
+            if (!map.Inside(cell) || state.IsCellBlocked(cell)) return true;
+            for (int i = 0; i < astronauts.Count; i++)
+                if (astronauts[i].Root != null && Vector2.Distance(position, astronauts[i].Root.position) < .72f) return true;
+            return false;
+        }
+
+        private bool FindReachableCellNear(Vector2Int target, out Vector2Int result)
+        {
+            for (int radius = 1; radius <= 5; radius++)
+            {
+                int bestLength = int.MaxValue;
+                Vector2Int best = default;
+                for (int y = -radius; y <= radius; y++)
+                for (int x = -radius; x <= radius; x++)
+                {
+                    if (Mathf.Abs(x) != radius && Mathf.Abs(y) != radius) continue;
+                    Vector2Int candidate = target + new Vector2Int(x, y);
+                    if (!map.Inside(candidate) || state.IsCellBlocked(candidate)) continue;
+                    if (!FindRoverPath(roverCell, candidate, out List<Vector2Int> path, false) || path.Count >= bestLength) continue;
+                    best = candidate;
+                    bestLength = path.Count;
+                }
+                if (bestLength != int.MaxValue) { result = best; return true; }
+            }
+            result = default;
+            return false;
         }
 
         private void CreateScanTrail()
@@ -807,7 +946,7 @@ namespace SpaceFarm
             if (state.ExtractorCount == 0) return $"Construí un extractor para asegurar agua ({state.ExtractorCost} de hierro).";
             if (!state.Greenhouse) return "Construí un invernadero para iniciar la cosecha (6 de hierro).";
             if (state.Population < 3) return "Prepará reservas de O2, agua y comida; luego recibí un colono.";
-            if (state.BarrierCount < 8) return $"Protegé las minas: construí barreras ({state.BarrierCount}/8).";
+            if (state.BarrierCount < 8) return $"Protegé las minas: construí muros ({state.BarrierCount}/8).";
             if (state.Sol < 7) return $"Mantené la colonia hasta el sol 7 (ahora {state.Sol}).";
             return "Revisá recursos y explorá yacimientos lejanos para crecer.";
         }
