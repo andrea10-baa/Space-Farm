@@ -39,7 +39,7 @@ namespace SpaceFarm
 
         public static void RestorePreference()
         {
-            SetLanguage(PlayerPrefs.GetString(LanguagePreference, "es"), false);
+            SetLanguage(PlayerPrefs.GetString(LanguagePreference, "en"), false);
         }
 
         public static void SetLanguage(string code, bool persist = true)
