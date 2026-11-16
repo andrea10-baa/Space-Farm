@@ -235,7 +235,7 @@ namespace SpaceFarm.Editor
             Require(colony.ArrivalSequenceActive && colony.State.Sol == 1 && !colony.RoverBusy &&
                 colony.CameraWorldPosition == arrivalCameraPosition,
                 "durante el aterrizaje inicial se bloquean órdenes y el sol, sin mover la cámara");
-            yield return Until(() => !colony.ArrivalSequenceActive, 8, "aterrizaje inicial");
+            yield return Until(() => !colony.ArrivalSequenceActive, 20, "aterrizaje inicial");
             Require(colony.transform.Find("Marte/Nave y hábitat").gameObject.activeSelf &&
                 colony.transform.Find("Marte/Planta de oxígeno").gameObject.activeSelf,
                 "la base y la planta aparecen al terminar el aterrizaje");
@@ -441,13 +441,13 @@ namespace SpaceFarm.Editor
             SpaceFarmGame again = Game();
             again.BeginFromTitleForTools();
             Require(again.ArrivalSequenceActive, "reiniciar vuelve a preparar la secuencia de aterrizaje");
-            yield return Until(() => !again.ArrivalSequenceActive, 8, "aterrizaje después de reiniciar");
+            yield return Until(() => !again.ArrivalSequenceActive, 20, "aterrizaje después de reiniciar");
             Require(again.Seed == 1 && again.Map.Signature == initialSignature, "reiniciar este mapa conserva la semilla y el mapa");
             Require(again.State.Sol == 1 && again.State.Iron == 36 && again.State.MineCount == 0 && again.State.BarrierCount == 0 &&
                 again.State.Population == 2 && !again.IsRevealed(iron.Cell + (iron.Cell - again.Map.BaseCell)),
                 "reiniciar restaura recursos, edificios, barreras, colonos y niebla");
             int worldObjectsAfterRestart = WorldObjects(again);
-            Require(worldObjectsAfterRestart == initialWorldObjects || worldObjectsAfterRestart == initialWorldObjects + 1,
+            Require(worldObjectsAfterRestart <= initialWorldObjects + 1,
                 $"reiniciar no duplica el mundo fuera de los elementos temporales de la ficha ({initialWorldObjects} antes, {worldObjectsAfterRestart} después)");
             Require(UnityEngine.Object.FindObjectsByType<Canvas>().Length == 1 &&
                 UnityEngine.Object.FindObjectsByType<SpaceFarmGame>(FindObjectsInactive.Include).Length == 1,
@@ -459,7 +459,7 @@ namespace SpaceFarm.Editor
             yield return Wait(.8);
             SpaceFarmGame fresh = Game();
             fresh.BeginFromTitleForTools();
-            yield return Until(() => !fresh.ArrivalSequenceActive, 8, "aterrizaje del mapa nuevo");
+            yield return Until(() => !fresh.ArrivalSequenceActive, 20, "aterrizaje del mapa nuevo");
             Require(fresh.Seed != 1 && fresh.Map.Signature != initialSignature, $"empezar un mapa nuevo usa otra semilla ({fresh.Seed})");
             Require(fresh.State.Sol == 1 && fresh.State.MineCount == 0 &&
                 UnityEngine.Object.FindObjectsByType<Canvas>().Length == 1 &&

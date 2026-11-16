@@ -176,9 +176,11 @@ namespace SpaceFarm
             string stationName = "sin tarea";
             foreach (CrewStation station in crewStations)
                 if (selected != null && station.Job == selected.Job && station.Target == selected.Target) { stationName = station.Name; break; }
-            crewSummary.text = selected == null ? "No hay astronautas." :
-                $"Astronauta {selected.Id}: {stationName} · energía {selected.Energy:0}% · {(selected.Resting ? "DESCANSANDO" : selected.Job == CrewJob.None ? "LIBRE" : "TRABAJANDO")}. " +
-                $"Libres: {state.FreeWorkers}/{state.Population}.";
+            crewSummary.text = selected == null ? SpaceFarmLocalization.T("No hay astronautas.") :
+                SpaceFarmLocalization.F("Astronauta {0}: {1} · energía {2:0}% · {3}. Libres: {4}/{5}.",
+                    selected.Id, SpaceFarmLocalization.T(stationName), selected.Energy,
+                    SpaceFarmLocalization.T(selected.Resting ? "DESCANSANDO" : selected.Job == CrewJob.None ? "LIBRE" : "TRABAJANDO"),
+                    state.FreeWorkers, state.Population);
             crewPageLabel.text = $"{crewPage + 1}/{Mathf.Max(1, (state.Crew.Count + CrewRowsPerPage - 1) / CrewRowsPerPage)}";
             stationPageLabel.text = $"{stationPage + 1}/{Mathf.Max(1, (crewStations.Count + CrewRowsPerPage - 1) / CrewRowsPerPage)}";
             for (int row = 0; row < CrewRowsPerPage; row++)
@@ -190,7 +192,8 @@ namespace SpaceFarm
                 {
                     SpaceFarmState.CrewMember member = state.Crew[crewIndex];
                     crewButton.GetComponentInChildren<TextMeshProUGUI>().text =
-                        $"A-{member.Id:00} · {(member.Resting ? "DURMIENDO" : member.Job == CrewJob.None ? "LIBRE" : "TRABAJANDO")} · {member.Energy:0}%";
+                        SpaceFarmLocalization.F("A-{0:00} · {1} · {2:0}%", member.Id,
+                            SpaceFarmLocalization.T(member.Resting ? "DURMIENDO" : member.Job == CrewJob.None ? "LIBRE" : "TRABAJANDO"), member.Energy);
                     crewButton.GetComponent<Image>().color = member.Id == selectedCrewId ? SpaceFarmPalette.Iron : SpaceFarmPalette.Button;
                 }
                 int stationIndex = stationPage * CrewRowsPerPage + row;
@@ -203,8 +206,8 @@ namespace SpaceFarm
                     bool available = occupant == null || occupant.Id == selectedCrewId;
                     stationButton.interactable = available;
                     stationButton.GetComponentInChildren<TextMeshProUGUI>().text =
-                        $"{station.Name} · +{SpaceFarmState.WorkerBonus(station.Job)}/sol" +
-                        (occupant == null ? "" : $" · A-{occupant.Id:00}");
+                        SpaceFarmLocalization.F("{0} · +{1}/sol", SpaceFarmLocalization.T(station.Name), SpaceFarmState.WorkerBonus(station.Job)) +
+                        (occupant == null ? "" : SpaceFarmLocalization.F(" · A-{0:00}", occupant.Id));
                     stationButton.GetComponent<Image>().color = occupant != null && occupant.Id == selectedCrewId ? SpaceFarmPalette.Iron : SpaceFarmPalette.Button;
                 }
             }

@@ -201,7 +201,9 @@ namespace SpaceFarm
                 int yield = SpaceFarmState.GreenhouseCropYield(crop, level);
                 int duration = SpaceFarmState.GreenhouseCropDuration(crop);
                 TextMeshProUGUI label = cropChoiceButtons[i].GetComponentInChildren<TextMeshProUGUI>();
-                label.text = $"{SpaceFarmState.GreenhouseCropName(crop).ToUpperInvariant()}  ·  +{yield} COMIDA / {duration} SOL{(duration == 1 ? "" : "ES")}  ·  NIVEL {unlock}";
+                label.text = SpaceFarmLocalization.F("{0}  ·  +{1} comida / {2} {3}  ·  nivel {4}",
+                    SpaceFarmLocalization.T(SpaceFarmState.GreenhouseCropName(crop)).ToUpperInvariant(), yield, duration,
+                    SpaceFarmLocalization.T(duration == 1 ? "sol" : "soles"), unlock).ToUpperInvariant();
                 cropChoiceButtons[i].interactable = level >= unlock && !state.GameOver;
                 cropChoiceButtons[i].GetComponent<Image>().color = state.GreenhouseCropAt(selectedBuildingIndex) == crop
                     ? SpaceFarmPalette.Greenhouse : SpaceFarmPalette.PanelRaised;
@@ -261,7 +263,8 @@ namespace SpaceFarm
                 if (d == null) { HideWorldSelection(); return; }
                 sprite = FindWorldSprite(selectedDeposit, true);
                 Vector2Int cell = map.Deposits[d.Id].Cell;
-                string distance = $"A {d.Distance} sectores de la base, hacia el {SpaceFarmMap.Compass(BaseCell, cell)}.";
+                string distance = SpaceFarmLocalization.F("A {0} sectores de la base, hacia el {1}.",
+                    d.Distance, SpaceFarmLocalization.T(SpaceFarmMap.Compass(BaseCell, cell)));
                 if (d.MineLevel > 0)
                 {
                     title = $"Mina {d.Name}"; level = $"Nivel {d.MineLevel}/{SpaceFarmState.MaxLevel} · Depósito local {d.MineStored}/{d.MineCapacity} Fe";
@@ -272,7 +275,7 @@ namespace SpaceFarm
                     metrics.Add(new[] { "Energía", $"-{d.MineEnergy}/sol · real -{d.LastResult.EnergyUsed}", energyIcon.ToString() });
                     metrics.Add(new[] { "Depósito local", $"{d.MineStored}/{d.MineCapacity} Fe", ironIcon.ToString() });
                     metrics.Add(new[] { "Carga del rover", $"{state.RoverCargoTotal}/{state.RoverCapacity} total · Fe {state.RoverCargo}", ironIcon.ToString() });
-                    facts = $"{distance}\n{d.LastResult.Reason}";
+                    facts = $"{distance}\n{SpaceFarmLocalization.T(d.LastResult.Reason)}";
                     reality = "La composición del suelo marciano cambia de un lugar a otro. Una señal mineral no garantiza que haya hierro fácil de extraer: una misión real tendría que analizar muestras y evaluar el terreno.";
                     game = "El yacimiento estudiado se convierte en una mina abstracta. Cada mina guarda su propio hierro; enviá el rover para recogerlo y vigila su consumo de energía.";
                     showPrimary = true; primaryText = "RECOGER HIERRO"; primaryEnabled = d.MineStored > 0 && !RoverBusy && !state.GameOver;
@@ -283,14 +286,14 @@ namespace SpaceFarm
                 }
                 else if (d.Extractor)
                 {
-                    title = $"Extractor de agua · {d.Name}"; level = $"Nivel {state.ExtractorLevel(d.Id)}/{SpaceFarmState.MaxLevel}"; damaged = false;
+                    title = SpaceFarmLocalization.F("Extractor de agua · {0}", d.Name); level = $"Nivel {state.ExtractorLevel(d.Id)}/{SpaceFarmState.MaxLevel}"; damaged = false;
                     status = d.LastResult.Actual == 0 && state.Sol > 1 ? "Sin producción" : "Operativa";
                     AddProduction(metrics, "Agua", 8 + state.ActiveWorkers(CrewJob.Extractor, d.Id) * 3, d.LastResult, waterIcon, "unid./sol juego");
                     metrics.Add(new[] { "Energía", $"-2/sol · real -{d.LastResult.EnergyUsed}", energyIcon.ToString() });
                     metrics.Add(new[] { "Depósito local", $"{d.WaterStored}/{SpaceFarmState.LocalStorageCapacity} agua", waterIcon.ToString() });
                     metrics.Add(new[] { "Reserva utilizable", $"{state.Water}/{state.WarehouseCapacity}", waterIcon.ToString() });
                     metrics.Add(new[] { "Carga del rover", $"{state.RoverWaterCargo}/{state.RoverCapacity} agua", ironIcon.ToString() });
-                    facts = $"{distance}\n{d.LastResult.Reason}";
+                    facts = $"{distance}\n{SpaceFarmLocalization.T(d.LastResult.Reason)}";
                     reality = "Orbitadores han cartografiado hielo subterráneo en algunas regiones de Marte. Su profundidad y accesibilidad varían; extraerlo requiere localizarlo, perforar y procesar el material.";
                     game = "El juego representa el hielo confirmado como un depósito y resume la perforación en una instalación. La cantidad real depende de energía, capacidad disponible y agua que ya haya en reserva.";
                     showPrimary = true; primaryText = "RECOGER AGUA"; primaryEnabled = d.WaterStored > 0 && !RoverBusy && !state.GameOver;
@@ -302,7 +305,8 @@ namespace SpaceFarm
                 else
                 {
                     bool iron = d.Kind == DepositKind.Iron;
-                    title = iron ? $"Yacimiento de hierro · {d.Name}" : $"Depósito de hielo · {d.Name}";
+                    title = iron ? SpaceFarmLocalization.F("Yacimiento de hierro · {0}", d.Name)
+                        : SpaceFarmLocalization.F("Depósito de hielo · {0}", d.Name);
                     status = "Estudiado · listo para construir";
                     metrics.Add(new[] { "Distancia", $"{d.Distance} sectores", "" });
                     metrics.Add(new[] { "Mineral", iron ? "Hierro" : "Hielo", iron ? ironIcon.ToString() : waterIcon.ToString() });
@@ -327,7 +331,7 @@ namespace SpaceFarm
                     metrics.Add(new[] { "Carga total", $"{state.RoverCargoTotal}/{state.RoverCapacity} unidades", ironIcon.ToString() });
                     metrics.Add(new[] { "Fe / O2 / agua / comida", $"{state.RoverCargo} / {state.RoverOxygenCargo} / {state.RoverWaterCargo} / {state.RoverFoodCargo}", "" });
                     metrics.Add(new[] { "Movimiento", $"{RoverSpeed:0.0} unidades de juego/s", "" });
-                    facts = $"Destino: sector {roverDestination.x},{roverDestination.y}. La velocidad indicada es solo la animación del juego; no representa una velocidad real de un rover.";
+                    facts = SpaceFarmLocalization.F("Destino: sector {0},{1}. La velocidad indicada es solo la animación del juego; no representa una velocidad real de un rover.", roverDestination.x, roverDestination.y);
                     reality = "Los rovers usan imágenes de cámaras y mapas del terreno para planear rutas seguras. Los equipos evitan pendientes peligrosas, rocas y obstáculos; los comandos se planifican por puntos de recorrido porque Marte está muy lejos para controlarlo en tiempo real.";
                     game = "Este rover ficticio recorre una cuadrícula y revela sectores con su escáner. Mejorarlo aumenta su carga y radio; el nivel de colonia limita hasta dónde puede explorar.";
                     showSecondary = state.RoverLevel < 2; secondaryText = UpgradeActionText("rover", 0, state.RoverUpgradeCost); secondaryEnabled = !state.HasUpgrade("rover", 0) && state.Iron >= state.RoverUpgradeCost && !state.GameOver;
@@ -374,7 +378,7 @@ namespace SpaceFarm
                     int cropDuration = SpaceFarmState.GreenhouseCropDuration(crop);
                     int cropProgress = state.GreenhouseCropProgress(greenhouseIndex);
                     int cropYield = state.GreenhouseCropYield(greenhouseIndex);
-                    metrics.Add(new[] { "Cultivo", $"{SpaceFarmState.GreenhouseCropName(crop)} · +{cropYield} comida", foodIcon.ToString() });
+                    metrics.Add(new[] { "Cultivo", SpaceFarmLocalization.F("{0} · +{1} comida", SpaceFarmLocalization.T(SpaceFarmState.GreenhouseCropName(crop)), cropYield), foodIcon.ToString() });
                     metrics.Add(new[] { "Ciclo", $"{cropProgress}/{cropDuration} soles · último +{greenhouseResult.Actual}", foodIcon.ToString() });
                     metrics.Add(new[] { "Depósito local", $"{state.GreenhouseLocal(greenhouseIndex)}/{SpaceFarmState.LocalStorageCapacity} comida", foodIcon.ToString() });
                     showPrimary = true; primaryText = "RECOGER COMIDA"; primaryEnabled = state.GreenhouseLocal(greenhouseIndex) > 0 && !RoverBusy && !state.GameOver;
@@ -397,7 +401,7 @@ namespace SpaceFarm
                     metrics.Add(new[] { "Colonos", $"{state.Population}/{state.HabitatCapacity}", peopleIcon.ToString() });
                     metrics.Add(new[] { "Libres", $"{state.FreeWorkers}", peopleIcon.ToString() });
                     metrics.Add(new[] { "Salud", $"{state.Health}/3", "6" });
-                    facts = damaged ? "El dormitorio está averiado; la recuperación de energía durante el descanso es menor hasta repararlo." : "Los astronautas vuelven aquí automáticamente cuando necesitan descansar.";
+                    facts = SpaceFarmLocalization.T(damaged ? "El dormitorio está averiado; la recuperación de energía durante el descanso es menor hasta repararlo." : "Los astronautas vuelven aquí automáticamente cuando necesitan descansar.");
                     reality = "Las tripulaciones necesitan sueño y períodos de descanso para mantener su salud y capacidad de trabajo. Un hábitat real debe controlar aire, temperatura, humedad, ruido y protección, además de ofrecer un lugar para dormir.";
                     game = "El dormitorio modela el descanso y la recuperación de energía. No simula sueño, salud ni condiciones médicas con detalle; una avería ralentiza la recuperación.";
                     showRepair = damaged;
@@ -438,7 +442,8 @@ namespace SpaceFarm
                     metrics.Add(new[] { "Energía", $"{state.Energy}/{state.EnergyCapacity}", energyIcon.ToString() });
                     metrics.Add(new[] { "Salud", $"{state.Health}/3", "6" });
                     status = state.GameOver ? "Misión finalizada" : "Base operativa";
-                    facts = $"Astronautas libres: {state.FreeWorkers}. XP: {state.Xp}/{(state.XpToNext == 0 ? state.Xp : state.XpToNext)}. El espacio para nuevos colonos depende del nivel de colonia.";
+                    facts = SpaceFarmLocalization.F("Astronautas libres: {0}. XP: {1}/{2}. El espacio para nuevos colonos depende del nivel de colonia.",
+                        state.FreeWorkers, state.Xp, state.XpToNext == 0 ? state.Xp : state.XpToNext);
                     reality = "Un hábitat necesita mantener presión y temperatura, renovar el aire, recuperar agua y proteger a la tripulación de radiación y micrometeoritos. Todos estos subsistemas se afectan entre sí.";
                     game = "La partida resume la supervivencia con reservas de oxígeno, agua, comida, energía y camas. El modelo educativo no simula presión, temperatura ni dosis de radiación de forma numérica.";
                     break;
@@ -465,7 +470,7 @@ namespace SpaceFarm
             infoTitle.text = SpaceFarmLocalization.T(title);
             infoLevelState.text = $"{SpaceFarmLocalization.T(level)}     ·     {SpaceFarmLocalization.T("ESTADO")}: {SpaceFarmLocalization.T(status)}";
             if (damaged && state.DamagedStructure != DamagedStructureKind.None)
-                facts += $"\nReparación: {state.RepairIronCost} Fe y {state.RepairEnergyCost} energía.";
+                facts += "\n" + SpaceFarmLocalization.F("Reparación: {0} Fe y {1} energía.", state.RepairIronCost, state.RepairEnergyCost);
             if (worker != null) facts += "\n" + WorkerText(worker, job);
             string secondaryReason = "";
             if (editMode && showSecondary && !secondaryEnabled) secondaryReason = editRemovalReason;
@@ -512,7 +517,8 @@ namespace SpaceFarm
             infoCrop.gameObject.SetActive(showCrop && !editMode);
             infoCrop.interactable = !state.GameOver;
             if (showCrop)
-                infoCrop.GetComponentInChildren<TextMeshProUGUI>().text = $"CULTIVO · {SpaceFarmState.GreenhouseCropName(state.GreenhouseCropAt(selectedBuildingIndex)).ToUpperInvariant()}";
+                infoCrop.GetComponentInChildren<TextMeshProUGUI>().text = SpaceFarmLocalization.F("CULTIVO · {0}",
+                    SpaceFarmLocalization.T(SpaceFarmState.GreenhouseCropName(state.GreenhouseCropAt(selectedBuildingIndex))).ToUpperInvariant());
             if (cropPicker != null && cropPicker.activeSelf) RefreshCropPicker();
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(infoMetricsRoot);
@@ -561,23 +567,25 @@ namespace SpaceFarm
         private static void AddProduction(List<string[]> metrics, string name, int nominal, SpaceFarmState.SystemResult result, int icon, string unit)
         {
             bool cycle = result != null && result.Nominal > 0;
-            string actual = cycle ? result.Actual.ToString() : "sin ciclo";
-            metrics.Add(new[] { name, $"{nominal}/{unit} · real {actual}", icon.ToString() });
+            string actual = cycle ? result.Actual.ToString() : SpaceFarmLocalization.T("sin ciclo");
+            metrics.Add(new[] { name, SpaceFarmLocalization.F("{0}/{1} · real {2}", nominal, SpaceFarmLocalization.T(unit), actual), icon.ToString() });
         }
 
         private string WorkerText(SpaceFarmState.CrewMember worker, CrewJob job)
         {
             if (job == CrewJob.None) return "";
-            if (worker == null) return "Tripulación: sin astronauta asignado. Podés abrir Administración de astronautas.";
-            return $"Astronauta {worker.Id}: {(worker.Resting ? "descansando" : "trabajando")} · energía personal {worker.Energy:0}% · bono {SpaceFarmState.WorkerBonus(job)} unidades/sol cuando trabaja.";
+            if (worker == null) return SpaceFarmLocalization.T("Tripulación: sin astronauta asignado. Podés abrir Administración de astronautas.");
+            return SpaceFarmLocalization.F("Astronauta {0}: {1} · energía personal {2:0}% · bono {3} unidades/sol cuando trabaja.",
+                worker.Id, SpaceFarmLocalization.T(worker.Resting ? "descansando" : "trabajando"), worker.Energy,
+                SpaceFarmState.WorkerBonus(job));
         }
 
         private string UpgradeButtonText(string kind, int target, int cost) => state.HasUpgrade(kind, target)
             ? $"MEJORA · {state.UpgradeRemaining(kind, target)} s" : $"MEJORAR · {cost} Fe · {state.UpgradeSecondsToDisplay(kind, target)} s";
 
         private string UpgradeActionText(string kind, int target, int cost) => state.HasUpgrade(kind, target)
-            ? $"MEJORA EN CURSO · {state.UpgradeRemaining(kind, target)} s"
-            : $"{(kind == "rover" ? "MEJORAR ROVER" : "MEJORAR ESTRUCTURA")} · {cost} Fe";
+            ? SpaceFarmLocalization.F("MEJORA EN CURSO · {0} s", state.UpgradeRemaining(kind, target))
+            : SpaceFarmLocalization.F("{0} · {1} Fe", SpaceFarmLocalization.T(kind == "rover" ? "MEJORAR ROVER" : "MEJORAR ESTRUCTURA"), cost);
 
         private Sprite FindWorldSprite(int depositId, bool mine)
         {

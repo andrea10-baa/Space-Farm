@@ -1062,6 +1062,1290 @@ MonoBehaviour:
     m_Localized: SOL
     m_Metadata:
       m_Items: []
+  - m_Id: 7867951296512
+    m_Localized: "{0} \xB7 level {1} \u2192 {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268032
+    m_Localized: " \xB7 confirm in the facility card"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268033
+    m_Localized: "Click to select a blueprint \xB7 drag a card to place it."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268034
+    m_Localized: Choose a facility; confirm the upgrade in its card.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268035
+    m_Localized: Colony orders and logistics.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268036
+    m_Localized: Iron mine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268037
+    m_Localized: Oxygen plant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268038
+    m_Localized: Build walls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268039
+    m_Localized: Order from Earth
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268040
+    m_Localized: Send rover to storage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268041
+    m_Localized: Automatic collection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268042
+    m_Localized: Extracts iron from the selected deposit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268043
+    m_Localized: Turns ice into water
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268044
+    m_Localized: Produces food using water and energy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268045
+    m_Localized: Produces oxygen for more colonists
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268046
+    m_Localized: Adds storage for iron and other resources
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268047
+    m_Localized: Place walls in any free sector
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268048
+    m_Localized: Delivers water and food
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268049
+    m_Localized: Unloads materials into shared storage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268050
+    m_Localized: The rover collects local resources after finishing its task
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268051
+    m_Localized: "ON \xB7 prioritizes vital supplies"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268052
+    m_Localized: "OFF \xB7 manual orders"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268053
+    m_Localized: Automatic collection enabled.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268054
+    m_Localized: Automatic collection paused.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268055
+    m_Localized: More generation and battery capacity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268056
+    m_Localized: More cargo space and scan radius
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268057
+    m_Localized: Increases local oxygen production
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268058
+    m_Localized: Increases local food production
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268059
+    m_Localized: Increases shared storage capacity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268060
+    m_Localized: Increases iron extraction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268061
+    m_Localized: Increases water extraction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268062
+    m_Localized: Solar panel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268063
+    m_Localized: Rover
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268064
+    m_Localized: Oxygen plant {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268065
+    m_Localized: Greenhouse {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268066
+    m_Localized: Warehouse {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268067
+    m_Localized: Iron mine Fe-{0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268068
+    m_Localized: Ice mine {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268069
+    m_Localized: Ice extractor {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268070
+    m_Localized: Extractor {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268071
+    m_Localized: Mine {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268072
+    m_Localized: Oxygen plant {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268073
+    m_Localized: "Water extractor \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268074
+    m_Localized: "Iron deposit \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268075
+    m_Localized: "Ice deposit \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268076
+    m_Localized: There are no astronauts.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268077
+    m_Localized: unassigned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268078
+    m_Localized: RESTING
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268079
+    m_Localized: SLEEPING
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268080
+    m_Localized: AVAILABLE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268081
+    m_Localized: WORKING
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268082
+    m_Localized: "Astronaut {0}: {1} \xB7 energy {2:0}% \xB7 {3}. Available: {4}/{5}."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268083
+    m_Localized: "A-{0:00} \xB7 {1} \xB7 {2:0}%"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268084
+    m_Localized: "{0} \xB7 +{1}/sol"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268085
+    m_Localized: " \xB7 A-{0:00}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462336
+    m_Localized: "{0}  \xB7  +{1} food / {2} {3}  \xB7  level {4}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462337
+    m_Localized: Wheat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462338
+    m_Localized: Lettuce
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462339
+    m_Localized: Corn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462340
+    m_Localized: "{0} \xB7 +{1} food"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462341
+    m_Localized: "CROP \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462342
+    m_Localized: "{0}/{1} \xB7 actual {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462343
+    m_Localized: no cycle yet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462344
+    m_Localized: Fe/sol
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462345
+    m_Localized: game units/sol
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462346
+    m_Localized: units/sol
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462347
+    m_Localized: '{0} sectors from base, to the {1}.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462348
+    m_Localized: Level {0}/{1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462349
+    m_Localized: "Level {0}/{1} \xB7 Local storage {2}/{3} Fe"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462350
+    m_Localized: "Level {0} \xB7 Range {1} sectors (colony level {2})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462351
+    m_Localized: Colony level {0}/{1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462352
+    m_Localized: '{0} sectors'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462353
+    m_Localized: Scan radius {0} sectors
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462354
+    m_Localized: '{0}/{1} units'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462355
+    m_Localized: "{0}/{1} total \xB7 Fe {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462356
+    m_Localized: '{0}/{1} water'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462357
+    m_Localized: '{0}/{1} food'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462358
+    m_Localized: '{0}/{1} O2'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462359
+    m_Localized: '{0} game units/s'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462360
+    m_Localized: "-{0}/sol \xB7 actual -{1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462361
+    m_Localized: -{0} units/sol actual
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462362
+    m_Localized: "{0}/{1} sols \xB7 last +{2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462363
+    m_Localized: '{0} segments'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462364
+    m_Localized: 1 Fe per segment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462365
+    m_Localized: Fe / O2 / water / food
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462366
+    m_Localized: Iron confirmed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462367
+    m_Localized: Ice confirmed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462368
+    m_Localized: Ice
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462369
+    m_Localized: The mine has no stored iron yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462370
+    m_Localized: There is no water in local storage yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462371
+    m_Localized: There is no oxygen in local storage yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462372
+    m_Localized: There is no food in local storage yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462373
+    m_Localized: The rover is busy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462374
+    m_Localized: Shared storage is full.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462375
+    m_Localized: This base structure cannot be removed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462376
+    m_Localized: Wait for the rover to finish its route.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462377
+    m_Localized: Choose MOVE, then a valid sector.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462378
+    m_Localized: Mines and extractors remain anchored to their deposits.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462379
+    m_Localized: Edit mode keeps the level and assigned worker when moving. The refund is about 50% of base cost; mineral deposits remain in place.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462380
+    m_Localized: 'Repair scheduled: the rover will go when its turn comes.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462381
+    m_Localized: Confirming will queue the repair until the rover finishes its route.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462382
+    m_Localized: 'Upgrade in progress: {0} s.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462383
+    m_Localized: Need {0} more Fe to upgrade.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462384
+    m_Localized: Need {0} more Fe to repair.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462385
+    m_Localized: Need {0} more energy to repair.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462386
+    m_Localized: 'Repair: {0} Fe and {1} energy.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462387
+    m_Localized: "REPAIR \xB7 {0} s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462388
+    m_Localized: "REPAIR ROVER \xB7 {0} Fe \xB7 {1} s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462389
+    m_Localized: "REPAIR \xB7 {0} Fe \xB7 {1} s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462390
+    m_Localized: "VALID \xB7 CLICK TO PLACE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462391
+    m_Localized: "UNAVAILABLE \xB7 "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462392
+    m_Localized: "{0}\n{1} Fe \xB7 you have {2} Fe"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462393
+    m_Localized: "{0} \xB7 {1} Fe (you have {2})\n{3}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462394
+    m_Localized: "Valid sector \xB7 click to build"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462395
+    m_Localized: Drop onto the map
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462396
+    m_Localized: Cannot build under the rover
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462397
+    m_Localized: "Wall \xB7 1 Fe (you have {0})\n{1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462398
+    m_Localized: "Connects to adjacent walls \xB7 click to place"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462399
+    m_Localized: Point at the map
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462400
+    m_Localized: Cannot place under the rover
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462401
+    m_Localized: "Save \u201C{0}\u201D stored on this device."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462402
+    m_Localized: "Save \u201C{0}\u201D loaded from sol {1}. The rover is at its last confirmed position."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462403
+    m_Localized: "{0}\nSol {1} \xB7 level {2} \xB7 seed {3} \xB7 {4}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462404
+    m_Localized: "Delete save \u201C{0}\u201D? This cannot be undone."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462405
+    m_Localized: unknown date
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462406
+    m_Localized: 'Destination: sector {0},{1}. This speed only describes the game''s animation; it is not a real rover speed.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462407
+    m_Localized: The dormitory is damaged; astronauts recover less energy while resting until it is repaired.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462408
+    m_Localized: Astronauts return here automatically when they need rest.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462409
+    m_Localized: 'Available astronauts: {0}. XP: {1}/{2}. Room for new colonists depends on colony level.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462410
+    m_Localized: 'Crew: no astronaut assigned. Open Manage Astronauts to assign one.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462411
+    m_Localized: "Astronaut {0}: {1} \xB7 personal energy {2:0}% \xB7 bonus {3} units/sol while working."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462412
+    m_Localized: "UPGRADE IN PROGRESS \xB7 {0} s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462413
+    m_Localized: "{0} \xB7 {1} Fe"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462414
+    m_Localized: "BUILD MINE \xB7 {0} Fe"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462415
+    m_Localized: "BUILD EXTRACTOR \xB7 {0} Fe"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462416
+    m_Localized: 'Local storage is full: send the rover.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462417
+    m_Localized: No sol has passed yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462418
+    m_Localized: 'Solar panels damaged: repair needed.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462419
+    m_Localized: 'Dust storm: less sunlight reaches the panels.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462420
+    m_Localized: 'Local storage full: send the rover.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462421
+    m_Localized: Local storage full; send the rover.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462422
+    m_Localized: Not enough energy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462423
+    m_Localized: O2 storage full.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462424
+    m_Localized: Operational.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462425
+    m_Localized: Not enough water.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462426
+    m_Localized: 'Greenhouse damaged: repair it.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462427
+    m_Localized: 'Mine damaged: repair it.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462428
+    m_Localized: 'Storage full: send the rover.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462429
+    m_Localized: 'Partial {0} harvest: local storage is nearly full.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462430
+    m_Localized: '{0} harvest ready.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462431
+    m_Localized: 'Growing {0}: {1}/{2} sols.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462432
+    m_Localized: Could not save the game. The previous file was kept.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462433
+    m_Localized: That save file could not be loaded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462434
+    m_Localized: Name this game before saving it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462435
+    m_Localized: Limit of {0} warehouses
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462436
+    m_Localized: Limit of 5 greenhouses
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462437
+    m_Localized: Limit of 5 O2 plants
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462438
+    m_Localized: Limit of 5 extractors
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462439
+    m_Localized: Survey an available iron deposit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462440
+    m_Localized: Survey an available ice deposit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462441
+    m_Localized: Choose a structure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462442
+    m_Localized: Outside the map
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462443
+    m_Localized: That sector is beyond level {0} range
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462444
+    m_Localized: 'Hidden sector: explore it with the rover'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462445
+    m_Localized: 'Hidden sector: explore it first'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462446
+    m_Localized: Cannot place a structure on a wall
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462447
+    m_Localized: That sector is occupied by a structure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462448
+    m_Localized: That sector is occupied by a warehouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462449
+    m_Localized: Area reserved for the habitat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462450
+    m_Localized: Too close to a deposit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462451
+    m_Localized: Point of interest occupied
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462452
+    m_Localized: Too close to the greenhouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462453
+    m_Localized: Too close to the O2 plant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462454
+    m_Localized: This facility is anchored and cannot be moved
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462455
+    m_Localized: Greenhouse does not exist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462456
+    m_Localized: Oxygen plant does not exist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462457
+    m_Localized: Warehouse does not exist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462458
+    m_Localized: Wall does not exist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462459
+    m_Localized: There is already a wall in that sector
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462460
+    m_Localized: Keep the deposit or signal clear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462461
+    m_Localized: Cannot place a wall on a structure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462462
+    m_Localized: Cannot overlap a wall
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462463
+    m_Localized: Too close to a greenhouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462464
+    m_Localized: Too close to an O2 plant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462465
+    m_Localized: Too close to a mine or extractor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462466
+    m_Localized: Local storage holds {0} food; send the rover first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462467
+    m_Localized: Local storage holds {0} O2; send the rover first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462468
+    m_Localized: Wait for the upgrade to finish
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462469
+    m_Localized: Extra plant does not exist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462470
+    m_Localized: At least one warehouse must remain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462471
+    m_Localized: The colony holds {0} units, but the remaining warehouses would hold only {1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462472
+    m_Localized: That facility is not at the deposit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462473
+    m_Localized: The mine holds {0} Fe; send the rover first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462474
+    m_Localized: The extractor holds {0} water; send the rover first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462475
+    m_Localized: This base facility cannot be removed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462476
+    m_Localized: Keep the deposit clear so the rover can survey it
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462477
+    m_Localized: Keep the signal clear so the rover can collect it
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462478
+    m_Localized: Cannot place a wall on a structure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462479
+    m_Localized: Keep the rover's access to base clear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462480
+    m_Localized: Need 1 Fe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462481
+    m_Localized: Choose an iron deposit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462482
+    m_Localized: Survey that deposit with the rover first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462483
+    m_Localized: That deposit already has a mine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462484
+    m_Localized: The mine needs {0} iron
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462485
+    m_Localized: Choose an ice deposit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462486
+    m_Localized: Survey that ice deposit with the rover first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462487
+    m_Localized: That deposit already has an extractor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462488
+    m_Localized: The demo allows {0} extractors
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462489
+    m_Localized: The extractor needs {0} iron
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462490
+    m_Localized: That point has already been explored.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462491
+    m_Localized: FOLLOWING
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462492
+    m_Localized: 'Sol {0:00}: solar +{1}, O2 +{2}, water +{3}, food +{4}, mines +{5} Fe stored. Crew consumed {6} essential supplies.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462493
+    m_Localized: ' Dust storm.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462494
+    m_Localized: ' The storm damaged {0}. Repair: {1} Fe and {2} energy.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462495
+    m_Localized: ' Supply ship arrived: +5 water and +5 food.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462496
+    m_Localized: ' Raid: -{0} food. Walls near the habitat reduce the loss.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462497
+    m_Localized: ' Mission failed.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462498
+    m_Localized: ' Mission complete!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488960
+    m_Localized: "UNAVAILABLE \xB7"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488961
+    m_Localized: "EDIT MODE \xB7 Select a wall or a built structure."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488962
+    m_Localized: That sector is outside the map.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488963
+    m_Localized: The rover cannot enter a sector occupied by a wall or structure.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488964
+    m_Localized: The rover is collecting iron. Wait until it unloads at the habitat.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488965
+    m_Localized: There is no clear route to that sector. Remove a wall or structure blocking the way.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488966
+    m_Localized: The mission is over. Open PAUSE (Esc) to restart this map or start a new one.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488967
+    m_Localized: Wait for the rover to finish its route before advancing the sol.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488968
+    m_Localized: "EDIT MODE \xB7 Select a wall or facility. Its info card lets you move or remove it."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488969
+    m_Localized: "Explore mode \xB7 click to select and send the rover."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488970
+    m_Localized: The image for this structure could not be found for moving it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488971
+    m_Localized: "Move facility \xB7 point to a valid sector and click to confirm. Escape cancels."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488972
+    m_Localized: The rover or an astronaut occupies that footprint. Choose another sector.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488973
+    m_Localized: This base structure cannot be removed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488974
+    m_Localized: Blueprint canceled. No iron was spent.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488975
+    m_Localized: Drop the blueprint on a valid map sector.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488976
+    m_Localized: "Explore mode \xB7 select a tile to move the rover."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488977
+    m_Localized: The camera follows the rover. Move the camera or press FOLLOW again to release it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488978
+    m_Localized: Choose free sectors to place walls for 1 Fe each. Adjacent pieces connect automatically; Escape finishes.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488979
+    m_Localized: That minimap area is still unexplored. Send the rover to reveal it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488980
+    m_Localized: Choose a sector inside the map.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488981
+    m_Localized: Do not place a wall under the rover.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488982
+    m_Localized: An unsurveyed deposit cannot be edited. Explore it with the rover first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488983
+    m_Localized: Select a built facility first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488984
+    m_Localized: The rover is busy; send this order once it finishes its route.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488985
+    m_Localized: There is no accessible route to this facility. Clear a path through the walls.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488986
+    m_Localized: The damaged facility could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488987
+    m_Localized: Repair scheduled. The rover will travel to the facility and begin on arrival.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488988
+    m_Localized: The rover could not reach a tile beside the facility. The repair was not charged; clear the route and try again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488989
+    m_Localized: An upgrade is already waiting for the rover.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488990
+    m_Localized: Upgrade scheduled. The rover will travel to the facility and begin on arrival.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488991
+    m_Localized: The rover did not reach the facility. The upgrade was not charged; check the route.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488992
+    m_Localized: That local storage site could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488993
+    m_Localized: The mission is over. Open PAUSE (Esc) to restart.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488994
+    m_Localized: Collection was queued; the rover will finish its current trip first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488995
+    m_Localized: Shared storage is full; the trip was not started.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488996
+    m_Localized: There is no clear route to the facility. Remove a wall blocking access.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488997
+    m_Localized: The rover kept its cargo because no warehouse is reachable. Open a path through the walls.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488998
+    m_Localized: The rover still has cargo. Clear a route to the base to continue.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488999
+    m_Localized: The rover is damaged. Repair it before sending it to the warehouse.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880489000
+    m_Localized: Unloading was queued; it will happen after the current route.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880489001
+    m_Localized: Shared storage is full. Cargo stays on the rover.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880489002
+    m_Localized: There is no clear route to the warehouse. Open a path through the walls.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880489003
+    m_Localized: Rover heading to the warehouse with collected materials.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851884683264
+    m_Localized: The rover could not reach the warehouse. Check whether a wall blocks the route.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041278480384
+    m_Localized: Select a valid greenhouse.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868992
+    m_Localized: No facility is damaged.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868993
+    m_Localized: 'Greenhouse ready: it starts with wheat and harvests 7 food each sol.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868994
+    m_Localized: New oxygen plant ready. Each plant generates 7 O2 and uses 2 energy per sol.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868995
+    m_Localized: Build the mine first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868996
+    m_Localized: The mine is at maximum level.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868997
+    m_Localized: That mine is already being upgraded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868998
+    m_Localized: Level 2 is the maximum in this demo.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868999
+    m_Localized: The rover is already being upgraded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869000
+    m_Localized: The panels are at maximum level.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869001
+    m_Localized: The panels are already being upgraded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869002
+    m_Localized: That facility does not exist yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869003
+    m_Localized: The facility is at maximum level.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869004
+    m_Localized: That facility is already being upgraded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869005
+    m_Localized: No astronauts are available. Unassign one from a facility.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869006
+    m_Localized: That astronaut does not exist.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869007
+    m_Localized: Choose a facility.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869008
+    m_Localized: Choose a built mine.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869009
+    m_Localized: Choose a built extractor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869010
+    m_Localized: Build a greenhouse.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869011
+    m_Localized: Build an O2 plant.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869012
+    m_Localized: Solar panels are unavailable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869013
+    m_Localized: There is no mine there.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869014
+    m_Localized: The rover's cargo hold is full. Unload before collecting more.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869015
+    m_Localized: The rover has no cargo.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869016
+    m_Localized: The crew grows by two when the colony levels up.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869017
+    m_Localized: A supply order is already on its way.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869018
+    m_Localized: An Earth supply order costs 4 refined iron.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591279329280
+    m_Localized: The rover is damaged. Repair it for {0} Fe and {1} energy before moving it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689408
+    m_Localized: The rover is damaged. Repair it for {0} Fe and {1} energy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689409
+    m_Localized: 'Area locked: the colony is level {0}. Current range: {1} sectors from base. Earn XP to advance.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689410
+    m_Localized: The rover reached sector {0},{1} and revealed new terrain.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689411
+    m_Localized: The deposit is beyond the rover's range ({0} sectors). Level up the colony.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689412
+    m_Localized: Rover heading out to collect iron.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689413
+    m_Localized: Rover heading out to collect oxygen.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689414
+    m_Localized: Rover heading out to collect water.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689415
+    m_Localized: Rover heading out to collect food.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689416
+    m_Localized: 'Construction finished. Walls placed: {0}.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689417
+    m_Localized: 'Warehouse built. Shared capacity: {0} units.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689418
+    m_Localized: 'Wall installed at {0},{1}. Walls placed: {2}.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689419
+    m_Localized: 'Repair is already in progress: {0} s.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689420
+    m_Localized: Repair needs {0} Fe.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689421
+    m_Localized: Repair needs {0} energy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689422
+    m_Localized: The upgrade needs {0} iron.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689423
+    m_Localized: The upgrade needs {0} Fe.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689424
+    m_Localized: The rover needs {0} iron for the upgrade.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689425
+    m_Localized: The solar upgrade needs {0} Fe.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689426
+    m_Localized: 'Order sent: food and water will arrive on sol {0}.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689427
+    m_Localized: Rover collected {0} iron ({1}/{2} cargo units).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689428
+    m_Localized: Rover collected {0} oxygen ({1}/{2} cargo units).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689429
+    m_Localized: Rover collected {0} water ({1}/{2} cargo units).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689430
+    m_Localized: Rover collected {0} food ({1}/{2} cargo units).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689431
+    m_Localized: The mine needs {0} iron.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689432
+    m_Localized: The extractor needs {0} iron.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689433
+    m_Localized: The plant needs {0} iron.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689434
+    m_Localized: The greenhouse needs {0} iron.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689435
+    m_Localized: The warehouse needs {0} iron.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689436
+    m_Localized: The colony stores {0} units, but the remaining warehouses would hold only {1}.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

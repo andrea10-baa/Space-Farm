@@ -68,6 +68,7 @@ namespace SpaceFarm
         private TextMeshProUGUI reportText;
         private string lastReportSource;
         private object[] lastReportArguments;
+        private bool lastReportIsSolSummary;
         private TextMeshProUGUI roverText;
         private TextMeshProUGUI actionDetailText;
         private RectTransform actionCardsRoot;
@@ -1041,7 +1042,7 @@ namespace SpaceFarm
             state.AdvanceSol();
             solCountdown = SolDurationSeconds;
             solCountdownHudClock = 0f;
-            SetReport(SummarizeSol());
+            SetSolReport();
             if (state.LastSol.DamagedStructure != DamagedStructureKind.None)
                 ShowDamageAlert(state.DamagedStructureName(state.LastSol.DamagedStructure, state.LastSol.DamagedTarget));
             if (state.LastSol.ShipmentDelivered) QueueShipmentArrival();
@@ -1053,6 +1054,7 @@ namespace SpaceFarm
 
         private void SetReport(string value)
         {
+            lastReportIsSolSummary = false;
             lastReportSource = value;
             lastReportArguments = null;
             if (reportText != null) reportText.text = SpaceFarmLocalization.T(value);
@@ -1060,13 +1062,27 @@ namespace SpaceFarm
 
         private void SetReportFormat(string spanishFormat, params object[] values)
         {
+            lastReportIsSolSummary = false;
             lastReportSource = spanishFormat;
             lastReportArguments = values;
             RefreshReportLanguage();
         }
 
+        private void SetSolReport()
+        {
+            lastReportIsSolSummary = true;
+            lastReportSource = null;
+            lastReportArguments = null;
+            if (reportText != null) reportText.text = SummarizeSol();
+        }
+
         private void RefreshReportLanguage()
         {
+            if (lastReportIsSolSummary)
+            {
+                if (reportText != null) reportText.text = SummarizeSol();
+                return;
+            }
             if (reportText == null || lastReportSource == null) return;
             reportText.text = lastReportArguments == null
                 ? SpaceFarmLocalization.T(lastReportSource)

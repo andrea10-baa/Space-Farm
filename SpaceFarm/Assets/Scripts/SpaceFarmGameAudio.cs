@@ -224,7 +224,9 @@ namespace SpaceFarm
             foreach (SpaceFarmLocalizedLabel label in hudCanvas.GetComponentsInChildren<SpaceFarmLocalizedLabel>(true))
                 label.Refresh();
             RefreshLanguageButtons();
+            upgradeCatalogSignature = string.Empty;
             if (state != null) RefreshHud();
+            if (constructionMenuOpen) SelectCategory(selectedCategory);
             RefreshReportLanguage();
             if (constructionMenuToggle != null)
                 constructionMenuToggle.GetComponentInChildren<TextMeshProUGUI>().text =

@@ -154,7 +154,7 @@ namespace SpaceFarm
                 SetStartingBaseVisible(true);
                 RefreshWorld();
                 RefreshHud();
-                SetReport($"Partida «{activeSessionName}» cargada desde el sol {state.Sol}. El rover quedó en su última casilla confirmada.");
+                SetReportFormat("Partida «{0}» cargada desde el sol {1}. El rover quedó en su última casilla confirmada.", activeSessionName, state.Sol);
             }
             else BeginInitialLanding();
         }

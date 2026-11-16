@@ -16,6 +16,7 @@ namespace SpaceFarm
         private const string LanguagePreference = "SpaceFarm.Language";
         private const string TableName = "SpaceFarm UI";
         private static StringTable fragmentTable;
+        private static readonly Regex numberPattern = new Regex(@"(?<![\p{L}\d])\d+(?:[.,]\d+)?(?![\p{L}\d])", RegexOptions.CultureInvariant);
         private static readonly List<KeyValuePair<Regex, string>> fragments = new List<KeyValuePair<Regex, string>>();
         private static readonly string[] FragmentKeys =
         {
@@ -62,6 +63,20 @@ namespace SpaceFarm
             StringTableEntry entry = table != null ? table.GetEntry(spanish) : null;
             if (entry != null && !string.IsNullOrEmpty(entry.Value)) return entry.Value;
             if (!IsEnglish || table == null) return spanish;
+            // Game state messages often contain counts. Match a translated format key before
+            // falling back to individual words, so grammar and word order remain correct.
+            var values = new List<object>();
+            string formatKey = numberPattern.Replace(spanish, match =>
+            {
+                values.Add(match.Value);
+                return "{" + (values.Count - 1) + "}";
+            });
+            if (values.Count > 0)
+            {
+                StringTableEntry formatEntry = table.GetEntry(formatKey);
+                if (formatEntry != null && !string.IsNullOrEmpty(formatEntry.Value))
+                    return string.Format(CultureInfo.InvariantCulture, formatEntry.Value, values.ToArray());
+            }
             if (fragmentTable != table) RebuildFragments(table);
             string result = spanish;
             foreach (KeyValuePair<Regex, string> fragment in fragments)

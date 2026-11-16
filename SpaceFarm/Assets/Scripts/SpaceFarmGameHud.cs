@@ -52,6 +52,7 @@ namespace SpaceFarm
             public Image Background;
             public TextMeshProUGUI Title;
             public TextMeshProUGUI Detail;
+            public bool AutomaticCollectionToggle;
             public Func<string> Cost;
             public Func<bool> Action;
             public Func<string> LockReason;
@@ -360,7 +361,8 @@ namespace SpaceFarm
             {
                 Category = category, Root = item.transform, Background = image, Title = titleText,
                 Detail = detailText, Cost = cost, Action = action, LockReason = lockReason,
-                Placement = placement, Button = button, Icon = icon, Description = description
+                Placement = placement, Button = button, Icon = icon, Description = description,
+                AutomaticCollectionToggle = title == "Recolección automática"
             };
             actionCards.Add(card);
             if (placement != StructureKind.None && placement != StructureKind.Barrier)
@@ -402,7 +404,7 @@ namespace SpaceFarm
                     return;
                 }
                 bool success = card.Action();
-                if (card.Title.text == "Recolección automática")
+                if (card.AutomaticCollectionToggle)
                 {
                     SetReport(state.AutomaticCollection ? "Recolección automática activada." : "Recolección automática pausada.");
                     RefreshHud();
@@ -474,7 +476,7 @@ namespace SpaceFarm
                 "Elegí una instalación; confirmá la mejora desde su ficha.",
                 "Pedidos y logística de la colonia."
             };
-            actionDetailText.text = hints[Mathf.Clamp(category, 0, hints.Length - 1)];
+            actionDetailText.text = SpaceFarmLocalization.T(hints[Mathf.Clamp(category, 0, hints.Length - 1)]);
             if (actionMenuTitle != null)
                 actionMenuTitle.text = SpaceFarmLocalization.T(new[] { "CONSTRUCCIÓN", "MEJORAS", "COLONIA" }[Mathf.Clamp(category, 0, 2)]);
             RefreshActionCards();
@@ -495,7 +497,8 @@ namespace SpaceFarm
                 card.Title.color = available ? SpaceFarmPalette.Text : SpaceFarmPalette.MutedText;
                 card.Detail.color = available ? SpaceFarmPalette.Ice : SpaceFarmPalette.MutedText;
                 card.Icon.color = available ? Color.white : new Color(.62f, .65f, .66f, .55f);
-                card.Detail.text = available ? card.Cost() : card.Cost() + " · " + reason;
+                card.Detail.text = SpaceFarmLocalization.T(card.Cost()) +
+                    (available ? string.Empty : " · " + SpaceFarmLocalization.T(reason));
             }
             LayoutRebuilder.ForceRebuildLayoutImmediate(actionCardsRoot);
         }
@@ -558,7 +561,7 @@ namespace SpaceFarm
             string upgradeKind, int upgradeTarget, string building, int index, string benefit, string icon)
         {
             if (!belowMaximum) return;
-            AddAction($"{name} · nivel {level} → {level + 1}",
+            AddAction(SpaceFarmLocalization.F("{0} · nivel {1} → {2}", SpaceFarmLocalization.T(name), level, level + 1),
                 () => $"{cost} Fe · {state.UpgradeSecondsToDisplay(upgradeKind, upgradeTarget)} s",
                 1,
                 () =>
@@ -573,7 +576,7 @@ namespace SpaceFarm
                     return selected;
                 },
                 () => inProgress ? "Mejora en curso" : string.Empty,
-                StructureKind.None, icon, benefit + " · confirmar en la ficha del edificio");
+                StructureKind.None, icon, SpaceFarmLocalization.T(benefit) + SpaceFarmLocalization.T(" · confirmar en la ficha del edificio"));
         }
 
         private string MissingIron(int amount) => state.Iron < amount ? $"Faltan {amount - state.Iron} Fe" : string.Empty;
@@ -945,23 +948,25 @@ namespace SpaceFarm
             followButton.GetComponent<Image>().color = followRover ? SpaceFarmPalette.Iron : SpaceFarmPalette.PanelRaised;
             TextMeshProUGUI label = followButton.GetComponentInChildren<TextMeshProUGUI>();
             label.color = followRover ? SpaceFarmPalette.Background : SpaceFarmPalette.Text;
-            label.text = followRover ? "SIGUIENDO" : "SEGUIR";
+            label.text = SpaceFarmLocalization.T(followRover ? "SIGUIENDO" : "SEGUIR");
         }
 
         private string SummarizeSol()
         {
             SpaceFarmState.SolResults sol = state.LastSol;
-            string text = $"Sol {state.Sol:00}: solar +{sol.Solar.Actual}, O2 +{sol.OxygenOne.Actual + sol.OxygenTwo.Actual}, " +
-                $"agua +{sol.Water.Actual}, comida +{sol.Greenhouse.Actual}, minas +{sol.Mine.Actual} Fe almacenado. " +
-                $"Tripulación -{sol.CrewConsumed} recursos vitales.";
-            if (sol.Storm) text += " Tormenta de polvo.";
+            string text = SpaceFarmLocalization.F("Sol {0:00}: solar +{1}, O2 +{2}, agua +{3}, comida +{4}, minas +{5} Fe almacenado. Tripulación -{6} recursos vitales.",
+                state.Sol, sol.Solar.Actual, sol.OxygenOne.Actual + sol.OxygenTwo.Actual,
+                sol.Water.Actual, sol.Greenhouse.Actual, sol.Mine.Actual, sol.CrewConsumed);
+            if (sol.Storm) text += SpaceFarmLocalization.T(" Tormenta de polvo.");
             if (sol.DamagedStructure != DamagedStructureKind.None)
-                text += $" La tormenta averió {state.DamagedStructureName(sol.DamagedStructure, sol.DamagedTarget)}. Reparación: {state.RepairIronCost} Fe y {state.RepairEnergyCost} energía.";
-            if (sol.ShipmentDelivered) text += " Llegó la nave de suministros: +5 agua y +5 comida.";
+                text += SpaceFarmLocalization.F(" La tormenta averió {0}. Reparación: {1} Fe y {2} energía.",
+                    SpaceFarmLocalization.T(state.DamagedStructureName(sol.DamagedStructure, sol.DamagedTarget)),
+                    state.RepairIronCost, state.RepairEnergyCost);
+            if (sol.ShipmentDelivered) text += SpaceFarmLocalization.T(" Llegó la nave de suministros: +5 agua y +5 comida.");
             if (sol.RaidFoodLoss > 0)
-                text += $" Incursión: -{sol.RaidFoodLoss} comida. Los muros cercanos al hábitat reducen la pérdida.";
-            if (state.GameOver) text += " Misión perdida.";
-            else if (state.MissionComplete) text += " ¡Misión completa!";
+                text += SpaceFarmLocalization.F(" Incursión: -{0} comida. Los muros cercanos al hábitat reducen la pérdida.", sol.RaidFoodLoss);
+            if (state.GameOver) text += SpaceFarmLocalization.T(" Misión perdida.");
+            else if (state.MissionComplete) text += SpaceFarmLocalization.T(" ¡Misión completa!");
             return text;
         }
 

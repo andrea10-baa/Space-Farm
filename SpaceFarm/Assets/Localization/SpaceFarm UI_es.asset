@@ -1048,6 +1048,1290 @@ MonoBehaviour:
     m_Localized: SOL
     m_Metadata:
       m_Items: []
+  - m_Id: 7867951296512
+    m_Localized: "{0} \xB7 nivel {1} \u2192 {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268032
+    m_Localized: " \xB7 confirmar en la ficha del edificio"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268033
+    m_Localized: "Clic: activar plano \xB7 arrastrar tarjeta: colocar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268034
+    m_Localized: "Eleg\xED una instalaci\xF3n; confirm\xE1 la mejora desde su ficha."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268035
+    m_Localized: "Pedidos y log\xEDstica de la colonia."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268036
+    m_Localized: Mina de hierro
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268037
+    m_Localized: Planta de O2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268038
+    m_Localized: Construir muros
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268039
+    m_Localized: Pedir a la Tierra
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268040
+    m_Localized: "Enviar rover al almac\xE9n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268041
+    m_Localized: "Recolecci\xF3n autom\xE1tica"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268042
+    m_Localized: Extrae hierro del yacimiento elegido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268043
+    m_Localized: Convierte hielo en agua
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268044
+    m_Localized: "Produce alimentos con agua y energ\xEDa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268045
+    m_Localized: "Produce ox\xEDgeno para m\xE1s colonos"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268046
+    m_Localized: "Ampl\xEDa el espacio para hierro y minerales"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268047
+    m_Localized: "Coloc\xE1 muros en cualquier sector libre"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268048
+    m_Localized: Recibe agua y alimentos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268049
+    m_Localized: "Descarga materiales y actualiza el almac\xE9n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268050
+    m_Localized: El rover recoge recursos locales al terminar su tarea
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268051
+    m_Localized: "ACTIVADA \xB7 prioriza reservas vitales"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268052
+    m_Localized: "DESACTIVADA \xB7 \xF3rdenes manuales"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268053
+    m_Localized: "Recolecci\xF3n autom\xE1tica activada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268054
+    m_Localized: "Recolecci\xF3n autom\xE1tica pausada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268055
+    m_Localized: "M\xE1s generaci\xF3n y capacidad de bater\xEDa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268056
+    m_Localized: "M\xE1s carga y radio de exploraci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268057
+    m_Localized: "Aumenta producci\xF3n local de ox\xEDgeno"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268058
+    m_Localized: "Aumenta producci\xF3n local de comida"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268059
+    m_Localized: Aumenta capacidad compartida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268060
+    m_Localized: "Aumenta extracci\xF3n de hierro"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268061
+    m_Localized: "Aumenta extracci\xF3n de agua"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268062
+    m_Localized: Panel solar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268063
+    m_Localized: Rover
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268064
+    m_Localized: Planta O2 {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268065
+    m_Localized: Invernadero {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268066
+    m_Localized: "Almac\xE9n {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268067
+    m_Localized: Mina Fe-{0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268068
+    m_Localized: Mina Hielo-{0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268069
+    m_Localized: Extractor Hielo-{0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268070
+    m_Localized: Extractor {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268071
+    m_Localized: Mina {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268072
+    m_Localized: "Planta de ox\xEDgeno {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268073
+    m_Localized: "Extractor de agua \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268074
+    m_Localized: "Yacimiento de hierro \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268075
+    m_Localized: "Dep\xF3sito de hielo \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268076
+    m_Localized: No hay astronautas.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268077
+    m_Localized: sin tarea
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268078
+    m_Localized: DESCANSANDO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268079
+    m_Localized: DURMIENDO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268080
+    m_Localized: LIBRE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268081
+    m_Localized: TRABAJANDO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268082
+    m_Localized: "Astronauta {0}: {1} \xB7 energ\xEDa {2:0}% \xB7 {3}. Libres: {4}/{5}."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268083
+    m_Localized: "A-{0:00} \xB7 {1} \xB7 {2:0}%"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268084
+    m_Localized: "{0} \xB7 +{1}/sol"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867972268085
+    m_Localized: " \xB7 A-{0:00}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462336
+    m_Localized: "{0}  \xB7  +{1} comida / {2} {3}  \xB7  nivel {4}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462337
+    m_Localized: Trigo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462338
+    m_Localized: Lechuga
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462339
+    m_Localized: "Ma\xEDz"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462340
+    m_Localized: "{0} \xB7 +{1} comida"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462341
+    m_Localized: "CULTIVO \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462342
+    m_Localized: "{0}/{1} \xB7 real {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462343
+    m_Localized: sin ciclo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462344
+    m_Localized: Fe/sol
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462345
+    m_Localized: unid./sol juego
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462346
+    m_Localized: unid./sol
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462347
+    m_Localized: A {0} sectores de la base, hacia el {1}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462348
+    m_Localized: Nivel {0}/{1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462349
+    m_Localized: "Nivel {0}/{1} \xB7 Dep\xF3sito local {2}/{3} Fe"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462350
+    m_Localized: "Nivel {0} \xB7 Alcance {1} sectores (colonia nivel {2})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462351
+    m_Localized: Colonia nivel {0}/{1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462352
+    m_Localized: '{0} sectores'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462353
+    m_Localized: Radio {0} sectores
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462354
+    m_Localized: '{0}/{1} unidades'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462355
+    m_Localized: "{0}/{1} total \xB7 Fe {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462356
+    m_Localized: '{0}/{1} agua'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462357
+    m_Localized: '{0}/{1} comida'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462358
+    m_Localized: '{0}/{1} O2'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462359
+    m_Localized: '{0} unidades de juego/s'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462360
+    m_Localized: "-{0}/sol \xB7 real -{1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462361
+    m_Localized: -{0} unid./sol real
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462362
+    m_Localized: "{0}/{1} soles \xB7 \xFAltimo +{2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462363
+    m_Localized: '{0} tramos'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462364
+    m_Localized: 1 Fe por tramo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462365
+    m_Localized: Fe / O2 / agua / comida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462366
+    m_Localized: Hierro confirmado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462367
+    m_Localized: Hielo confirmado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462368
+    m_Localized: Hielo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462369
+    m_Localized: "La mina todav\xEDa no tiene hierro almacenado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462370
+    m_Localized: "El dep\xF3sito local todav\xEDa no tiene agua."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462371
+    m_Localized: "El dep\xF3sito local todav\xEDa no tiene ox\xEDgeno."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462372
+    m_Localized: "El dep\xF3sito local todav\xEDa no tiene comida."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462373
+    m_Localized: "El rover est\xE1 ocupado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462374
+    m_Localized: "La capacidad compartida est\xE1 completa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462375
+    m_Localized: Esta estructura base no se puede eliminar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462376
+    m_Localized: "Esper\xE1 a que el rover termine su recorrido."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462377
+    m_Localized: "Eleg\xED MOVER y luego un sector v\xE1lido."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462378
+    m_Localized: Las minas y los extractores quedan anclados al yacimiento.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462379
+    m_Localized: "Modo Editar conserva el nivel y el trabajador al mover. El reembolso es aproximadamente el 50 % del costo base; los dep\xF3sitos minerales quedan en su sitio."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462380
+    m_Localized: "Reparaci\xF3n programada: el rover ir\xE1 al llegar su turno."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462381
+    m_Localized: "Al confirmar, la reparaci\xF3n quedar\xE1 en cola hasta que el rover termine su recorrido."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462382
+    m_Localized: 'Mejora en curso: {0} s.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462383
+    m_Localized: Faltan {0} Fe para mejorar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462384
+    m_Localized: Faltan {0} Fe para reparar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462385
+    m_Localized: "Faltan {0} de energ\xEDa para reparar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462386
+    m_Localized: "Reparaci\xF3n: {0} Fe y {1} energ\xEDa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462387
+    m_Localized: "REPARACI\xD3N \xB7 {0} s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462388
+    m_Localized: "REPARAR ROVER \xB7 {0} Fe \xB7 {1} s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462389
+    m_Localized: "REPARAR \xB7 {0} Fe \xB7 {1} s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462390
+    m_Localized: "V\xC1LIDO \xB7 CLIC PARA COLOCAR"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462391
+    m_Localized: "NO DISPONIBLE \xB7 "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462392
+    m_Localized: "{0}\n{1} Fe \xB7 ten\xE9s {2} Fe"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462393
+    m_Localized: "{0} \xB7 {1} Fe (ten\xE9s {2})\n{3}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462394
+    m_Localized: "Sector v\xE1lido \xB7 clic para construir"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462395
+    m_Localized: "Solt\xE1 sobre el mapa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462396
+    m_Localized: "No coloqu\xE9s una estructura debajo del rover"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462397
+    m_Localized: "Muro \xB7 1 Fe (ten\xE9s {0})\n{1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462398
+    m_Localized: "Se une solo a muros vecinos \xB7 clic para colocar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462399
+    m_Localized: "Apunt\xE1 al mapa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462400
+    m_Localized: No colocar bajo el rover
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462401
+    m_Localized: "Partida \xAB{0}\xBB guardada en este dispositivo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462402
+    m_Localized: "Partida \xAB{0}\xBB cargada desde el sol {1}. El rover qued\xF3 en su \xFAltima casilla confirmada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462403
+    m_Localized: "{0}\nSol {1} \xB7 nivel {2} \xB7 semilla {3} \xB7 {4}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462404
+    m_Localized: "\xBFEliminar la partida \xAB{0}\xBB? Esta acci\xF3n no se puede deshacer."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462405
+    m_Localized: fecha desconocida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462406
+    m_Localized: "Destino: sector {0},{1}. La velocidad indicada es solo la animaci\xF3n del juego; no representa una velocidad real de un rover."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462407
+    m_Localized: "El dormitorio est\xE1 averiado; la recuperaci\xF3n de energ\xEDa durante el descanso es menor hasta repararlo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462408
+    m_Localized: "Los astronautas vuelven aqu\xED autom\xE1ticamente cuando necesitan descansar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462409
+    m_Localized: 'Astronautas libres: {0}. XP: {1}/{2}. El espacio para nuevos colonos depende del nivel de colonia.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462410
+    m_Localized: "Tripulaci\xF3n: sin astronauta asignado. Pod\xE9s abrir Administraci\xF3n de astronautas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462411
+    m_Localized: "Astronauta {0}: {1} \xB7 energ\xEDa personal {2:0}% \xB7 bono {3} unidades/sol cuando trabaja."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462412
+    m_Localized: "MEJORA EN CURSO \xB7 {0} s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462413
+    m_Localized: "{0} \xB7 {1} Fe"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462414
+    m_Localized: "CONSTRUIR MINA \xB7 {0} Fe"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462415
+    m_Localized: "CONSTRUIR EXTRACTOR \xB7 {0} Fe"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462416
+    m_Localized: "El dep\xF3sito local est\xE1 lleno: envi\xE1 el rover."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462417
+    m_Localized: "A\xFAn no se avanz\xF3 un sol."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462418
+    m_Localized: "Paneles averiados: reparaci\xF3n necesaria."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462419
+    m_Localized: 'Tormenta de polvo: llega menos luz.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462420
+    m_Localized: "Dep\xF3sito local lleno: envi\xE1 el rover."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462421
+    m_Localized: "Dep\xF3sito local lleno; envi\xE1 el rover."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462422
+    m_Localized: "Falta energ\xEDa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462423
+    m_Localized: "Dep\xF3sito de O2 lleno."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462424
+    m_Localized: Operativa.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462425
+    m_Localized: Falta agua.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462426
+    m_Localized: 'Invernadero averiado: reparalo.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462427
+    m_Localized: 'Mina averiada: reparala.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462428
+    m_Localized: "Almac\xE9n lleno: envi\xE1 el rover."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462429
+    m_Localized: "Cosecha parcial de {0}: dep\xF3sito local casi lleno."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462430
+    m_Localized: Cosecha de {0} lista.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462431
+    m_Localized: 'Cultivando {0}: {1}/{2} soles.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462432
+    m_Localized: "No se pudo guardar la partida. El archivo anterior se conserv\xF3."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462433
+    m_Localized: El archivo de esa partida no se puede cargar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462434
+    m_Localized: "Eleg\xED un nombre para esta partida antes de guardarla."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462435
+    m_Localized: "L\xEDmite de {0} almacenes"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462436
+    m_Localized: "L\xEDmite de 5 invernaderos"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462437
+    m_Localized: "L\xEDmite de 5 plantas de O2"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462438
+    m_Localized: "L\xEDmite de 5 extractores"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462439
+    m_Localized: "Estudi\xE1 un yacimiento de hierro libre"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462440
+    m_Localized: "Estudi\xE1 un dep\xF3sito de hielo libre"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462441
+    m_Localized: "Eleg\xED una estructura"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462442
+    m_Localized: Fuera del mapa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462443
+    m_Localized: Ese sector queda fuera del alcance nivel {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462444
+    m_Localized: 'Sector oculto: exploralo con el rover'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462445
+    m_Localized: 'Sector oculto: exploralo primero'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462446
+    m_Localized: No se puede colocar una estructura sobre un muro
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462447
+    m_Localized: "Ese sector est\xE1 ocupado por una estructura"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462448
+    m_Localized: "Ese sector est\xE1 ocupado por un almac\xE9n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462449
+    m_Localized: "\xC1rea reservada del h\xE1bitat"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462450
+    m_Localized: Demasiado cerca de un yacimiento
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462451
+    m_Localized: "Punto de inter\xE9s ocupado"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462452
+    m_Localized: Demasiado cerca del invernadero
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462453
+    m_Localized: Demasiado cerca de la planta de O2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462454
+    m_Localized: "Esta instalaci\xF3n est\xE1 anclada y no se puede mover"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462455
+    m_Localized: Invernadero inexistente
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462456
+    m_Localized: "Planta de ox\xEDgeno inexistente"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462457
+    m_Localized: "Almac\xE9n inexistente"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462458
+    m_Localized: Muro inexistente
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462459
+    m_Localized: Ya hay un muro en ese sector
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462460
+    m_Localized: "Dej\xE1 libre el yacimiento o se\xF1al"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462461
+    m_Localized: No se puede colocar un muro sobre una estructura
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462462
+    m_Localized: No se puede superponer con un muro
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462463
+    m_Localized: Demasiado cerca de un invernadero
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462464
+    m_Localized: Demasiado cerca de una planta de O2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462465
+    m_Localized: Demasiado cerca de una mina o extractor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462466
+    m_Localized: "El dep\xF3sito local conserva {0} comida; envi\xE1 el rover primero"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462467
+    m_Localized: "El dep\xF3sito local conserva {0} O2; envi\xE1 el rover primero"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462468
+    m_Localized: "Esper\xE1 a que termine la mejora"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462469
+    m_Localized: Planta extra inexistente
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462470
+    m_Localized: "Debe quedar al menos un almac\xE9n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462471
+    m_Localized: "La colonia guarda {0} unidades y los almacenes restantes admitir\xEDan {1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462472
+    m_Localized: "No hay esa instalaci\xF3n en el yacimiento"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462473
+    m_Localized: "La mina conserva {0} Fe; envi\xE1 el rover primero"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462474
+    m_Localized: "El extractor conserva {0} agua; envi\xE1 el rover primero"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462475
+    m_Localized: "Esta instalaci\xF3n base no se puede eliminar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462476
+    m_Localized: "Dej\xE1 libre el yacimiento para que pueda estudiarlo el rover"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462477
+    m_Localized: "Dej\xE1 libre la se\xF1al para que pueda recogerla el rover"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462478
+    m_Localized: No se puede poner un muro sobre una estructura
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462479
+    m_Localized: "Dej\xE1 libre el acceso del rover a la base"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462480
+    m_Localized: Falta 1 Fe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462481
+    m_Localized: "Eleg\xED un yacimiento de hierro"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462482
+    m_Localized: "Primero estudi\xE1 ese yacimiento con el rover"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462483
+    m_Localized: Ese yacimiento ya tiene mina
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462484
+    m_Localized: La mina necesita {0} de hierro
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462485
+    m_Localized: "Eleg\xED un dep\xF3sito de hielo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462486
+    m_Localized: "Primero estudi\xE1 ese dep\xF3sito con el rover"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462487
+    m_Localized: "Ese dep\xF3sito ya tiene extractor"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462488
+    m_Localized: La demo admite {0} extractores
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462489
+    m_Localized: El extractor necesita {0} de hierro
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462490
+    m_Localized: Ese punto ya fue explorado.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462491
+    m_Localized: SIGUIENDO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462492
+    m_Localized: "Sol {0:00}: solar +{1}, O2 +{2}, agua +{3}, comida +{4}, minas +{5} Fe almacenado. Tripulaci\xF3n -{6} recursos vitales."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462493
+    m_Localized: ' Tormenta de polvo.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462494
+    m_Localized: " La tormenta averi\xF3 {0}. Reparaci\xF3n: {1} Fe y {2} energ\xEDa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462495
+    m_Localized: " Lleg\xF3 la nave de suministros: +5 agua y +5 comida."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462496
+    m_Localized: " Incursi\xF3n: -{0} comida. Los muros cercanos al h\xE1bitat reducen la p\xE9rdida."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462497
+    m_Localized: " Misi\xF3n perdida."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7867976462498
+    m_Localized: " \xA1Misi\xF3n completa!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488960
+    m_Localized: "NO DISPONIBLE \xB7"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488961
+    m_Localized: "MODO EDITAR \xB7 Seleccion\xE1 un muro o una estructura construida."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488962
+    m_Localized: Ese sector queda fuera del mapa.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488963
+    m_Localized: El rover no puede entrar en un sector ocupado por un muro o una estructura.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488964
+    m_Localized: "El rover est\xE1 recogiendo hierro. Esper\xE1 a que descargue en el h\xE1bitat."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488965
+    m_Localized: "No hay un camino libre hasta ese sector. Retir\xE1 un muro o una estructura que bloquee el paso."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488966
+    m_Localized: "La misi\xF3n termin\xF3. Abr\xED PAUSA (Esc) para reiniciar este mapa o empezar uno nuevo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488967
+    m_Localized: "Esper\xE1 a que el rover termine su recorrido antes de avanzar el sol."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488968
+    m_Localized: "MODO EDITAR \xB7 Seleccion\xE1 un muro o instalaci\xF3n. La ficha permite mover o eliminar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488969
+    m_Localized: "Modo explorar \xB7 clic para seleccionar y enviar el rover."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488970
+    m_Localized: "No se encontr\xF3 la imagen de esta estructura para moverla."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488971
+    m_Localized: "Mover instalaci\xF3n \xB7 apunt\xE1 a un sector v\xE1lido y confirm\xE1 con clic. Escape cancela."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488972
+    m_Localized: "El rover o un astronauta ocupa esa huella. Eleg\xED otro sector."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488973
+    m_Localized: Esta estructura base no se puede eliminar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488974
+    m_Localized: "Plano cancelado. No se gast\xF3 hierro."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488975
+    m_Localized: "Solt\xE1 el plano sobre un sector v\xE1lido del mapa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488976
+    m_Localized: "Modo explorar \xB7 seleccion\xE1 una casilla para mover el rover."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488977
+    m_Localized: "La c\xE1mara sigue al rover. Mover la c\xE1mara o pulsar SEGUIR otra vez la libera."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488978
+    m_Localized: "Eleg\xED sectores libres para colocar muros por 1 Fe cada uno. Los tramos vecinos se unen solos; Escape termina."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488979
+    m_Localized: "Esa zona del minimapa sigue sin explorar. Envi\xE1 el rover para revelarla."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488980
+    m_Localized: "Eleg\xED un sector dentro del mapa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488981
+    m_Localized: "No coloqu\xE9s el muro debajo del rover."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488982
+    m_Localized: Un yacimiento sin estudiar no se puede editar. Exploralo con el rover primero.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488983
+    m_Localized: "Seleccion\xE1 una instalaci\xF3n construida primero."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488984
+    m_Localized: "El rover ya est\xE1 ocupado; la acci\xF3n puede enviarse al terminar su recorrido."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488985
+    m_Localized: "No hay una ruta accesible hasta esta instalaci\xF3n. Despej\xE1 un paso entre los muros."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488986
+    m_Localized: "No se pudo localizar la instalaci\xF3n averiada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488987
+    m_Localized: "Reparaci\xF3n programada. El rover ir\xE1 a la instalaci\xF3n y empezar\xE1 al llegar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488988
+    m_Localized: "El rover no lleg\xF3 a una celda junto a la instalaci\xF3n. No se cobr\xF3 la reparaci\xF3n; despej\xE1 la ruta y volv\xE9 a intentarlo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488989
+    m_Localized: Ya hay una mejora esperando al rover.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488990
+    m_Localized: "Mejora programada. El rover ir\xE1 a la instalaci\xF3n y comenzar\xE1 al llegar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488991
+    m_Localized: "El rover no lleg\xF3 a la instalaci\xF3n. No se cobr\xF3 la mejora; revis\xE1 la ruta."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488992
+    m_Localized: "No se encontr\xF3 ese dep\xF3sito local."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488993
+    m_Localized: "La misi\xF3n termin\xF3. Abr\xED PAUSA (Esc) para reiniciar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488994
+    m_Localized: "La orden de recolecci\xF3n qued\xF3 en cola; el rover terminar\xE1 primero el viaje actual."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488995
+    m_Localized: "El almac\xE9n compartido est\xE1 lleno; no se inici\xF3 el viaje."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488996
+    m_Localized: "No hay una ruta libre hasta la instalaci\xF3n. Retir\xE1 un muro que bloquee el acceso."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488997
+    m_Localized: "El rover conserv\xF3 la carga porque no hay una ruta libre hasta un almac\xE9n. Abr\xED un paso entre los muros."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488998
+    m_Localized: "El rover sigue cargado. Despej\xE1 el camino hasta la base para continuar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880488999
+    m_Localized: "El rover est\xE1 averiado. Reparalo antes de enviarlo al almac\xE9n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880489000
+    m_Localized: "La descarga qued\xF3 en cola; se atender\xE1 al terminar el recorrido actual."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880489001
+    m_Localized: "El almac\xE9n compartido est\xE1 lleno. La carga permanece en el rover."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880489002
+    m_Localized: "No hay una ruta libre hasta el almac\xE9n. Despej\xE1 un paso entre los muros."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851880489003
+    m_Localized: "Rover en camino al almac\xE9n con los materiales recuperados."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8851884683264
+    m_Localized: "El rover no alcanz\xF3 el almac\xE9n. Revis\xE1 si hay un muro bloqueando el paso."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041278480384
+    m_Localized: "Seleccion\xE1 un invernadero v\xE1lido."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868992
+    m_Localized: "No hay ninguna instalaci\xF3n averiada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868993
+    m_Localized: 'Invernadero listo: empieza con trigo y cosecha 7 de comida cada sol.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868994
+    m_Localized: "Nueva planta de ox\xEDgeno lista. Cada planta genera 7 de O2 y consume 2 de energ\xEDa por sol."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868995
+    m_Localized: "Constru\xED primero la mina."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868996
+    m_Localized: "La mina est\xE1 en nivel m\xE1ximo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868997
+    m_Localized: "Esa mina ya se est\xE1 mejorando."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868998
+    m_Localized: "El nivel 2 es el m\xE1ximo de esta demo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286868999
+    m_Localized: "El rover ya se est\xE1 mejorando."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869000
+    m_Localized: "Los paneles est\xE1n en nivel m\xE1ximo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869001
+    m_Localized: "Los paneles ya se est\xE1n mejorando."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869002
+    m_Localized: "Esa instalaci\xF3n todav\xEDa no existe."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869003
+    m_Localized: "La instalaci\xF3n est\xE1 en nivel m\xE1ximo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869004
+    m_Localized: "Esa instalaci\xF3n ya se est\xE1 mejorando."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869005
+    m_Localized: "No hay astronautas libres. Desasign\xE1 uno desde su instalaci\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869006
+    m_Localized: Astronauta inexistente.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869007
+    m_Localized: "Eleg\xED una instalaci\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869008
+    m_Localized: "Eleg\xED una mina construida."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869009
+    m_Localized: "Eleg\xED un extractor construido."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869010
+    m_Localized: "Constru\xED un invernadero."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869011
+    m_Localized: "Constru\xED una planta de O2."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869012
+    m_Localized: Paneles solares no disponibles.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869013
+    m_Localized: "Ah\xED no hay una mina."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869014
+    m_Localized: "La carga del rover est\xE1 llena. Descargala antes de recoger m\xE1s."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869015
+    m_Localized: El rover no lleva carga.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869016
+    m_Localized: "La tripulaci\xF3n aumenta de dos en dos al subir el nivel de la colonia."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869017
+    m_Localized: Ya hay un pedido en camino.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9041286869018
+    m_Localized: El pedido a la Tierra cuesta 4 de hierro refinado.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591279329280
+    m_Localized: "El rover est\xE1 averiado. Reparalo por {0} Fe y {1} energ\xEDa antes de moverlo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689408
+    m_Localized: "El rover est\xE1 averiado. Reparalo por {0} Fe y {1} energ\xEDa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689409
+    m_Localized: "Zona bloqueada: la colonia est\xE1 en nivel {0}. Alcance actual: {1} sectores desde la base. Gan\xE1 XP para avanzar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689410
+    m_Localized: "El rover lleg\xF3 al sector {0},{1} y revel\xF3 terreno nuevo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689411
+    m_Localized: "El dep\xF3sito queda fuera del alcance del rover ({0} sectores). Sub\xED el nivel de colonia."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689412
+    m_Localized: Rover en camino a recoger hierro.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689413
+    m_Localized: "Rover en camino a recoger ox\xEDgeno."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689414
+    m_Localized: Rover en camino a recoger agua.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689415
+    m_Localized: Rover en camino a recoger comida.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689416
+    m_Localized: "Construcci\xF3n terminada. Muros colocados: {0}."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689417
+    m_Localized: "Almac\xE9n construido. Capacidad compartida: {0} unidades."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689418
+    m_Localized: 'Muro instalado en {0},{1}. Muros colocados: {2}.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689419
+    m_Localized: "La reparaci\xF3n ya est\xE1 en curso: {0} s."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689420
+    m_Localized: "La reparaci\xF3n necesita {0} Fe."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689421
+    m_Localized: "La reparaci\xF3n necesita {0} de energ\xEDa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689422
+    m_Localized: La mejora necesita {0} de hierro.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689423
+    m_Localized: La mejora necesita {0} Fe.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689424
+    m_Localized: El rover necesita {0} de hierro para la mejora.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689425
+    m_Localized: La mejora solar necesita {0} Fe.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689426
+    m_Localized: "Pedido enviado: llegar\xE1 en el sol {0} con comida y agua."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689427
+    m_Localized: "Rover recogi\xF3 {0} de hierro ({1}/{2} unidades de carga)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689428
+    m_Localized: "Rover recogi\xF3 {0} de ox\xEDgeno ({1}/{2} unidades de carga)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689429
+    m_Localized: "Rover recogi\xF3 {0} de agua ({1}/{2} unidades de carga)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689430
+    m_Localized: "Rover recogi\xF3 {0} de comida ({1}/{2} unidades de carga)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689431
+    m_Localized: La mina necesita {0} de hierro.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689432
+    m_Localized: El extractor necesita {0} de hierro.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689433
+    m_Localized: La planta necesita {0} de hierro.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689434
+    m_Localized: El invernadero necesita {0} de hierro.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689435
+    m_Localized: "El almac\xE9n necesita {0} de hierro."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10591308689436
+    m_Localized: "La colonia guarda {0} unidades y los almacenes restantes admitir\xEDan {1}."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

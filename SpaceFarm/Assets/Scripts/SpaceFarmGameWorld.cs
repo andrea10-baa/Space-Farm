@@ -489,8 +489,8 @@ namespace SpaceFarm
                     state.BarrierBlocker(hoveredBarrierCell, revealed[hoveredBarrierCell.x, hoveredBarrierCell.y]);
                 bool valid = reason.Length == 0;
                 if (buildModeText != null)
-                    buildModeText.text = $"Muro · 1 Fe (tenés {state.Iron})\n" +
-                        (valid ? "Se une solo a muros vecinos · clic para colocar" : reason);
+                    buildModeText.text = SpaceFarmLocalization.F("Muro · 1 Fe (tenés {0})\n{1}", state.Iron,
+                        SpaceFarmLocalization.T(valid ? "Se une solo a muros vecinos · clic para colocar" : reason));
                 UpdateWallPreview(hoveredBarrierCell, !overUi && inside, valid);
             }
             else HideWallPreview();

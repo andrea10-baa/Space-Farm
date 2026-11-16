@@ -86,7 +86,7 @@ namespace SpaceFarm
                     Revealed = CaptureRevealMask(),
                     State = state.CaptureSave()
                 });
-                SetReport($"Partida «{activeSessionName}» guardada en este dispositivo.");
+                SetReportFormat("Partida «{0}» guardada en este dispositivo.", activeSessionName);
                 if (paused) ShowPausePage(false);
             }
             catch (Exception exception)
@@ -209,10 +209,10 @@ namespace SpaceFarm
                 new Vector2(0,1),new Vector2(1,1),new Vector2(.5f,1),Vector2.zero,new Vector2(-8,75));
             LayoutElement element = row.AddComponent<LayoutElement>(); element.minHeight = 75; element.preferredHeight = 75;
             string date = DateTime.TryParse(data.SavedAtUtc, null, System.Globalization.DateTimeStyles.RoundtripKind, out DateTime parsed)
-                ? parsed.ToLocalTime().ToString("dd/MM/yyyy HH:mm") : "fecha desconocida";
+                ? parsed.ToLocalTime().ToString("dd/MM/yyyy HH:mm") : SpaceFarmLocalization.T("fecha desconocida");
             int sol = data.State != null ? data.State.Sol : 1;
             int level = data.State != null ? data.State.ColonyLevel : 1;
-            TextMeshProUGUI details = Label($"{data.Name}\nSol {sol} · nivel {level} · semilla {data.Seed} · {date}", row.transform,
+            TextMeshProUGUI details = Label(SpaceFarmLocalization.F("{0}\nSol {1} · nivel {2} · semilla {3} · {4}", data.Name, sol, level, data.Seed, date), row.transform,
                 13,FontStyles.Normal,SpaceFarmPalette.Text,new Vector2(0,0),new Vector2(1,1),new Vector2(0,0),
                 new Vector2(12,5),new Vector2(-265,-10));
             details.alignment = TextAlignmentOptions.MidlineLeft; details.enableAutoSizing = true; details.fontSizeMin = 10; details.fontSizeMax = 13;
@@ -230,7 +230,7 @@ namespace SpaceFarm
             saveDialog.GetComponent<Image>().raycastTarget = true;
             GameObject box = Panel("Confirmación",saveDialog.transform,SpaceFarmPalette.Panel,
                 new Vector2(.5f,.5f),new Vector2(.5f,.5f),new Vector2(.5f,.5f),Vector2.zero,new Vector2(500,220));
-            TextMeshProUGUI message = Label($"¿Eliminar la partida «{data.Name}»? Esta acción no se puede deshacer.",box.transform,
+            TextMeshProUGUI message = Label(SpaceFarmLocalization.F("¿Eliminar la partida «{0}»? Esta acción no se puede deshacer.", data.Name),box.transform,
                 16,FontStyles.Bold,SpaceFarmPalette.Text,new Vector2(0,1),new Vector2(1,1),new Vector2(.5f,1),
                 new Vector2(0,-35),new Vector2(-50,75));
             message.alignment = TextAlignmentOptions.Center;

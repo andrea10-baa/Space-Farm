@@ -262,12 +262,15 @@ namespace SpaceFarm
             placementPreview.enabled = placementFootprint.enabled = !overUi;
             placementPreview.color = valid ? new Color(.78f, 1f, .94f, .72f) : new Color(1f, .52f, .47f, .68f);
             placementFootprint.color = valid ? new Color(.48f, 1f, .88f, .8f) : new Color(1f, .31f, .27f, .8f);
-            placementTooltipText.text = $"{(valid ? "VÁLIDO · CLIC PARA COLOCAR" : "NO DISPONIBLE · " + reason)}\n" +
-                $"{state.StructureCost(activeStructure)} Fe · tenés {state.Iron} Fe";
+            placementTooltipText.text = SpaceFarmLocalization.F("{0}\n{1} Fe · tenés {2} Fe",
+                valid ? SpaceFarmLocalization.T("VÁLIDO · CLIC PARA COLOCAR")
+                    : SpaceFarmLocalization.T("NO DISPONIBLE ·") + " " + SpaceFarmLocalization.T(reason),
+                state.StructureCost(activeStructure), state.Iron);
             placementTooltipText.color = valid ? SpaceFarmPalette.Oxygen : SpaceFarmPalette.Danger;
             if (buildModeText != null)
-                buildModeText.text = $"{StructureName(activeStructure)} · {state.StructureCost(activeStructure)} Fe (tenés {state.Iron})\n" +
-                    (valid ? "Sector válido · clic para construir" : reason);
+                buildModeText.text = SpaceFarmLocalization.F("{0} · {1} Fe (tenés {2})\n{3}",
+                    SpaceFarmLocalization.T(StructureName(activeStructure)), state.StructureCost(activeStructure), state.Iron,
+                    SpaceFarmLocalization.T(valid ? "Sector válido · clic para construir" : reason));
             RectTransform canvasRect = hudCanvas.GetComponent<RectTransform>();
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, pointer, null, out Vector2 local))
             {
