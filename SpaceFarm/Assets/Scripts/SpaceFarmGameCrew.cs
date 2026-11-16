@@ -107,7 +107,7 @@ namespace SpaceFarm
             SetNavigationButtonsVisible(false);
             crewMenuRoot.SetActive(true);
             crewMenuRoot.transform.SetAsLastSibling();
-            crewMenuToggle.GetComponentInChildren<TextMeshProUGUI>().text = "CERRAR EQUIPO";
+            crewMenuToggle.GetComponentInChildren<TextMeshProUGUI>().text = SpaceFarmLocalization.T("CERRAR EQUIPO");
             RefreshCrewMenu();
         }
 
@@ -115,7 +115,7 @@ namespace SpaceFarm
         {
             crewMenuOpen = false;
             if (crewMenuRoot != null) crewMenuRoot.SetActive(false);
-            if (crewMenuToggle != null) crewMenuToggle.GetComponentInChildren<TextMeshProUGUI>().text = "ASTRONAUTAS";
+            if (crewMenuToggle != null) crewMenuToggle.GetComponentInChildren<TextMeshProUGUI>().text = SpaceFarmLocalization.T("ASTRONAUTAS");
             SetNavigationButtonsVisible(true);
             if (infoPanel != null && selectedBuilding != null && activeStructure == StructureKind.None)
             {

@@ -117,8 +117,8 @@ namespace SpaceFarm
             AddButton("COMENZAR", box.transform, () =>
             {
                 string name = saveNameInput.text.Trim();
-                if (name.Length == 0) { error.text = "Escribí un nombre para comenzar."; return; }
-                if (SpaceFarmSaveStore.NameExists(name)) { error.text = "Ya existe una partida con ese nombre."; return; }
+                if (name.Length == 0) { error.text = SpaceFarmLocalization.T("Escribí un nombre para comenzar."); return; }
+                if (SpaceFarmSaveStore.NameExists(name)) { error.text = SpaceFarmLocalization.T("Ya existe una partida con ese nombre."); return; }
                 activeSessionName = name;
                 DestroySaveDialog();
                 BeginFromTitle();

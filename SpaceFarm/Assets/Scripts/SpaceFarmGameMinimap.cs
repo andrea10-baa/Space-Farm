@@ -31,6 +31,7 @@ namespace SpaceFarm
         private Color32[] minimapPixels;
         private Button minimapSizeButton;
         private Button minimapSideButton;
+        private TextMeshProUGUI minimapTitleLabel;
         private bool minimapDirty = true;
         private float minimapTimer;
         private Vector3 minimapLastCamera = new Vector3(float.MaxValue, 0f, 0f);
@@ -60,8 +61,9 @@ namespace SpaceFarm
             minimapRoot = root.GetComponent<RectTransform>();
             Panel("Borde", root.transform, SpaceFarmPalette.Iron, new Vector2(0, 1), new Vector2(1, 1),
                 new Vector2(0, 1), Vector2.zero, new Vector2(0, 2));
-            TextMeshProUGUI title = Label($"MAPA · semilla {seed}", root.transform, 11, FontStyles.Bold, SpaceFarmPalette.MutedText,
+            TextMeshProUGUI title = Label(SpaceFarmLocalization.F("MAPA · semilla {0}", seed), root.transform, 11, FontStyles.Bold, SpaceFarmPalette.MutedText,
                 new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1), new Vector2(7, -3), new Vector2(-62, 20));
+            minimapTitleLabel = title;
             title.enableAutoSizing = true;
             title.fontSizeMin = 8;
             title.fontSizeMax = 11;

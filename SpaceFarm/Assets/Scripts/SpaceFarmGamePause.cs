@@ -33,6 +33,7 @@ namespace SpaceFarm
             paused = value;
             Time.timeScale = value ? 0f : 1f;
             pauseOverlay.SetActive(value);
+            if (!value && pauseAudioPage != null) pauseAudioPage.SetActive(false);
             pauseOverlay.transform.SetAsLastSibling();
             // Any press in progress is dropped so it cannot become an order when the game resumes.
             isPanning = false;
@@ -68,11 +69,11 @@ namespace SpaceFarm
             PauseButton(main, "REINICIAR ESTE MAPA", () => Restart(true), SpaceFarmPalette.Button, SpaceFarmPalette.Text, ref y);
             PauseButton(main, "EMPEZAR UN MAPA NUEVO", () => Restart(false), SpaceFarmPalette.Button, SpaceFarmPalette.Text, ref y);
             PauseButton(main, "CONTROLES", () => ShowPausePage(true), SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text, ref y);
-            PauseButton(main, "SONIDO", ShowAudioPage, SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text, ref y);
+            PauseButton(main, "CONFIGURACIÓN", ShowAudioPage, SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text, ref y);
             Button side = PauseButton(main, "MINIMAPA", () => SetMinimapSide(!minimapRight),
                 SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text, ref y);
             pauseMinimapLabel = side.GetComponentInChildren<TextMeshProUGUI>();
-            pauseMinimapLabel.text = minimapRight ? "MINIMAPA: DERECHA" : "MINIMAPA: IZQUIERDA";
+            pauseMinimapLabel.text = SpaceFarmLocalization.T(minimapRight ? "MINIMAPA: DERECHA" : "MINIMAPA: IZQUIERDA");
 #if !UNITY_WEBGL || UNITY_EDITOR
             // A browser tab cannot be closed by Application.Quit, so the web build simply has no exit button.
             PauseButton(main, "SALIR DEL JUEGO", QuitGame, SpaceFarmPalette.PanelRaised, SpaceFarmPalette.MutedText, ref y);
@@ -110,6 +111,7 @@ namespace SpaceFarm
 
         private void ShowAudioPage()
         {
+            settingsFromTitle = false;
             pauseMainPage.SetActive(false);
             pauseControlsPage.SetActive(false);
             pauseAudioPage.SetActive(true);

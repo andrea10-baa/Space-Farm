@@ -462,8 +462,8 @@ namespace SpaceFarm
 
             if (sprite != null) infoPreview.sprite = sprite;
             infoPreview.enabled = sprite != null;
-            infoTitle.text = title;
-            infoLevelState.text = $"{level}     ·     ESTADO: {status}";
+            infoTitle.text = SpaceFarmLocalization.T(title);
+            infoLevelState.text = $"{SpaceFarmLocalization.T(level)}     ·     {SpaceFarmLocalization.T("ESTADO")}: {SpaceFarmLocalization.T(status)}";
             if (damaged && state.DamagedStructure != DamagedStructureKind.None)
                 facts += $"\nReparación: {state.RepairIronCost} Fe y {state.RepairEnergyCost} energía.";
             if (worker != null) facts += "\n" + WorkerText(worker, job);
@@ -488,26 +488,26 @@ namespace SpaceFarm
                 else if (state.Energy < state.RepairEnergyCost) nextStep = $"Faltan {state.RepairEnergyCost - state.Energy} de energía para reparar.";
                 else if (RoverBusy) nextStep = "Al confirmar, la reparación quedará en cola hasta que el rover termine su recorrido.";
             }
-            string reasonLine = nextStep.Length > 0 ? $"\n\n<b>SIGUIENTE PASO</b>  {nextStep}" : "";
-            infoEducationText.text = $"<b>DATOS DE ESTA INSTALACIÓN</b>\n{facts}\n\n<b>¿CÓMO FUNCIONA EN LA REALIDAD?</b>\n{reality}\n\n<b>EN SPACE FARM</b>\n{game}{reasonLine}";
+            string reasonLine = nextStep.Length > 0 ? $"\n\n<b>{SpaceFarmLocalization.T("SIGUIENTE PASO")}</b>  {SpaceFarmLocalization.T(nextStep)}" : "";
+            infoEducationText.text = $"<b>{SpaceFarmLocalization.T("DATOS DE ESTA INSTALACIÓN")}</b>\n{SpaceFarmLocalization.T(facts)}\n\n<b>{SpaceFarmLocalization.T("¿CÓMO FUNCIONA EN LA REALIDAD?")}</b>\n{SpaceFarmLocalization.T(reality)}\n\n<b>{SpaceFarmLocalization.T("EN SPACE FARM")}</b>\n{SpaceFarmLocalization.T(game)}{reasonLine}";
             infoEducationText.fontSize = Screen.height < 600 ? 13 : 15;
             RefreshMetricCards(metrics);
 
             infoPrimary.gameObject.SetActive(showPrimary);
             infoPrimary.interactable = primaryEnabled;
-            if (showPrimary) infoPrimary.GetComponentInChildren<TextMeshProUGUI>().text = primaryText;
+            if (showPrimary) infoPrimary.GetComponentInChildren<TextMeshProUGUI>().text = SpaceFarmLocalization.T(primaryText);
             infoSecondary.gameObject.SetActive(showSecondary);
             infoSecondary.interactable = secondaryEnabled;
-            if (showSecondary) infoSecondary.GetComponentInChildren<TextMeshProUGUI>().text = secondaryText;
+            if (showSecondary) infoSecondary.GetComponentInChildren<TextMeshProUGUI>().text = SpaceFarmLocalization.T(secondaryText);
             bool globalRepair = state.DamagedStructure != DamagedStructureKind.None && DamagedSelectionMatches();
             infoRepair.gameObject.SetActive(showRepair || globalRepair);
             infoRepair.interactable = state.Iron >= state.RepairIronCost && state.Energy >= state.RepairEnergyCost && !state.GameOver && !state.IsRepairing && !repairOrderPending;
             if (infoRepair.gameObject.activeSelf)
-                infoRepair.GetComponentInChildren<TextMeshProUGUI>().text = state.IsRepairing
+                infoRepair.GetComponentInChildren<TextMeshProUGUI>().text = SpaceFarmLocalization.T(state.IsRepairing
                     ? $"REPARACIÓN · {state.RepairSecondsRemaining} s"
                     : state.DamagedStructure == DamagedStructureKind.Rover
                         ? $"REPARAR ROVER · {state.RepairIronCost} Fe · 30 s"
-                        : repairOrderPending ? "REPARACIÓN EN COLA" : $"REPARAR · {state.RepairIronCost} Fe · 30 s";
+                        : repairOrderPending ? "REPARACIÓN EN COLA" : $"REPARAR · {state.RepairIronCost} Fe · 30 s");
             infoCrew.gameObject.SetActive(hasWorkerAccess);
             infoCrop.gameObject.SetActive(showCrop && !editMode);
             infoCrop.interactable = !state.GameOver;

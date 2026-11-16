@@ -108,7 +108,7 @@ namespace SpaceFarm
             RefreshHud();
             arrivalSequenceActive = false;
             SetHudControlsEnabled(true);
-            SetReport($"Aterrizaje completado en Marte (semilla {seed}). Enviá el rover a explorar los sectores ocultos.");
+            SetReportFormat("Aterrizaje completado en Marte (semilla {0}). Enviá el rover a explorar los sectores ocultos.", seed);
         }
 
         private void QueueShipmentArrival()

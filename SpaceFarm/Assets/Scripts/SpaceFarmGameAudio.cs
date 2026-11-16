@@ -20,6 +20,9 @@ namespace SpaceFarm
         private Coroutine damageAlertRoutine;
         private TextMeshProUGUI musicVolumeValue;
         private TextMeshProUGUI effectsVolumeValue;
+        private bool settingsFromTitle;
+        private Button spanishButton;
+        private Button englishButton;
 
         private void CreateAudioSystem()
         {
@@ -138,7 +141,7 @@ namespace SpaceFarm
         private void ShowDamageAlert(string structureName)
         {
             if (damageAlertRoot == null) return;
-            damageAlertText.text = $"Se averió {structureName}. Enviá el rover para repararla.";
+            damageAlertText.text = SpaceFarmLocalization.F("Se averió {0}. Enviá el rover para repararla.", SpaceFarmLocalization.T(structureName));
             damageAlertRoot.SetActive(true);
             damageAlertRoot.transform.SetAsLastSibling();
             if (effectsSource != null && damageAlarm != null)
@@ -164,15 +167,87 @@ namespace SpaceFarm
 
         private void CreateAudioSettingsPage()
         {
-            pauseAudioPage = PausePanel("Audio", 350);
-            Transform page = pauseAudioPage.transform;
-            PauseTitle(page, "SONIDO");
-            AddAudioSlider(page, "Música de fondo", -102, true, out musicVolumeValue);
-            AddAudioSlider(page, "Efectos y alarmas", -197, false, out effectsVolumeValue);
-            float y = -298;
-            PauseButton(page, "VOLVER", () => ShowPausePage(false), SpaceFarmPalette.Iron,
+            pauseAudioPage = Panel("Configuración", hudCanvas.transform,
+                new Color(.04f, .07f, .1f, .88f), Vector2.zero, Vector2.one,
+                new Vector2(.5f, .5f), Vector2.zero, Vector2.zero);
+            pauseAudioPage.GetComponent<Image>().raycastTarget = true;
+            GameObject settingsCard = Panel("Panel de configuración", pauseAudioPage.transform,
+                SpaceFarmPalette.Panel, new Vector2(.5f, .5f), new Vector2(.5f, .5f),
+                new Vector2(.5f, .5f), Vector2.zero, new Vector2(400, 445));
+            settingsCard.GetComponent<Image>().raycastTarget = true;
+            Transform page = settingsCard.transform;
+            PauseTitle(page, "CONFIGURACIÓN");
+            AddAudioSlider(page, "Música de fondo", -68, true, out musicVolumeValue);
+            AddAudioSlider(page, "Efectos y alarmas", -162, false, out effectsVolumeValue);
+            TextMeshProUGUI languageTitle = Label("IDIOMA", page, 15, FontStyles.Bold,
+                SpaceFarmPalette.Text, new Vector2(.5f, 1), new Vector2(.5f, 1),
+                new Vector2(.5f, 1), new Vector2(0, -257), new Vector2(250, 24));
+            languageTitle.alignment = TextAlignmentOptions.Center;
+            spanishButton = AddButton("ESPAÑOL", page, () => ChangeLanguage("es"), 14,
+                SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
+                new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(.5f, 1),
+                new Vector2(-80, -307), new Vector2(146, 42));
+            englishButton = AddButton("ENGLISH", page, () => ChangeLanguage("en"), 14,
+                SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
+                new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(.5f, 1),
+                new Vector2(80, -307), new Vector2(146, 42));
+            RefreshLanguageButtons();
+            float y = -379;
+            PauseButton(page, "VOLVER", CloseSettings, SpaceFarmPalette.Iron,
                 SpaceFarmPalette.Background, ref y);
             pauseAudioPage.SetActive(false);
+        }
+
+        private void ShowTitleSettings()
+        {
+            settingsFromTitle = true;
+            RefreshLanguageButtons();
+            pauseAudioPage.SetActive(true);
+            pauseAudioPage.transform.SetAsLastSibling();
+        }
+
+        private void CloseSettings()
+        {
+            pauseAudioPage.SetActive(false);
+            if (!settingsFromTitle) ShowPausePage(false);
+        }
+
+        private void ChangeLanguage(string code)
+        {
+            SpaceFarmLocalization.SetLanguage(code);
+            StartCoroutine(FinishLanguageChange());
+        }
+
+        private IEnumerator FinishLanguageChange()
+        {
+            yield return SpaceFarmLocalization.LoadTableAsync();
+            foreach (SpaceFarmLocalizedLabel label in hudCanvas.GetComponentsInChildren<SpaceFarmLocalizedLabel>(true))
+                label.Refresh();
+            RefreshLanguageButtons();
+            if (state != null) RefreshHud();
+            RefreshReportLanguage();
+            if (constructionMenuToggle != null)
+                constructionMenuToggle.GetComponentInChildren<TextMeshProUGUI>().text =
+                    SpaceFarmLocalization.T(constructionMenuOpen ? "CERRAR MENÚ" : "CONSTRUIR");
+            if (crewMenuToggle != null)
+                crewMenuToggle.GetComponentInChildren<TextMeshProUGUI>().text =
+                    SpaceFarmLocalization.T(crewMenuOpen ? "CERRAR EQUIPO" : "ASTRONAUTAS");
+            if (actionMenuTitle != null)
+                actionMenuTitle.text = SpaceFarmLocalization.T(new[] { "CONSTRUCCIÓN", "MEJORAS", "COLONIA" }[Mathf.Clamp(selectedCategory, 0, 2)]);
+            if (pauseMinimapLabel != null)
+                pauseMinimapLabel.text = SpaceFarmLocalization.T(minimapRight ? "MINIMAPA: DERECHA" : "MINIMAPA: IZQUIERDA");
+            if (minimapTitleLabel != null)
+                minimapTitleLabel.text = SpaceFarmLocalization.F("MAPA · semilla {0}", seed);
+            if (infoPanel != null && infoPanel.activeSelf) RefreshEducationalCard();
+        }
+
+        private void RefreshLanguageButtons()
+        {
+            if (spanishButton == null || englishButton == null) return;
+            spanishButton.GetComponent<Image>().color = SpaceFarmLocalization.IsEnglish
+                ? SpaceFarmPalette.PanelRaised : SpaceFarmPalette.Oxygen;
+            englishButton.GetComponent<Image>().color = SpaceFarmLocalization.IsEnglish
+                ? SpaceFarmPalette.Oxygen : SpaceFarmPalette.PanelRaised;
         }
 
         private void AddAudioSlider(Transform page, string caption, float y, bool music, out TextMeshProUGUI valueLabel)

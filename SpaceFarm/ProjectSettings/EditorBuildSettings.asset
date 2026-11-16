@@ -9,4 +9,6 @@ EditorBuildSettings:
     path: Assets/Scenes/SpaceFarm.unity
     guid: 3bf05e3e6683fae75a37512a8d5cd452
   m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: 05a9b82d995232184b643a24a37cae8f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+    com.unity.localization.settings: {fileID: 11400000, guid: d59f01351721c6894a6d684761253c73, type: 2}

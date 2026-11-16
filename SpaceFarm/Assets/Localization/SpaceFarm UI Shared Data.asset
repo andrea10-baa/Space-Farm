@@ -1,0 +1,1058 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: SpaceFarm UI Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: SpaceFarm UI
+  m_TableCollectionNameGuidString: a1eca39a5dabce8adb8e8e5ab2e22100
+  m_Entries:
+  - m_Id: 1181822976
+    m_Key: SPACE FARM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1211183104
+    m_Key: "EXPEDICI\xD3N 01     /     MARTE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377408
+    m_Key: "CULTIV\xC1 \xB7 EXPLOR\xC1 \xB7 SOBREVIV\xCD"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377409
+    m_Key: Una nueva colonia comienza en el polvo rojo.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377410
+    m_Key: "INICIAR EXPEDICI\xD3N"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377411
+    m_Key: CONTINUAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377412
+    m_Key: "CONFIGURACI\xD3N"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377413
+    m_Key: PARTIDAS LOCALES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377414
+    m_Key: "NUEVA REGI\xD3N  \xB7  ASENTAMIENTO PENDIENTE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377415
+    m_Key: NUEVA COLONIA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377416
+    m_Key: Dale un nombre para identificarla en la lista de partidas.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377417
+    m_Key: Nombre de la colonia
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377418
+    m_Key: COMENZAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377419
+    m_Key: VOLVER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377420
+    m_Key: CONTINUAR PARTIDA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377421
+    m_Key: "Todav\xEDa no hay partidas guardadas en este dispositivo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377422
+    m_Key: CERRAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377423
+    m_Key: BORRAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377424
+    m_Key: ELIMINAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377425
+    m_Key: CARGAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377426
+    m_Key: CANCELAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377427
+    m_Key: PAUSA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377428
+    m_Key: REANUDAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377429
+    m_Key: GUARDAR PARTIDA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377430
+    m_Key: REINICIAR ESTE MAPA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377431
+    m_Key: EMPEZAR UN MAPA NUEVO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377432
+    m_Key: CONTROLES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377433
+    m_Key: SONIDO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377434
+    m_Key: "M\xFAsica de fondo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377435
+    m_Key: Efectos y alarmas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377436
+    m_Key: IDIOMA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377437
+    m_Key: "ESPA\xD1OL"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377438
+    m_Key: ENGLISH
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377439
+    m_Key: MINIMAPA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377440
+    m_Key: 'MINIMAPA: DERECHA'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377441
+    m_Key: 'MINIMAPA: IZQUIERDA'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377442
+    m_Key: SALIR DEL JUEGO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377443
+    m_Key: "MARTE \xB7 SUPERVIVENCIA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377444
+    m_Key: VOLVER A LA BASE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377445
+    m_Key: IR AL ROVER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377446
+    m_Key: SEGUIR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377447
+    m_Key: II  PAUSA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377448
+    m_Key: AVANZAR SOL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377449
+    m_Key: "MISI\xD3N FINALIZADA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377450
+    m_Key: "MISI\xD3N TERMINADA \xB7 Recursos vitales agotados. Abr\xED PAUSA (Esc) para reiniciar este mapa o probar otro."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377451
+    m_Key: "MISI\xD3N COMPLETA \xB7 Primera cosecha y colonia protegida tras la incursi\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377452
+    m_Key: "SIGUIENTE PASO  \xB7  "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377453
+    m_Key: Hierro
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377454
+    m_Key: "Energ\xEDa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377455
+    m_Key: "Ox\xEDgeno"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377456
+    m_Key: Agua
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377457
+    m_Key: Comida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377458
+    m_Key: Colonos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377459
+    m_Key: Salud
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377460
+    m_Key: COLONIA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377461
+    m_Key: ASTRONAUTAS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377462
+    m_Key: EXPLORAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377463
+    m_Key: EDITAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377464
+    m_Key: MEJORAS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377465
+    m_Key: CONSTRUIR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377466
+    m_Key: "CONSTRUCCI\xD3N"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377467
+    m_Key: "Eleg\xED un plano o arrastralo al mapa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377468
+    m_Key: "TRIPULACI\xD3N  /  ASIGNACIONES"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377469
+    m_Key: "1 \xB7 ELEG\xCD UN ASTRONAUTA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377470
+    m_Key: "2 \xB7 ELEG\xCD UNA INSTALACI\xD3N"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377471
+    m_Key: "El bono se aplica por sol mientras trabaja; al cansarse descansa autom\xE1ticamente."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377472
+    m_Key: DEJAR TAREA / DESCANSAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377473
+    m_Key: ANTERIORES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377474
+    m_Key: SIGUIENTES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377475
+    m_Key: ADMINISTRAR ASTRONAUTAS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377476
+    m_Key: "CERRAR  \xD7"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377477
+    m_Key: ELEGIR CULTIVO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377478
+    m_Key: "ELEG\xCD QU\xC9 CULTIVAR"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377479
+    m_Key: "Los ciclos avanzan con cada sol. Si falta agua o energ\xEDa, el cultivo espera."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377480
+    m_Key: OBJETO SELECCIONADO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377481
+    m_Key: REPARAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377482
+    m_Key: ELIMINAR ESTRUCTURA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377483
+    m_Key: "Reembolso: aproximadamente 50 % del costo base. Los dep\xF3sitos minerales permanecen en el terreno."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377484
+    m_Key: "ALERTA \xB7 INSTALACI\xD3N AVERIADA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377485
+    m_Key: "NIVEL {0} \xB7 M\xC1XIMO\nXP {1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377486
+    m_Key: "NIVEL {0}/5 \xB7 XP {1}/{2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377487
+    m_Key: 'AVANZAR SOL
+
+      AUTO {0:00}:{1:00}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377488
+    m_Key: SOL <b>{0:00}</b>
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377489
+    m_Key: "ROVER {0} \xB7 LISTO\nRadio {1} \xB7 visi\xF3n {2}\nAlmac\xE9n {3}/{4}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377490
+    m_Key: "ROVER {0} \xB7 EN RUTA\nSector {1}\nAlmac\xE9n {2}/{3}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377491
+    m_Key: "ROVER {0} \xB7 LOG\xCDSTICA\nCarga {1}/{2} \xB7 Fe {3} O2 {4}\nAg {5} Co {6}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1215377492
+    m_Key: "MURO \xB7 1 Fe\nMuros {0} \xB7 Hierro {1} \xB7 Uni\xF3n autom\xE1tica"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002387353600
+    m_Key: "Preparando la carta orbital\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002395742208
+    m_Key: "Repar\xE1 {0} ({1} Fe y {2} energ\xEDa)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002395742209
+    m_Key: "El almac\xE9n est\xE1 lleno. Constru\xED otro y envi\xE1 el rover a descargar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002404130816
+    m_Key: "Explor\xE1 la regi\xF3n para localizar hierro y hielo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002404130817
+    m_Key: "La carta orbital indica hierro al {0}, a {1} sectores. Envi\xE1 el rover y estudialo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002404130818
+    m_Key: "Seleccion\xE1 el yacimiento estudiado y constru\xED la mina ({0} de hierro)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002404130819
+    m_Key: "Hay hielo al {0}, a {1} sectores. Envi\xE1 el rover a localizarlo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002404130820
+    m_Key: "Constru\xED un extractor para asegurar agua ({0} de hierro)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002404130821
+    m_Key: "Constru\xED un invernadero para iniciar la cosecha (6 de hierro)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002404130822
+    m_Key: "Explor\xE1 y constru\xED para ganar XP y alcanzar el nivel 3 ({0}/{1})."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002404130823
+    m_Key: "Manten\xE9 la colonia hasta el sol 7 (ahora {0})."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002404130824
+    m_Key: "Revis\xE1 recursos y explor\xE1 yacimientos lejanos para crecer."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002404130825
+    m_Key: norte
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002404130826
+    m_Key: sur
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002404130827
+    m_Key: este
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002404130828
+    m_Key: oeste
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002404130829
+    m_Key: noreste
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002404130830
+    m_Key: noroeste
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325120
+    m_Key: sureste
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325121
+    m_Key: suroeste
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325122
+    m_Key: ESTADO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325123
+    m_Key: SIGUIENTE PASO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325124
+    m_Key: "DATOS DE ESTA INSTALACI\xD3N"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325125
+    m_Key: "\xBFC\xD3MO FUNCIONA EN LA REALIDAD?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325126
+    m_Key: EN SPACE FARM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325127
+    m_Key: Sin niveles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325128
+    m_Key: Operativa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325129
+    m_Key: Operativo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325130
+    m_Key: Operativos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325131
+    m_Key: Averiado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325132
+    m_Key: Averiados
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325133
+    m_Key: Averiada por tormenta
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325134
+    m_Key: Disponible
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325135
+    m_Key: Listo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325136
+    m_Key: En recorrido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325137
+    m_Key: "Almac\xE9n lleno"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325138
+    m_Key: "Sin producci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325139
+    m_Key: "Sin ciclo todav\xEDa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325140
+    m_Key: Detenida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325141
+    m_Key: "Detenida o sin energ\xEDa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325142
+    m_Key: "Producci\xF3n afectada por tormenta"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325143
+    m_Key: Tormenta
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325144
+    m_Key: Sin tormenta
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325145
+    m_Key: "Misi\xF3n finalizada"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325146
+    m_Key: Base operativa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325147
+    m_Key: "Estudiado \xB7 listo para construir"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325148
+    m_Key: "Protecci\xF3n de per\xEDmetro"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325149
+    m_Key: Nivel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325150
+    m_Key: "Dep\xF3sito local"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325151
+    m_Key: Carga del rover
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325152
+    m_Key: Reserva utilizable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325153
+    m_Key: Reserva
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325154
+    m_Key: Distancia
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325155
+    m_Key: Mineral
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325156
+    m_Key: Costo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325157
+    m_Key: Alcance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325158
+    m_Key: "Exploraci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325159
+    m_Key: Carga total
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325160
+    m_Key: Movimiento
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325161
+    m_Key: "Bater\xEDa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325162
+    m_Key: Clima
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325163
+    m_Key: Cultivo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325164
+    m_Key: Ciclo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325165
+    m_Key: Agua usada
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325166
+    m_Key: Libres
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325167
+    m_Key: Capacidad compartida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325168
+    m_Key: "Hierro / ox\xEDgeno"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325169
+    m_Key: Agua / comida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325170
+    m_Key: Almacenes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325171
+    m_Key: Carga rover
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325172
+    m_Key: "Per\xEDmetro"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325173
+    m_Key: RECOGER HIERRO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325174
+    m_Key: RECOGER AGUA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325175
+    m_Key: "RECOGER OX\xCDGENO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325176
+    m_Key: RECOGER COMIDA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325177
+    m_Key: ENVIAR ROVER A DESCARGAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325178
+    m_Key: MOVER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325179
+    m_Key: "REPARACI\xD3N EN COLA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325180
+    m_Key: "Rover de exploraci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325181
+    m_Key: Paneles solares
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325182
+    m_Key: Dormitorio de astronautas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325183
+    m_Key: "Almac\xE9n de recursos"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325184
+    m_Key: Muro modular
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325185
+    m_Key: "H\xE1bitat principal"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325186
+    m_Key: "La composici\xF3n del suelo marciano cambia de un lugar a otro. Una se\xF1al mineral no garantiza que haya hierro f\xE1cil de extraer: una misi\xF3n real tendr\xEDa que analizar muestras y evaluar el terreno."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325187
+    m_Key: "El yacimiento estudiado se convierte en una mina abstracta. Cada mina guarda su propio hierro; envi\xE1 el rover para recogerlo y vigila su consumo de energ\xEDa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325188
+    m_Key: "Orbitadores han cartografiado hielo subterr\xE1neo en algunas regiones de Marte. Su profundidad y accesibilidad var\xEDan; extraerlo requiere localizarlo, perforar y procesar el material."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325189
+    m_Key: "El juego representa el hielo confirmado como un dep\xF3sito y resume la perforaci\xF3n en una instalaci\xF3n. La cantidad real depende de energ\xEDa, capacidad disponible y agua que ya haya en reserva."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325190
+    m_Key: "La superficie de Marte contiene minerales, pero su tipo, concentraci\xF3n y facilidad de extracci\xF3n cambian seg\xFAn la zona. Un rover cient\xEDfico estudia primero el terreno antes de elegir d\xF3nde trabajar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325191
+    m_Key: "El hielo de agua puede estar bajo la superficie y cubierto por regolito. Las misiones usan mapas y mediciones para buscar dep\xF3sitos accesibles; no se supone que haya hielo aprovechable en cualquier sitio."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325192
+    m_Key: "Eleg\xED colocar una mina para comenzar la extracci\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325193
+    m_Key: "Eleg\xED colocar un extractor para comenzar la extracci\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325194
+    m_Key: "Los rovers usan im\xE1genes de c\xE1maras y mapas del terreno para planear rutas seguras. Los equipos evitan pendientes peligrosas, rocas y obst\xE1culos; los comandos se planifican por puntos de recorrido porque Marte est\xE1 muy lejos para controlarlo en tiempo real."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325195
+    m_Key: "Este rover ficticio recorre una cuadr\xEDcula y revela sectores con su esc\xE1ner. Mejorarlo aumenta su carga y radio; el nivel de colonia limita hasta d\xF3nde puede explorar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325196
+    m_Key: "Las celdas fotovoltaicas convierten la luz en electricidad. Una tormenta de polvo puede reducir la luz que llega a los paneles y acumular polvo en su superficie, as\xED que una base necesita almacenamiento y planes de respaldo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325197
+    m_Key: "El juego resume la generaci\xF3n en energ\xEDa por sol y reduce la producci\xF3n durante tormentas. Ampliar los paneles aumenta generaci\xF3n y capacidad de bater\xEDa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325198
+    m_Key: "MOXIE fue un experimento tecnol\xF3gico del rover Perseverance. Recog\xEDa di\xF3xido de carbono marciano y lo separaba electroqu\xEDmicamente para producir ox\xEDgeno; fue una demostraci\xF3n, no una planta capaz de sostener por s\xED sola a una colonia."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325199
+    m_Key: "La planta del juego est\xE1 inspirada en MOXIE, pero produce ox\xEDgeno de forma continua y simplificada. No simula CO\u2082, presi\xF3n, pureza ni el tama\xF1o industrial que necesitar\xEDa una misi\xF3n humana."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325200
+    m_Key: "Las plantas necesitan luz, agua, nutrientes y un ambiente controlado. En el espacio, los equipos estudian c\xF3mo cultivar alimentos con recursos limitados y proteger los cultivos de condiciones extremas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325201
+    m_Key: "Cada invernadero tiene su propio cultivo. Trigo: nivel 1, 7 alimentos en 1 sol; lechuga: nivel 2, 16 en 2 soles; ma\xEDz: nivel 3, hasta 24 en 3 soles. Cada sol de crecimiento consume agua y energ\xEDa; si faltan, el ciclo espera. Los astronautas asignados suman comida a la cosecha."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325202
+    m_Key: "Las tripulaciones necesitan sue\xF1o y per\xEDodos de descanso para mantener su salud y capacidad de trabajo. Un h\xE1bitat real debe controlar aire, temperatura, humedad, ruido y protecci\xF3n, adem\xE1s de ofrecer un lugar para dormir."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325203
+    m_Key: "El dormitorio modela el descanso y la recuperaci\xF3n de energ\xEDa. No simula sue\xF1o, salud ni condiciones m\xE9dicas con detalle; una aver\xEDa ralentiza la recuperaci\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325204
+    m_Key: Los cuatro recursos ocupan el mismo espacio. La carga que no cabe permanece a bordo del rover.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325205
+    m_Key: "Las bases de exploraci\xF3n necesitan log\xEDstica para guardar muestras, herramientas y repuestos. El almacenamiento debe proteger el contenido y permitir que la tripulaci\xF3n lo encuentre cuando hace falta."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325206
+    m_Key: "Ox\xEDgeno, agua, comida y hierro comparten capacidad. Las reservas iniciales y las entregas tambi\xE9n ocupan espacio."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325207
+    m_Key: "Los tramos vecinos se conectan visualmente para cerrar el per\xEDmetro. Los muros cercanos al h\xE1bitat reducen las p\xE9rdidas de comida durante una incursi\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325208
+    m_Key: "Una barrera f\xEDsica puede separar \xE1reas y proteger equipos de ciertos peligros, pero no convierte una base en un refugio contra toda amenaza. La radiaci\xF3n requiere materiales, masa y dise\xF1o especializados."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325209
+    m_Key: "Las incursiones de criaturas alien\xEDgenas y su defensa son ficci\xF3n del juego. Los muros reducen p\xE9rdidas de comida; no protegen contra radiaci\xF3n ni representan una soluci\xF3n real de ingenier\xEDa marciana."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325210
+    m_Key: "Un h\xE1bitat necesita mantener presi\xF3n y temperatura, renovar el aire, recuperar agua y proteger a la tripulaci\xF3n de radiaci\xF3n y micrometeoritos. Todos estos subsistemas se afectan entre s\xED."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1002408325211
+    m_Key: "La partida resume la supervivencia con reservas de ox\xEDgeno, agua, comida, energ\xEDa y camas. El modelo educativo no simula presi\xF3n, temperatura ni dosis de radiaci\xF3n de forma num\xE9rica."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681654886400
+    m_Key: MEJORAR ESTRUCTURA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663616
+    m_Key: MEJORAR ROVER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663617
+    m_Key: REPARAR ROVER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663618
+    m_Key: ENVIAR ROVER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663619
+    m_Key: "REPARACI\xD3N"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663620
+    m_Key: MEJORAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663621
+    m_Key: Sin trabajador
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663622
+    m_Key: Astronautas libres
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663623
+    m_Key: "energ\xEDa personal"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663624
+    m_Key: "en construcci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663625
+    m_Key: Mejora en curso
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663626
+    m_Key: nivel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663627
+    m_Key: sectores
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663628
+    m_Key: sector
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663629
+    m_Key: de la base
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663630
+    m_Key: hacia el
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663631
+    m_Key: hacia la
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663632
+    m_Key: "producci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663633
+    m_Key: almacenado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663634
+    m_Key: almacenada
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663635
+    m_Key: capacidad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663636
+    m_Key: unidades de juego
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663637
+    m_Key: unidades
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663638
+    m_Key: unidad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663639
+    m_Key: unid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663640
+    m_Key: soles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663641
+    m_Key: sol
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663642
+    m_Key: real
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663643
+    m_Key: "\xFAltimo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681671663644
+    m_Key: trabajando
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857920
+    m_Key: descansando
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857921
+    m_Key: comida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857922
+    m_Key: agua
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857923
+    m_Key: hierro
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857924
+    m_Key: "energ\xEDa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857925
+    m_Key: "ox\xEDgeno"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857926
+    m_Key: Mina
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857927
+    m_Key: Extractor de agua
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857928
+    m_Key: "Planta de ox\xEDgeno"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857929
+    m_Key: Invernadero
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857930
+    m_Key: "Almac\xE9n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857931
+    m_Key: Colonia
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857932
+    m_Key: cultivo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857933
+    m_Key: Norte
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857934
+    m_Key: Sur
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857935
+    m_Key: Este
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857936
+    m_Key: Oeste
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857937
+    m_Key: "<b>C\xE1mara</b>  Arrastr\xE1 el mapa o us\xE1 WASD / flechas.\n<b>Zoom</b>  Rueda del mouse. VOLVER A LA BASE e IR AL ROVER reubican la vista; SEGUIR acompa\xF1a al rover.\n<b>Explorar</b>  Clic en el terreno: el rover viaja ah\xED y revela sectores. Clic en una se\xF1al: va a estudiarla.\n<b>Construir</b>  Abr\xED CONSTRUIR. Eleg\xED un plano y hac\xE9 clic en un sector v\xE1lido, o arrastr\xE1 una tarjeta al mapa. Esc o clic derecho cancelan.\n<b>Astronautas</b>  Abr\xED ASTRONAUTAS, eleg\xED una persona y luego una instalaci\xF3n. Trabajar aumenta su producci\xF3n; descansan solos al cansarse.\n<b>Muros</b>  Eleg\xED muros en el men\xFA y coloc\xE1 cada uno en un sector libre (1 Fe). Los vecinos se unen solos; Esc cancela.\n<b>Minimapa</b>  Clic en zona explorada: centra la c\xE1mara sin mover al rover. + / - cambia el tama\xF1o; < > lo pasa de lado.\n<b>Pausa</b>  Esc o el bot\xF3n PAUSA."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1681675857938
+    m_Key: "Se averi\xF3 {0}. Envi\xE1 el rover para repararla."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2705702596608
+    m_Key: "MAPA \xB7 semilla {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2705710985216
+    m_Key: "Preparando el aterrizaje en una regi\xF3n nueva de Marte (semilla {0})."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2705710985217
+    m_Key: "Aterrizaje completado en Marte (semilla {0}). Envi\xE1 el rover a explorar los sectores ocultos."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3444944482304
+    m_Key: "CERRAR MEN\xDA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3444982231040
+    m_Key: CERRAR EQUIPO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3444982231041
+    m_Key: "Escrib\xED un nombre para comenzar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3444982231042
+    m_Key: Ya existe una partida con ese nombre.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3444982231043
+    m_Key: NIVEL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3444982231044
+    m_Key: CULTIVO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3444982231045
+    m_Key: COMIDA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3444982231046
+    m_Key: SOL
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 3746276171314364522
+  references:
+    version: 2
+    RefIds:
+    - rid: 3746276171314364522
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1794787198856

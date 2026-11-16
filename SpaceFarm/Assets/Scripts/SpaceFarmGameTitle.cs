@@ -36,27 +36,27 @@ namespace SpaceFarm
 
             Panel("Placa de portada", titleScreenRoot.transform, new Color(.07f, .11f, .14f, 1f),
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
-                Vector2.zero, new Vector2(620, 430));
+                Vector2.zero, new Vector2(620, 490));
 
             // Fine framing lines and warm/cool marks keep the screen in the game's Martian palette.
             Panel("Línea superior", titleScreenRoot.transform, SpaceFarmPalette.Iron,
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
-                new Vector2(0, 196), new Vector2(430, 2));
+                new Vector2(0, 224), new Vector2(430, 2));
             Panel("Línea inferior", titleScreenRoot.transform, SpaceFarmPalette.Ice,
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
-                new Vector2(0, -196), new Vector2(430, 2));
+                new Vector2(0, -224), new Vector2(430, 2));
 
             TextMeshProUGUI missionMark = Label("EXPEDICIÓN 01     /     MARTE",
                 titleScreenRoot.transform, 12, FontStyles.Bold, SpaceFarmPalette.Ice,
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
-                new Vector2(0, 151), new Vector2(400, 24));
+                new Vector2(0, 177), new Vector2(400, 24));
             missionMark.alignment = TextAlignmentOptions.Center;
             missionMark.characterSpacing = 3;
 
             TextMeshProUGUI title = Label("SPACE FARM", titleScreenRoot.transform,
                 48, FontStyles.Bold, SpaceFarmPalette.Text,
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
-                new Vector2(0, 93), new Vector2(540, 66));
+                new Vector2(0, 119), new Vector2(540, 66));
             title.alignment = TextAlignmentOptions.Center;
             title.enableAutoSizing = true;
             title.fontSizeMin = 36;
@@ -66,20 +66,20 @@ namespace SpaceFarm
             TextMeshProUGUI subtitle = Label("CULTIVÁ · EXPLORÁ · SOBREVIVÍ",
                 titleScreenRoot.transform, 14, FontStyles.Bold, SpaceFarmPalette.Iron,
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
-                new Vector2(0, 52), new Vector2(420, 26));
+                new Vector2(0, 78), new Vector2(420, 26));
             subtitle.alignment = TextAlignmentOptions.Center;
             subtitle.characterSpacing = 1.5f;
 
             TextMeshProUGUI intro = Label("Una nueva colonia comienza en el polvo rojo.",
                 titleScreenRoot.transform, 15, FontStyles.Normal, SpaceFarmPalette.MutedText,
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
-                new Vector2(0, 15), new Vector2(470, 30));
+                new Vector2(0, 41), new Vector2(470, 30));
             intro.alignment = TextAlignmentOptions.Center;
 
             Button play = AddButton("INICIAR EXPEDICIÓN", titleScreenRoot.transform,
                 ShowNewGameNamePrompt, 17, SpaceFarmPalette.Button, SpaceFarmPalette.Text,
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
-                new Vector2(0, -58), new Vector2(310, 48));
+                new Vector2(0, -24), new Vector2(310, 48));
             play.transition = Selectable.Transition.ColorTint;
             ColorBlock playColors = play.colors;
             playColors.normalColor = SpaceFarmPalette.Button;
@@ -91,7 +91,7 @@ namespace SpaceFarm
             GameObject continuePanel = Panel("Continuar partida", titleScreenRoot.transform,
                 SpaceFarmPalette.PanelRaised,
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
-                new Vector2(0, -124), new Vector2(310, 42));
+                new Vector2(0, -84), new Vector2(310, 42));
             TextMeshProUGUI continueLabel = Label("CONTINUAR", continuePanel.transform,
                 14, FontStyles.Bold, SpaceFarmPalette.MutedText,
                 Vector2.zero, Vector2.one, new Vector2(.5f, .5f), Vector2.zero, new Vector2(-12, -6));
@@ -108,17 +108,22 @@ namespace SpaceFarm
             continueColors.pressedColor = SpaceFarmPalette.Iron;
             continueButton.colors = continueColors;
 
+            AddButton("CONFIGURACIÓN", titleScreenRoot.transform, ShowTitleSettings,
+                14, SpaceFarmPalette.PanelRaised, SpaceFarmPalette.Text,
+                new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
+                new Vector2(0, -140), new Vector2(310, 42));
+
             TextMeshProUGUI futureLabel = Label("PARTIDAS LOCALES", titleScreenRoot.transform,
                 9, FontStyles.Bold, SpaceFarmPalette.MutedText,
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
-                new Vector2(0, -156), new Vector2(250, 16));
+                new Vector2(0, -182), new Vector2(250, 16));
             futureLabel.alignment = TextAlignmentOptions.Center;
             futureLabel.characterSpacing = 2;
 
             TextMeshProUGUI seedLabel = Label("NUEVA REGIÓN  ·  ASENTAMIENTO PENDIENTE",
                 titleScreenRoot.transform, 11, FontStyles.Bold, SpaceFarmPalette.MutedText,
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
-                new Vector2(0, -178), new Vector2(420, 24));
+                new Vector2(0, -202), new Vector2(420, 24));
             seedLabel.alignment = TextAlignmentOptions.Center;
             seedLabel.characterSpacing = 1.2f;
 

@@ -1,0 +1,257 @@
+SPACE FARM	SPACE FARM
+EXPEDICIÓN 01     /     MARTE	EXPEDITION 01     /     MARS
+CULTIVÁ · EXPLORÁ · SOBREVIVÍ	GROW · EXPLORE · SURVIVE
+Una nueva colonia comienza en el polvo rojo.	A new colony begins in the red dust.
+INICIAR EXPEDICIÓN	START EXPEDITION
+CONTINUAR	CONTINUE
+CONFIGURACIÓN	SETTINGS
+PARTIDAS LOCALES	LOCAL SAVES
+NUEVA REGIÓN  ·  ASENTAMIENTO PENDIENTE	NEW REGION  ·  SETTLEMENT PENDING
+NUEVA COLONIA	NEW COLONY
+Dale un nombre para identificarla en la lista de partidas.	Give it a name to identify it in your saved games.
+Nombre de la colonia	Colony name
+COMENZAR	START
+VOLVER	BACK
+CONTINUAR PARTIDA	CONTINUE GAME
+Todavía no hay partidas guardadas en este dispositivo.	There are no saved games on this device yet.
+CERRAR	CLOSE
+BORRAR	DELETE
+ELIMINAR	REMOVE
+CARGAR	LOAD
+CANCELAR	CANCEL
+PAUSA	PAUSE
+REANUDAR	RESUME
+GUARDAR PARTIDA	SAVE GAME
+REINICIAR ESTE MAPA	RESTART THIS MAP
+EMPEZAR UN MAPA NUEVO	START A NEW MAP
+CONTROLES	CONTROLS
+SONIDO	SOUND
+Música de fondo	Background music
+Efectos y alarmas	Effects and alarms
+IDIOMA	LANGUAGE
+ESPAÑOL	ESPAÑOL
+ENGLISH	ENGLISH
+MINIMAPA	MINIMAP
+MINIMAPA: DERECHA	MINIMAP: RIGHT
+MINIMAPA: IZQUIERDA	MINIMAP: LEFT
+SALIR DEL JUEGO	QUIT GAME
+MARTE · SUPERVIVENCIA	MARS · SURVIVAL
+VOLVER A LA BASE	RETURN TO BASE
+IR AL ROVER	GO TO ROVER
+SEGUIR	FOLLOW
+II  PAUSA	II  PAUSE
+AVANZAR SOL	ADVANCE SOL
+MISIÓN FINALIZADA	MISSION OVER
+MISIÓN TERMINADA · Recursos vitales agotados. Abrí PAUSA (Esc) para reiniciar este mapa o probar otro.	MISSION OVER · Essential supplies ran out. Open PAUSE (Esc) to restart or try another map.
+MISIÓN COMPLETA · Primera cosecha y colonia protegida tras la incursión.	MISSION COMPLETE · First harvest and colony protected after the raid.
+SIGUIENTE PASO  ·  	NEXT STEP  ·  
+Hierro	Iron
+Energía	Energy
+Oxígeno	Oxygen
+Agua	Water
+Comida	Food
+Colonos	Colonists
+Salud	Health
+COLONIA	COLONY
+ASTRONAUTAS	ASTRONAUTS
+EXPLORAR	EXPLORE
+EDITAR	EDIT
+MEJORAS	UPGRADES
+CONSTRUIR	BUILD
+CONSTRUCCIÓN	CONSTRUCTION
+CERRAR MENÚ	CLOSE MENU
+CERRAR EQUIPO	CLOSE CREW
+Escribí un nombre para comenzar.	Enter a name to begin.
+Ya existe una partida con ese nombre.	A saved game with that name already exists.
+Elegí un plano o arrastralo al mapa.	Choose a blueprint or drag it onto the map.
+TRIPULACIÓN  /  ASIGNACIONES	CREW  /  ASSIGNMENTS
+1 · ELEGÍ UN ASTRONAUTA	1 · CHOOSE AN ASTRONAUT
+2 · ELEGÍ UNA INSTALACIÓN	2 · CHOOSE A FACILITY
+El bono se aplica por sol mientras trabaja; al cansarse descansa automáticamente.	The bonus applies each sol while working; tired astronauts rest automatically.
+DEJAR TAREA / DESCANSAR	LEAVE JOB / REST
+ANTERIORES	PREVIOUS
+SIGUIENTES	NEXT
+ADMINISTRAR ASTRONAUTAS	MANAGE ASTRONAUTS
+CERRAR  ×	CLOSE  ×
+ELEGIR CULTIVO	CHOOSE CROP
+ELEGÍ QUÉ CULTIVAR	CHOOSE WHAT TO GROW
+Los ciclos avanzan con cada sol. Si falta agua o energía, el cultivo espera.	Crops advance each sol. If water or energy is missing, growth pauses.
+OBJETO SELECCIONADO	SELECTED OBJECT
+REPARAR	REPAIR
+ELIMINAR ESTRUCTURA	REMOVE STRUCTURE
+Reembolso: aproximadamente 50 % del costo base. Los depósitos minerales permanecen en el terreno.	Refund: about 50% of the base cost. Mineral deposits stay in place.
+ALERTA · INSTALACIÓN AVERIADA	ALERT · FACILITY DAMAGED
+NIVEL {0} · MÁXIMO\nXP {1}	LEVEL {0} · MAX\nXP {1}
+NIVEL {0}/5 · XP {1}/{2}	LEVEL {0}/5 · XP {1}/{2}
+AVANZAR SOL\nAUTO {0:00}:{1:00}	ADVANCE SOL\nAUTO {0:00}:{1:00}
+SOL <b>{0:00}</b>	SOL <b>{0:00}</b>
+ROVER {0} · LISTO\nRadio {1} · visión {2}\nAlmacén {3}/{4}	ROVER {0} · READY\nRange {1} · sight {2}\nStorage {3}/{4}
+ROVER {0} · EN RUTA\nSector {1}\nAlmacén {2}/{3}	ROVER {0} · TRAVELING\nSector {1}\nStorage {2}/{3}
+ROVER {0} · LOGÍSTICA\nCarga {1}/{2} · Fe {3} O2 {4}\nAg {5} Co {6}	ROVER {0} · LOGISTICS\nCargo {1}/{2} · Fe {3} O2 {4}\nWater {5} Food {6}
+MURO · 1 Fe\nMuros {0} · Hierro {1} · Unión automática	WALL · 1 Fe\nWalls {0} · Iron {1} · Auto-connect
+Preparando la carta orbital…	Preparing the orbital chart…
+Repará {0} ({1} Fe y {2} energía).	Repair {0} ({1} Fe and {2} energy).
+El almacén está lleno. Construí otro y enviá el rover a descargar.	Storage is full. Build another warehouse and send the rover to unload.
+Explorá la región para localizar hierro y hielo.	Explore the region to locate iron and ice.
+La carta orbital indica hierro al {0}, a {1} sectores. Enviá el rover y estudialo.	The orbital chart shows iron to the {0}, {1} sectors away. Send the rover to survey it.
+Seleccioná el yacimiento estudiado y construí la mina ({0} de hierro).	Select the surveyed deposit and build a mine ({0} iron).
+Hay hielo al {0}, a {1} sectores. Enviá el rover a localizarlo.	There is ice to the {0}, {1} sectors away. Send the rover to locate it.
+Construí un extractor para asegurar agua ({0} de hierro).	Build an extractor to secure water ({0} iron).
+Construí un invernadero para iniciar la cosecha (6 de hierro).	Build a greenhouse to start harvesting (6 iron).
+Explorá y construí para ganar XP y alcanzar el nivel 3 ({0}/{1}).	Explore and build to earn XP and reach level 3 ({0}/{1}).
+Mantené la colonia hasta el sol 7 (ahora {0}).	Keep the colony alive until sol 7 (now {0}).
+Revisá recursos y explorá yacimientos lejanos para crecer.	Check supplies and explore distant deposits to grow.
+norte	north
+sur	south
+este	east
+oeste	west
+noreste	northeast
+noroeste	northwest
+sureste	southeast
+suroeste	southwest
+ESTADO	STATUS
+SIGUIENTE PASO	NEXT STEP
+DATOS DE ESTA INSTALACIÓN	FACILITY DETAILS
+¿CÓMO FUNCIONA EN LA REALIDAD?	HOW DOES IT WORK IN REAL LIFE?
+EN SPACE FARM	IN SPACE FARM
+Sin niveles	No levels
+Operativa	Operational
+Operativo	Operational
+Operativos	Operational
+Averiado	Damaged
+Averiados	Damaged
+Averiada por tormenta	Storm damaged
+Disponible	Available
+Listo	Ready
+En recorrido	Traveling
+Almacén lleno	Storage full
+Sin producción	Not producing
+Sin ciclo todavía	No cycle yet
+Detenida	Stopped
+Detenida o sin energía	Stopped or out of energy
+Producción afectada por tormenta	Storm reduced production
+Tormenta	Storm
+Sin tormenta	No storm
+Misión finalizada	Mission over
+Base operativa	Base operational
+Estudiado · listo para construir	Surveyed · ready to build
+Protección de perímetro	Perimeter protection
+Nivel	Level
+Depósito local	Local storage
+Carga del rover	Rover cargo
+Reserva utilizable	Usable reserve
+Reserva	Reserve
+Distancia	Distance
+Mineral	Mineral
+Costo	Cost
+Alcance	Range
+Exploración	Exploration
+Carga total	Total cargo
+Movimiento	Movement
+Batería	Battery
+Clima	Weather
+Cultivo	Crop
+Ciclo	Cycle
+Agua usada	Water used
+Libres	Available
+Capacidad compartida	Shared capacity
+Hierro / oxígeno	Iron / oxygen
+Agua / comida	Water / food
+Almacenes	Warehouses
+Carga rover	Rover cargo
+Perímetro	Perimeter
+RECOGER HIERRO	COLLECT IRON
+RECOGER AGUA	COLLECT WATER
+RECOGER OXÍGENO	COLLECT OXYGEN
+RECOGER COMIDA	COLLECT FOOD
+ENVIAR ROVER A DESCARGAR	SEND ROVER TO UNLOAD
+MOVER	MOVE
+REPARACIÓN EN COLA	REPAIR QUEUED
+Rover de exploración	Exploration rover
+Paneles solares	Solar panels
+Dormitorio de astronautas	Astronaut dormitory
+Almacén de recursos	Resource warehouse
+Muro modular	Modular wall
+Hábitat principal	Main habitat
+La composición del suelo marciano cambia de un lugar a otro. Una señal mineral no garantiza que haya hierro fácil de extraer: una misión real tendría que analizar muestras y evaluar el terreno.	Martian soil composition varies by location. A mineral signal does not guarantee easy-to-extract iron: a real mission would analyze samples and assess the terrain.
+El yacimiento estudiado se convierte en una mina abstracta. Cada mina guarda su propio hierro; enviá el rover para recogerlo y vigila su consumo de energía.	A surveyed deposit becomes a simplified mine. Each mine stores its own iron; send the rover to collect it and monitor its energy use.
+Orbitadores han cartografiado hielo subterráneo en algunas regiones de Marte. Su profundidad y accesibilidad varían; extraerlo requiere localizarlo, perforar y procesar el material.	Orbiters have mapped subsurface ice in some regions of Mars. Its depth and accessibility vary; extracting it requires locating, drilling and processing it.
+El juego representa el hielo confirmado como un depósito y resume la perforación en una instalación. La cantidad real depende de energía, capacidad disponible y agua que ya haya en reserva.	The game represents confirmed ice as a deposit and simplifies drilling into one facility. Actual output depends on energy, free capacity and water already in reserve.
+La superficie de Marte contiene minerales, pero su tipo, concentración y facilidad de extracción cambian según la zona. Un rover científico estudia primero el terreno antes de elegir dónde trabajar.	The Martian surface contains minerals, but their type, concentration and accessibility vary by area. A scientific rover surveys the terrain before choosing where to work.
+El hielo de agua puede estar bajo la superficie y cubierto por regolito. Las misiones usan mapas y mediciones para buscar depósitos accesibles; no se supone que haya hielo aprovechable en cualquier sitio.	Water ice can lie beneath the surface under regolith. Missions use maps and measurements to find accessible deposits; usable ice is not assumed to exist everywhere.
+Elegí colocar una mina para comenzar la extracción.	Place a mine to start extraction.
+Elegí colocar un extractor para comenzar la extracción.	Place an extractor to start extraction.
+Los rovers usan imágenes de cámaras y mapas del terreno para planear rutas seguras. Los equipos evitan pendientes peligrosas, rocas y obstáculos; los comandos se planifican por puntos de recorrido porque Marte está muy lejos para controlarlo en tiempo real.	Rovers use camera images and terrain maps to plan safe routes. Teams avoid steep slopes, rocks and obstacles; commands use waypoints because Mars is too far away for real-time control.
+Este rover ficticio recorre una cuadrícula y revela sectores con su escáner. Mejorarlo aumenta su carga y radio; el nivel de colonia limita hasta dónde puede explorar.	This fictional rover moves across a grid and reveals sectors with its scanner. Upgrades increase cargo and scan radius; colony level limits exploration range.
+Las celdas fotovoltaicas convierten la luz en electricidad. Una tormenta de polvo puede reducir la luz que llega a los paneles y acumular polvo en su superficie, así que una base necesita almacenamiento y planes de respaldo.	Photovoltaic cells turn light into electricity. Dust storms can reduce sunlight and coat the panels, so a base needs energy storage and backup plans.
+El juego resume la generación en energía por sol y reduce la producción durante tormentas. Ampliar los paneles aumenta generación y capacidad de batería.	The game models generation as energy per sol and reduces output during storms. Upgrading panels increases generation and battery capacity.
+MOXIE fue un experimento tecnológico del rover Perseverance. Recogía dióxido de carbono marciano y lo separaba electroquímicamente para producir oxígeno; fue una demostración, no una planta capaz de sostener por sí sola a una colonia.	MOXIE was a technology experiment aboard the Perseverance rover. It collected Martian carbon dioxide and split it electrochemically to produce oxygen; it was a demonstration, not a plant able to sustain a colony by itself.
+La planta del juego está inspirada en MOXIE, pero produce oxígeno de forma continua y simplificada. No simula CO₂, presión, pureza ni el tamaño industrial que necesitaría una misión humana.	The game's plant is inspired by MOXIE, but produces oxygen continuously in a simplified way. It does not model CO₂, pressure, purity or the industrial scale a human mission would need.
+Las plantas necesitan luz, agua, nutrientes y un ambiente controlado. En el espacio, los equipos estudian cómo cultivar alimentos con recursos limitados y proteger los cultivos de condiciones extremas.	Plants need light, water, nutrients and a controlled environment. In space, teams study how to grow food with limited resources and protect crops from extreme conditions.
+Cada invernadero tiene su propio cultivo. Trigo: nivel 1, 7 alimentos en 1 sol; lechuga: nivel 2, 16 en 2 soles; maíz: nivel 3, hasta 24 en 3 soles. Cada sol de crecimiento consume agua y energía; si faltan, el ciclo espera. Los astronautas asignados suman comida a la cosecha.	Each greenhouse has its own crop. Wheat: level 1, 7 food in 1 sol; lettuce: level 2, 16 in 2 sols; corn: level 3, up to 24 in 3 sols. Each growing sol uses water and energy; without them, the cycle pauses. Assigned astronauts increase the harvest.
+Las tripulaciones necesitan sueño y períodos de descanso para mantener su salud y capacidad de trabajo. Un hábitat real debe controlar aire, temperatura, humedad, ruido y protección, además de ofrecer un lugar para dormir.	Crews need sleep and rest to stay healthy and able to work. A real habitat must control air, temperature, humidity, noise and protection, as well as offer sleeping quarters.
+El dormitorio modela el descanso y la recuperación de energía. No simula sueño, salud ni condiciones médicas con detalle; una avería ralentiza la recuperación.	The dormitory models rest and energy recovery. It does not simulate sleep, health or medical conditions in detail; damage slows recovery.
+Los cuatro recursos ocupan el mismo espacio. La carga que no cabe permanece a bordo del rover.	The four resources share the same space. Cargo that does not fit stays aboard the rover.
+Las bases de exploración necesitan logística para guardar muestras, herramientas y repuestos. El almacenamiento debe proteger el contenido y permitir que la tripulación lo encuentre cuando hace falta.	Exploration bases need logistics to store samples, tools and spare parts. Storage must protect supplies and let the crew find them when needed.
+Oxígeno, agua, comida y hierro comparten capacidad. Las reservas iniciales y las entregas también ocupan espacio.	Oxygen, water, food and iron share storage capacity. Starting reserves and deliveries also take up space.
+Los tramos vecinos se conectan visualmente para cerrar el perímetro. Los muros cercanos al hábitat reducen las pérdidas de comida durante una incursión.	Adjacent wall segments connect visually to close the perimeter. Walls near the habitat reduce food losses during a raid.
+Una barrera física puede separar áreas y proteger equipos de ciertos peligros, pero no convierte una base en un refugio contra toda amenaza. La radiación requiere materiales, masa y diseño especializados.	A physical barrier can separate areas and protect equipment from some hazards, but it cannot protect a base from every threat. Radiation shielding requires specialized materials, mass and design.
+Las incursiones de criaturas alienígenas y su defensa son ficción del juego. Los muros reducen pérdidas de comida; no protegen contra radiación ni representan una solución real de ingeniería marciana.	Alien creatures and defensive raids are fictional. Walls reduce food losses; they do not block radiation or represent a real Martian engineering solution.
+Un hábitat necesita mantener presión y temperatura, renovar el aire, recuperar agua y proteger a la tripulación de radiación y micrometeoritos. Todos estos subsistemas se afectan entre sí.	A habitat must maintain pressure and temperature, refresh the air, recover water and protect the crew from radiation and micrometeorites. These systems affect one another.
+La partida resume la supervivencia con reservas de oxígeno, agua, comida, energía y camas. El modelo educativo no simula presión, temperatura ni dosis de radiación de forma numérica.	The game models survival with oxygen, water, food, energy and beds. The educational model does not numerically simulate pressure, temperature or radiation dose.
+MEJORAR ESTRUCTURA	UPGRADE STRUCTURE
+MEJORAR ROVER	UPGRADE ROVER
+REPARAR ROVER	REPAIR ROVER
+ENVIAR ROVER	SEND ROVER
+REPARACIÓN	REPAIR
+MEJORAR	UPGRADE
+Sin trabajador	No worker
+Astronautas libres	Available astronauts
+energía personal	personal energy
+en construcción	under construction
+Mejora en curso	Upgrade in progress
+nivel	level
+sectores	sectors
+sector	sector
+de la base	from base
+hacia el	to the
+hacia la	to the
+producción	production
+almacenado	stored
+almacenada	stored
+capacidad	capacity
+unidades de juego	game units
+unidades	units
+unidad	unit
+unid.	units
+soles	sols
+sol	sol
+real	actual
+último	last
+trabajando	working
+descansando	resting
+comida	food
+agua	water
+hierro	iron
+energía	energy
+oxígeno	oxygen
+Mina	Mine
+Extractor de agua	Water extractor
+Planta de oxígeno	Oxygen plant
+Invernadero	Greenhouse
+Almacén	Warehouse
+Colonia	Colony
+cultivo	crop
+Norte	North
+Sur	South
+Este	East
+Oeste	West
+NIVEL	LEVEL
+CULTIVO	CROP
+COMIDA	FOOD
+SOL	SOL
+<b>Cámara</b>  Arrastrá el mapa o usá WASD / flechas.\n<b>Zoom</b>  Rueda del mouse. VOLVER A LA BASE e IR AL ROVER reubican la vista; SEGUIR acompaña al rover.\n<b>Explorar</b>  Clic en el terreno: el rover viaja ahí y revela sectores. Clic en una señal: va a estudiarla.\n<b>Construir</b>  Abrí CONSTRUIR. Elegí un plano y hacé clic en un sector válido, o arrastrá una tarjeta al mapa. Esc o clic derecho cancelan.\n<b>Astronautas</b>  Abrí ASTRONAUTAS, elegí una persona y luego una instalación. Trabajar aumenta su producción; descansan solos al cansarse.\n<b>Muros</b>  Elegí muros en el menú y colocá cada uno en un sector libre (1 Fe). Los vecinos se unen solos; Esc cancela.\n<b>Minimapa</b>  Clic en zona explorada: centra la cámara sin mover al rover. + / - cambia el tamaño; < > lo pasa de lado.\n<b>Pausa</b>  Esc o el botón PAUSA.	<b>Camera</b>  Drag the map or use WASD / arrow keys.\n<b>Zoom</b>  Mouse wheel. RETURN TO BASE and GO TO ROVER reposition the view; FOLLOW tracks the rover.\n<b>Explore</b>  Click terrain to send the rover there and reveal sectors. Click a signal to survey it.\n<b>Build</b>  Open BUILD. Choose a blueprint and click a valid sector, or drag a card onto the map. Esc or right-click cancels.\n<b>Astronauts</b>  Open ASTRONAUTS, choose a person and then a facility. Working increases its output; tired astronauts rest automatically.\n<b>Walls</b>  Choose walls in the menu and place each on an empty sector (1 Fe). Neighbors connect automatically; Esc cancels.\n<b>Minimap</b>  Click an explored area to center the camera without moving the rover. + / - changes size; < > moves it to the other side.\n<b>Pause</b>  Esc or the PAUSE button.
+Se averió {0}. Enviá el rover para repararla.	{0} broke down. Send the rover to repair it.
+MAPA · semilla {0}	MAP · seed {0}
+Preparando el aterrizaje en una región nueva de Marte (semilla {0}).	Preparing to land in a new region of Mars (seed {0}).
+Aterrizaje completado en Marte (semilla {0}). Enviá el rover a explorar los sectores ocultos.	Landing complete on Mars (seed {0}). Send the rover to explore hidden sectors.

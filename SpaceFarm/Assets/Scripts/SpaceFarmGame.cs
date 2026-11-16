@@ -66,6 +66,8 @@ namespace SpaceFarm
         private TextMeshProUGUI statsText;
         private TextMeshProUGUI objectiveText;
         private TextMeshProUGUI reportText;
+        private string lastReportSource;
+        private object[] lastReportArguments;
         private TextMeshProUGUI roverText;
         private TextMeshProUGUI actionDetailText;
         private RectTransform actionCardsRoot;
@@ -132,9 +134,12 @@ namespace SpaceFarm
         private Vector2Int BaseCell => map.BaseCell;
         private Vector2Int RoverDockCell => BaseCell + new Vector2Int(0, -2);
 
-        private void Start()
+        private IEnumerator Start()
         {
             Time.timeScale = 1f;
+            yield return UnityEngine.Localization.Settings.LocalizationSettings.InitializationOperation;
+            SpaceFarmLocalization.RestorePreference();
+            yield return SpaceFarmLocalization.LoadTableAsync();
             SpaceFarmSaveData loadedSave = TakePendingSessionLoad();
             seed = loadedSave != null ? loadedSave.Seed : pendingSeed ?? NewSeed(0);
             pendingSeed = null;
@@ -171,7 +176,7 @@ namespace SpaceFarm
             RefreshWorld();
             PrepareForInitialLanding();
             RefreshHud();
-            SetReport($"Preparando el aterrizaje en una región nueva de Marte (semilla {seed}).");
+            SetReportFormat("Preparando el aterrizaje en una región nueva de Marte (semilla {0}).", seed);
             CreateTitleScreen();
             if (loadedSavedSession) BeginFromTitle();
             Debug.Log($"SPACE_FARM_MAP_READY: {map.Describe()} en {(Time.realtimeSinceStartup - started) * 1000f:0} ms");
@@ -211,12 +216,19 @@ namespace SpaceFarm
 
         private void Update()
         {
-            if (state == null || titleScreenOpen || arrivalSequenceActive) return;
             Keyboard keyboard = Keyboard.current;
+            if (titleScreenOpen)
+            {
+                if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame && pauseAudioPage != null && pauseAudioPage.activeSelf)
+                    CloseSettings();
+                return;
+            }
+            if (state == null || arrivalSequenceActive) return;
             Mouse mouse = Mouse.current;
             if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
             {
-                if (paused) SetPaused(false);
+                if (paused && pauseAudioPage != null && pauseAudioPage.activeSelf) CloseSettings();
+                else if (paused) SetPaused(false);
                 else if (crewMenuOpen) CloseCrewMenu();
                 else if (editMoveActive) CancelEditMove();
                 else if (activeStructure != StructureKind.None) CancelPlacement();
@@ -1041,29 +1053,46 @@ namespace SpaceFarm
 
         private void SetReport(string value)
         {
-            if (reportText != null) reportText.text = value;
+            lastReportSource = value;
+            lastReportArguments = null;
+            if (reportText != null) reportText.text = SpaceFarmLocalization.T(value);
+        }
+
+        private void SetReportFormat(string spanishFormat, params object[] values)
+        {
+            lastReportSource = spanishFormat;
+            lastReportArguments = values;
+            RefreshReportLanguage();
+        }
+
+        private void RefreshReportLanguage()
+        {
+            if (reportText == null || lastReportSource == null) return;
+            reportText.text = lastReportArguments == null
+                ? SpaceFarmLocalization.T(lastReportSource)
+                : SpaceFarmLocalization.F(lastReportSource, lastReportArguments);
         }
 
         private string NextObjective()
         {
-            if (state == null || map == null) return "Preparando la carta orbital…";
+            if (state == null || map == null) return SpaceFarmLocalization.T("Preparando la carta orbital…");
             if (state.DamagedStructure != DamagedStructureKind.None)
-                return $"Repará {state.DamagedStructureName(state.DamagedStructure, state.DamagedTarget)} ({state.RepairIronCost} Fe y {state.RepairEnergyCost} energía).";
+                return SpaceFarmLocalization.F("Repará {0} ({1} Fe y {2} energía).", state.DamagedStructureName(state.DamagedStructure, state.DamagedTarget), state.RepairIronCost, state.RepairEnergyCost);
             if (state.RoverCargo > 0 && state.Iron >= state.WarehouseCapacity)
-                return "El almacén está lleno. Construí otro y enviá el rover a descargar.";
+                return SpaceFarmLocalization.T("El almacén está lleno. Construí otro y enviá el rover a descargar.");
             MapDeposit iron = map.Nearest(DepositKind.Iron);
             MapDeposit ice = map.Nearest(DepositKind.Ice);
-            if (iron == null || ice == null) return "Explorá la región para localizar hierro y hielo.";
+            if (iron == null || ice == null) return SpaceFarmLocalization.T("Explorá la región para localizar hierro y hielo.");
             if (!state.AnySurveyed(DepositKind.Iron))
-                return $"La carta orbital indica hierro al {SpaceFarmMap.Compass(BaseCell, iron.Cell)}, a {iron.Distance} sectores. Enviá el rover y estudialo.";
-            if (state.MineCount == 0) return $"Seleccioná el yacimiento estudiado y construí la mina ({state.MineCost} de hierro).";
+                return SpaceFarmLocalization.F("La carta orbital indica hierro al {0}, a {1} sectores. Enviá el rover y estudialo.", SpaceFarmLocalization.T(SpaceFarmMap.Compass(BaseCell, iron.Cell)), iron.Distance);
+            if (state.MineCount == 0) return SpaceFarmLocalization.F("Seleccioná el yacimiento estudiado y construí la mina ({0} de hierro).", state.MineCost);
             if (!state.AnySurveyed(DepositKind.Ice))
-                return $"Hay hielo al {SpaceFarmMap.Compass(BaseCell, ice.Cell)}, a {ice.Distance} sectores. Enviá el rover a localizarlo.";
-            if (state.ExtractorCount == 0) return $"Construí un extractor para asegurar agua ({state.ExtractorCost} de hierro).";
-            if (!state.Greenhouse) return "Construí un invernadero para iniciar la cosecha (6 de hierro).";
-            if (state.ColonyLevel < 3) return $"Explorá y construí para ganar XP y alcanzar el nivel 3 ({state.Xp}/{state.XpToNext}).";
-            if (state.Sol < 7) return $"Mantené la colonia hasta el sol 7 (ahora {state.Sol}).";
-            return "Revisá recursos y explorá yacimientos lejanos para crecer.";
+                return SpaceFarmLocalization.F("Hay hielo al {0}, a {1} sectores. Enviá el rover a localizarlo.", SpaceFarmLocalization.T(SpaceFarmMap.Compass(BaseCell, ice.Cell)), ice.Distance);
+            if (state.ExtractorCount == 0) return SpaceFarmLocalization.F("Construí un extractor para asegurar agua ({0} de hierro).", state.ExtractorCost);
+            if (!state.Greenhouse) return SpaceFarmLocalization.T("Construí un invernadero para iniciar la cosecha (6 de hierro).");
+            if (state.ColonyLevel < 3) return SpaceFarmLocalization.F("Explorá y construí para ganar XP y alcanzar el nivel 3 ({0}/{1}).", state.Xp, state.XpToNext);
+            if (state.Sol < 7) return SpaceFarmLocalization.F("Mantené la colonia hasta el sol 7 (ahora {0}).", state.Sol);
+            return SpaceFarmLocalization.T("Revisá recursos y explorá yacimientos lejanos para crecer.");
         }
     }
 }

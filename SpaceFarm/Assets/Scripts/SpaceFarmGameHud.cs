@@ -299,7 +299,7 @@ namespace SpaceFarm
             rect.anchoredPosition = position;
             rect.sizeDelta = dimensions;
             TextMeshProUGUI text = label.GetComponent<TextMeshProUGUI>();
-            text.text = value;
+            text.text = SpaceFarmLocalization.T(value);
             text.font = TMP_Settings.defaultFontAsset;
             text.fontSize = size;
             text.fontStyle = style;
@@ -307,6 +307,8 @@ namespace SpaceFarm
             text.alignment = TextAlignmentOptions.MidlineLeft;
             text.textWrappingMode = TextWrappingModes.Normal;
             text.raycastTarget = false;
+            if (SpaceFarmLocalization.HasKey(value))
+                label.AddComponent<SpaceFarmLocalizedLabel>().Configure(value);
             return text;
         }
 
@@ -474,7 +476,7 @@ namespace SpaceFarm
             };
             actionDetailText.text = hints[Mathf.Clamp(category, 0, hints.Length - 1)];
             if (actionMenuTitle != null)
-                actionMenuTitle.text = new[] { "CONSTRUCCIÓN", "MEJORAS", "COLONIA" }[Mathf.Clamp(category, 0, 2)];
+                actionMenuTitle.text = SpaceFarmLocalization.T(new[] { "CONSTRUCCIÓN", "MEJORAS", "COLONIA" }[Mathf.Clamp(category, 0, 2)]);
             RefreshActionCards();
         }
 
@@ -639,7 +641,7 @@ namespace SpaceFarm
             constructionMenuRoot.SetActive(true);
             constructionMenuRoot.transform.SetAsLastSibling();
             SelectCategory(0);
-            constructionMenuToggle.GetComponentInChildren<TextMeshProUGUI>().text = "CERRAR MENÚ";
+            constructionMenuToggle.GetComponentInChildren<TextMeshProUGUI>().text = SpaceFarmLocalization.T("CERRAR MENÚ");
         }
 
         private void CloseConstructionMenu()
@@ -648,7 +650,7 @@ namespace SpaceFarm
             if (constructionMenuRoot != null) constructionMenuRoot.SetActive(false);
             SetNavigationButtonsVisible(true);
             if (constructionMenuToggle != null)
-                constructionMenuToggle.GetComponentInChildren<TextMeshProUGUI>().text = "CONSTRUIR";
+                constructionMenuToggle.GetComponentInChildren<TextMeshProUGUI>().text = SpaceFarmLocalization.T("CONSTRUIR");
             if (infoPanel != null && selectedBuilding != null && activeStructure == StructureKind.None)
             {
                 infoPanel.SetActive(true);
@@ -677,18 +679,18 @@ namespace SpaceFarm
         private void RefreshHud()
         {
             if (statsText == null) return;
-            statsText.text = $"SOL <b>{state.Sol:00}</b>";
+            statsText.text = SpaceFarmLocalization.F("SOL <b>{0:00}</b>", state.Sol);
             RefreshSolCountdownLabel();
             roverText.text = collectionActive
-                ? $"ROVER {state.RoverLevel} · LOGÍSTICA\nCarga {state.RoverCargoTotal}/{state.RoverCapacity} · Fe {state.RoverCargo} O2 {state.RoverOxygenCargo}\nAg {state.RoverWaterCargo} Co {state.RoverFoodCargo}"
+                ? SpaceFarmLocalization.F("ROVER {0} · LOGÍSTICA\nCarga {1}/{2} · Fe {3} O2 {4}\nAg {5} Co {6}", state.RoverLevel, state.RoverCargoTotal, state.RoverCapacity, state.RoverCargo, state.RoverOxygenCargo, state.RoverWaterCargo, state.RoverFoodCargo)
                 : travel != null
-                    ? $"ROVER {state.RoverLevel} · EN RUTA\nSector {Sector(roverDestination)}\nAlmacén {state.WarehouseUsed}/{state.WarehouseCapacity}"
-                    : $"ROVER {state.RoverLevel} · LISTO\nRadio {state.RoverRange} · visión {state.ScanRadius}\nAlmacén {state.WarehouseUsed}/{state.WarehouseCapacity}";
+                    ? SpaceFarmLocalization.F("ROVER {0} · EN RUTA\nSector {1}\nAlmacén {2}/{3}", state.RoverLevel, Sector(roverDestination), state.WarehouseUsed, state.WarehouseCapacity)
+                    : SpaceFarmLocalization.F("ROVER {0} · LISTO\nRadio {1} · visión {2}\nAlmacén {3}/{4}", state.RoverLevel, state.RoverRange, state.ScanRadius, state.WarehouseUsed, state.WarehouseCapacity);
             if (state.GameOver)
-                objectiveText.text = "MISIÓN TERMINADA · Recursos vitales agotados. Abrí PAUSA (Esc) para reiniciar este mapa o probar otro.";
+                objectiveText.text = SpaceFarmLocalization.T("MISIÓN TERMINADA · Recursos vitales agotados. Abrí PAUSA (Esc) para reiniciar este mapa o probar otro.");
             else if (state.MissionComplete)
-                objectiveText.text = "MISIÓN COMPLETA · Primera cosecha y colonia protegida tras la incursión.";
-            else objectiveText.text = "SIGUIENTE PASO  ·  " + NextObjective();
+                objectiveText.text = SpaceFarmLocalization.T("MISIÓN COMPLETA · Primera cosecha y colonia protegida tras la incursión.");
+            else objectiveText.text = SpaceFarmLocalization.T("SIGUIENTE PASO  ·  ") + NextObjective();
             if (editModeToggle != null)
             {
                 editModeToggle.GetComponent<Image>().color = editMode ? SpaceFarmPalette.Iron : SpaceFarmPalette.PanelRaised;
@@ -706,9 +708,9 @@ namespace SpaceFarm
             if (advanceSolButton == null) return;
             TextMeshProUGUI label = advanceSolButton.GetComponentInChildren<TextMeshProUGUI>();
             if (label == null) return;
-            if (state != null && state.GameOver) { label.text = "MISIÓN FINALIZADA"; return; }
+            if (state != null && state.GameOver) { label.text = SpaceFarmLocalization.T("MISIÓN FINALIZADA"); return; }
             int seconds = Mathf.CeilToInt(Mathf.Max(0f, solCountdown));
-            label.text = $"AVANZAR SOL\nAUTO {seconds / 60:00}:{seconds % 60:00}";
+            label.text = SpaceFarmLocalization.F("AVANZAR SOL\nAUTO {0:00}:{1:00}", seconds / 60, seconds % 60);
         }
 
         private void CreateResourceHud(Transform header)
@@ -854,7 +856,7 @@ namespace SpaceFarm
             for (int i = 0; i < now.Length; i++)
             {
                 bool critical = (i == 2 || i == 3 || i == 4) && now[i] <= state.Population * 2;
-                resourceLabels[i].text = names[i];
+                resourceLabels[i].text = SpaceFarmLocalization.T(names[i]);
                 resourceAmounts[i].text = $"{now[i]} / {capacities[i]}";
                 resourceAmounts[i].color = critical ? SpaceFarmPalette.Danger : colorsForResource(i);
                 resourceBarRects[i].anchorMax = new Vector2(Mathf.Clamp01(now[i] / (float)capacities[i]), 1f);
@@ -1074,12 +1076,12 @@ namespace SpaceFarm
         {
             if (state == null) return;
             if (buildModeText != null && barrierMode)
-                buildModeText.text = $"MURO · 1 Fe\nMuros {state.BarrierCount} · Hierro {state.Iron} · Unión automática";
+                buildModeText.text = SpaceFarmLocalization.F("MURO · 1 Fe\nMuros {0} · Hierro {1} · Unión automática", state.BarrierCount, state.Iron);
             if (defenseText != null)
             {
                 defenseText.text = state.ColonyLevel >= SpaceFarmState.MaxLevel
-                    ? $"NIVEL {state.ColonyLevel} · MÁXIMO\nXP {state.Xp}"
-                    : $"NIVEL {state.ColonyLevel}/5 · XP {state.Xp}/{state.XpToNext}";
+                    ? SpaceFarmLocalization.F("NIVEL {0} · MÁXIMO\nXP {1}", state.ColonyLevel, state.Xp)
+                    : SpaceFarmLocalization.F("NIVEL {0}/5 · XP {1}/{2}", state.ColonyLevel, state.Xp, state.XpToNext);
                 if (xpBarFill != null) xpBarFill.sizeDelta = new Vector2(XpBarWidth * state.ColonyLevelProgress, 0);
             }
             if (infoPanel != null && !string.IsNullOrEmpty(selectedBuilding)) RefreshEducationalCard();
