@@ -810,6 +810,7 @@ namespace SpaceFarm
         private GameObject SelectedUpgradeTarget()
         {
             if (selectedBuilding == "solar") return solarWorld;
+            if (selectedBuilding == "dormitory") return dormWorld;
             if (selectedBuilding == "rover") return rover;
             if (selectedBuilding == "oxygen1") return oxygenPlantWorld;
             if (selectedBuilding == "oxygen2" && selectedBuildingIndex >= 0 && selectedBuildingIndex < oxygenWorlds.Count) return oxygenWorlds[selectedBuildingIndex];

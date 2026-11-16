@@ -521,6 +521,24 @@ namespace SpaceFarm.Editor
                 "reiniciar durante la animación elimina la nave y el pedido de la partida anterior");
             restartedDuringShipment.BeginFromTitleForTools();
             yield return Until(() => !restartedDuringShipment.ArrivalSequenceActive, 8, "aterrizaje posterior al reinicio de envío");
+
+            SpaceFarmState repairState = restartedDuringShipment.State;
+            SpaceFarmState.SaveSnapshot damagedDormitory = repairState.CaptureSave();
+            damagedDormitory.DamagedKind = (int)DamagedStructureKind.Dormitory;
+            damagedDormitory.DamagedTarget = 0;
+            damagedDormitory.Iron = Mathf.Max(damagedDormitory.Iron, 12);
+            damagedDormitory.Energy = Mathf.Max(damagedDormitory.Energy, 3);
+            damagedDormitory.AutomaticCollection = false;
+            Require(repairState.RestoreSave(damagedDormitory, out _), "se prepara un dormitorio averiado para comprobar su reparación");
+            restartedDuringShipment.SelectWorldObjectForTools("dormitory");
+            Button repairButton = UnityEngine.Object.FindObjectsByType<Button>()
+                .FirstOrDefault(button => button.gameObject.name == "REPARAR" && button.isActiveAndEnabled);
+            Require(repairButton != null && repairButton.interactable, "la ficha del dormitorio ofrece reparar cuando hay recursos");
+            int ironBeforeRepair = repairState.Iron;
+            repairButton.onClick.Invoke();
+            yield return Until(() => repairState.IsRepairing, 15, "el rover inicia la reparación del dormitorio");
+            Require(repairState.Iron == ironBeforeRepair - repairState.RepairIronCost,
+                "reparar el dormitorio envía el rover y cobra el hierro al comenzar el trabajo");
         }
     }
 }
